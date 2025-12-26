@@ -1,0 +1,19 @@
+{
+    "name": "today.comes.saintshierarchy",
+    "version": "0.0.1",
+    "displayName": "SaintsHierarchy",
+    "description": "A Unity plugin for hierarchy in inspector",
+    "unity": "2022.2",
+    "dependencies": {},
+    "keywords": [
+        "unity",
+        "inspector"
+    ],
+    "category": "editor extensions",
+    "author": {
+        "name": "TylerTemp",
+        "email": "tylertempdev@gmail.com",
+        "url": "https://github.com/TylerTemp/SaintsHierarchy"
+    },
+    "license": "MIT"
+}

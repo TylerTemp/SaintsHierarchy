@@ -1,0 +1,19 @@
+{
+    "name": "SaintsHierarchy.Editor",
+    "rootNamespace": "SaintsHierarchy",
+    "references": [
+        "Unity.RenderPipelines.Core.Runtime",
+        "AK.Wwise.Unity.MonoBehaviour"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
