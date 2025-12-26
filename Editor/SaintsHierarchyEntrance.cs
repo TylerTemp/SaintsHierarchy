@@ -268,41 +268,21 @@ namespace SaintsHierarchy.Editor
             Transform current = trans;
             while (current != null)
             {
-                // if (current.name == "Prefab Mode In Context")
-                // {
-                //     return names;
-                // }
-                // Debug.Log(current.name);
-                // if (!current.gameObject.scene.IsValid())
-                if (stage != null &&
-                    current.gameObject.scene == stage.scene &&
-                    !IsPartOfPrefabContents(current.gameObject, prefabContentsRoot))
-                {
-                    // Skip "Prefab Mode In Context"
-                    Debug.Log("return");
-                    return names;
-                }
                 Debug.Log($"add {current.name}");
                 names.Insert(0, current.name);
+
+                if (stage != null &&
+                    current.gameObject.scene == stage.scene &&
+                    current.gameObject == prefabContentsRoot)
+                {
+                    break;
+                }
+
                 current = current.parent;
+
             }
             Debug.Log($"names={string.Join("/",  names)}");
             return names;
-        }
-
-        static bool IsPartOfPrefabContents(GameObject go, GameObject prefabContentsRoot)
-        {
-            if (prefabContentsRoot == null)
-                return false;
-
-            Transform t = go.transform;
-            while (t != null)
-            {
-                if (t.gameObject == prefabContentsRoot)
-                    return true;
-                t = t.parent;
-            }
-            return false;
         }
 
         private static SaintsHierarchyConfig.GameObjectConfig GetGameObjectConfig(GameObject go)
