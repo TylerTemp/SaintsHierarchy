@@ -50,6 +50,11 @@ namespace SaintsHierarchy.Editor
             SaintsHierarchyConfig config = Utils.EnsureConfig();
 
             string scenePath = go.scene.path;
+            if (string.IsNullOrEmpty(scenePath))
+            {
+                scenePath = AssetDatabase.GetAssetPath(go);
+            }
+            // Debug.Log($"scenePath={scenePath}");
             string sceneGuid = AssetDatabase.AssetPathToGUID(scenePath);
             // Debug.Log($"path={scenePath}; guid={sceneGuid}");
             GlobalObjectId goId = GlobalObjectId.GetGlobalObjectIdSlow(go);

@@ -123,6 +123,16 @@ namespace SaintsHierarchy.Editor
             string goIdStringRaw = goId.ToString();
             string[] goIdSplit = goIdStringRaw.Split('-');
             goIdSplit[1] = "1";
+            // goIdSplit[4] = "0";
+            return string.Join('-', goIdSplit);
+        }
+
+        public static string GlobalObjectIdNormStringNoPrefabLink(GlobalObjectId goId)
+        {
+            string goIdStringRaw = goId.ToString();
+            string[] goIdSplit = goIdStringRaw.Split('-');
+            goIdSplit[1] = "1";
+            goIdSplit[4] = "0";
             return string.Join('-', goIdSplit);
         }
     }
