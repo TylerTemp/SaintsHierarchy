@@ -13,7 +13,7 @@ namespace SaintsHierarchy.Editor
             "Packages/today.comes.saintshierarchy/Editor/Editor Default Resources/SaintsHierarchy", // Unity UPM
         };
 
-        public static T LoadResource<T>(string resourcePath) where T: UnityEngine.Object
+        public static T LoadResource<T>(string resourcePath) where T: Object
         {
             foreach (T each in ResourceSearchFolder
                          .Select(resourceFolder => AssetDatabase.LoadAssetAtPath<T>($"{resourceFolder}/{resourcePath}")))
@@ -39,7 +39,14 @@ namespace SaintsHierarchy.Editor
                 }
             }
 
-            Debug.Assert(result, $"{resourcePath} not found in {string.Join(", ", ResourceSearchFolder)}");
+            if (result == null)
+            {
+#if SAINTSHIERARCHY_DEBUG
+                Debug.LogWarning($"{resourcePath} not found in {string.Join(", ", ResourceSearchFolder)}");
+#endif
+                return null;
+            }
+            // Debug.Assert(result, $"{resourcePath} not found in {string.Join(", ", ResourceSearchFolder)}");
             return result;
         }
 
@@ -77,9 +84,9 @@ namespace SaintsHierarchy.Editor
             return _config;
         }
 
-        public static void PopupConfig(Rect worldBound, GameObject go, bool hasCustomIcon)
+        public static void PopupConfig(Rect worldBound, GameObject go, string customIcon)
         {
-            PopupWindow.Show(worldBound, new GameObjectConfigPopup(go, hasCustomIcon));
+            PopupWindow.Show(worldBound, new GameObjectConfigPopup(go, customIcon));
         }
 
         // public static GlobalObjectId ScenePrefabGidToUnpackedGid(GlobalObjectId id, string prefabId)

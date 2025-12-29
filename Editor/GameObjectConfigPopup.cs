@@ -6,12 +6,12 @@ namespace SaintsHierarchy.Editor
     public class GameObjectConfigPopup: PopupWindowContent
     {
         private readonly GameObject _go;
-        private readonly bool _hasCustomIcon;
+        private readonly string _customIcon;
 
-        public GameObjectConfigPopup(GameObject go, bool hasCustomIcon)
+        public GameObjectConfigPopup(GameObject go, string customIcon)
         {
             _go = go;
-            _hasCustomIcon = hasCustomIcon;
+            _customIcon = customIcon;
         }
 
         public override void OnGUI(Rect rect)
@@ -26,7 +26,7 @@ namespace SaintsHierarchy.Editor
 
         public override void OnOpen()
         {
-            GameObjectConfigPanel element = new GameObjectConfigPanel(_go, _hasCustomIcon);
+            GameObjectConfigPanel element = new GameObjectConfigPanel(_go, _customIcon);
             editorWindow.rootVisualElement.Add(element);
             element.NeedCloseEvent.AddListener(hasChange =>
             {

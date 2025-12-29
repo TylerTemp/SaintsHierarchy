@@ -9,6 +9,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 
@@ -145,24 +146,32 @@ namespace SaintsHierarchy.Editor
 
             #region Main Icon
 
-            bool hasCustomIcon = false;
+            string customIcon = null;
             Texture iconTexture = null;
             if (!string.IsNullOrEmpty(goConfig.icon))
             {
                 iconTexture = Utils.LoadResource<Texture2D>(goConfig.icon);
-                hasCustomIcon = iconTexture != null;
+                customIcon = goConfig.icon;
             }
             else if (trans.GetComponent<Camera>())
             {
-                iconTexture = EditorGUIUtility.IconContent("Camera Icon").image;
+                iconTexture = EditorGUIUtility.IconContent("d_Camera Icon").image;
             }
             else if (trans.GetComponent<Light>())
             {
-                iconTexture = EditorGUIUtility.IconContent("DirectionalLight Icon").image;
+                iconTexture = EditorGUIUtility.IconContent("d_DirectionalLight Icon").image;
             }
             else if (trans.GetComponent<Volume>())
             {
                 iconTexture = Utils.LoadResource<Texture2D>("d_Volume Icon.asset");
+            }
+            else if (trans.GetComponent<Canvas>())
+            {
+                iconTexture = Utils.LoadResource<Texture2D>("d_Canvas Icon");
+            }
+            else if (trans.GetComponent<EventSystem>())
+            {
+                iconTexture = Utils.LoadResource<Texture2D>("d_EventSystem Icon");
             }
 #if SAINTSHIERARCHY_WWISE
             else if (trans.GetComponent<AkInitializer>())
@@ -197,7 +206,9 @@ namespace SaintsHierarchy.Editor
 
                 if (instanceStatus == PrefabInstanceStatus.MissingAsset)
                 {
-                    prefabTexture = EditorGUIUtility.IconContent("d_PrefabVariant On Icon").image;
+                    iconTexture = EditorGUIUtility.IconContent("d_Prefab Icon").image;
+                    prefabTexture = EditorGUIUtility.IconContent("d_console.warnicon").image;
+                    // prefabTexture = EditorGUIUtility.IconContent("d_PrefabVariant On Icon").image;
                 }
             }
 
@@ -224,10 +235,10 @@ namespace SaintsHierarchy.Editor
 
             if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && isHover && (Event.current.modifiers & EventModifiers.Alt) != 0)
             {
-                Debug.Log($"popup id: {GlobalObjectId.GetGlobalObjectIdSlow(go)}");
+                // Debug.Log($"popup id: {GlobalObjectId.GetGlobalObjectIdSlow(go)}");
                 // var parentRoots = GetPrefabRootTopToBottom(go);
 
-                Utils.PopupConfig(new Rect(mousePosition.x, mousePosition.y, 0, 0), go, hasCustomIcon);
+                Utils.PopupConfig(new Rect(mousePosition.x, mousePosition.y, 0, 0), go, customIcon);
             }
 
             #endregion
@@ -288,10 +299,10 @@ namespace SaintsHierarchy.Editor
         private static SaintsHierarchyConfig.GameObjectConfig GetGameObjectConfig(GameObject go)
         {
             GlobalObjectId goId = GlobalObjectId.GetGlobalObjectIdSlow(go);
-            if (go.name == "PrefabInsideAPrefab")
-            {
-                Debug.Log($"raw: {goId}");
-            }
+            // if (go.name == "PrefabInsideAPrefab")
+            // {
+            //     Debug.Log($"raw: {goId}");
+            // }
 
             string scenePath = go.scene.path;
             // Debug.Log($"scenePath={scenePath}");
@@ -317,25 +328,40 @@ namespace SaintsHierarchy.Editor
             // IReadOnlyList<GameObject> prefabRootTopToBottom = GetPrefabRootTopToBottom(go);
             foreach ((GameObject prefabInstanceRoot, string relativePath) in GetPrefabRootTopToBottom(go))
             {
-                if (go.name == "PrefabInsideAPrefab")
-                {
-                    Debug.Log($"go={go.name}: {prefabInstanceRoot.name}->{relativePath}");
-                }
+                // if (go.name == "PrefabInsideAPrefab")
+                // {
+                //     Debug.Log($"go={go.name}: {prefabInstanceRoot.name}->{relativePath}");
+                // }
                 // GameObject prefabAsset = PrefabUtility.GetCorrespondingObjectFromOriginalSource(prefabInstanceRoot);
                 string prefabPath =
                     AssetDatabase.GetAssetPath(
                         PrefabUtility.GetCorrespondingObjectFromOriginalSource(prefabInstanceRoot));
+                // Debug.Log(prefabPath);
+                if (string.IsNullOrEmpty(prefabPath))  // broken prefab
+                {
+                    return default;
+                }
                 GameObject prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
-                GameObject prefabSubGo = relativePath == ""? prefabAsset: prefabAsset.transform.Find(relativePath).gameObject;
+
+                GameObject prefabSubGo;
+                // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+                if (relativePath == "")
+                {
+                    prefabSubGo = prefabAsset;
+                }
+                else
+                {
+                    prefabSubGo = prefabAsset.transform.Find(relativePath).gameObject;
+                }
                 GlobalObjectId prefabSubGoId = GlobalObjectId.GetGlobalObjectIdSlow(prefabSubGo);
                 string prefabSubGoIdStr = Utils.GlobalObjectIdNormString(prefabSubGoId);
                 string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(prefabAsset));
-                if (go.name == "PrefabInsideAPrefab")
-                {
-                    Debug.Log($"prefab prefabSubGo = {prefabSubGo.name}");
-                    Debug.Log($"prefab path = {prefabPath}");
-                    Debug.Log($"prefab={guid}/goId={prefabSubGoIdStr}");
-                }
+                // if (go.name == "PrefabInsideAPrefab")
+                // {
+                //     Debug.Log($"prefab prefabSubGo = {prefabSubGo.name}");
+                //     Debug.Log($"prefab path = {prefabPath}");
+                //     Debug.Log($"prefab={guid}/goId={prefabSubGoIdStr}");
+                // }
                 (bool found, SaintsHierarchyConfig.GameObjectConfig config) prefabConfig = FindConfig(guid, prefabSubGoIdStr);
                 if (prefabConfig.found)
                 {
