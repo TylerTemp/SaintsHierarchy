@@ -137,6 +137,7 @@ namespace SaintsHierarchy.Editor
 
             ItemButtonElement noColorButton = MakeIconButton(EditorGUIUtility.IconContent("d_Close").image as Texture2D);
             colorRow.Insert(0, noColorButton);
+            noColorButton.Button.tooltip = "Remove Color Config";
             noColorButton.Button.clicked += () => SetColor(go, false, default, true);
 
             List<ItemButtonElement> colorButtons = new List<ItemButtonElement>(Colors.Length);
@@ -158,6 +159,7 @@ namespace SaintsHierarchy.Editor
             }
 
             ColorField colorField = colorRow.Q<ColorField>(name: "CustomColor");
+            colorField.tooltip = "Custom Color";
             colorField.value = goConfig.hasColor ? goConfig.color : Color.black;
             colorField.RegisterValueChangedCallback(evt =>
             {

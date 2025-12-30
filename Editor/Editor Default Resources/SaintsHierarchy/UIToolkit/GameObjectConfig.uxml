@@ -2,7 +2,7 @@
     <Style src="project://database/Packages/today.comes.saintshierarchy/Editor/Editor%20Default%20Resources/SaintsHierarchy/UIToolkit/GameObjectConfigStyle.uss?fileID=7433441132597879392&amp;guid=064a7a0385783364b9a4779323e69a91&amp;type=3#GameObjectConfigStyle"/>
     <ui:VisualElement name="ColorContainer" class="ColorContainer">
         <ui:VisualElement name="CustomColorContainer">
-            <uie:ColorField name="CustomColor"/>
+            <uie:ColorField name="CustomColor" tooltip="Custom Color"/>
             <ui:VisualElement name="CustomColorIcon" style="flex-grow: 1;"/>
         </ui:VisualElement>
     </ui:VisualElement>

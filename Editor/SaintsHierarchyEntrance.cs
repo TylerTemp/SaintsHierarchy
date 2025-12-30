@@ -233,6 +233,16 @@ namespace SaintsHierarchy.Editor
 
             if (!hasFoldout && indentLevel > 0)
             {
+                var parentTrans = trans.parent;
+                Color useColor = TreeColor;
+                if (parentTrans != null)
+                {
+                    var config = GetGameObjectConfig(parentTrans.gameObject);
+                    if (config.hasColor)
+                    {
+                        useColor = config.color;
+                    }
+                }
                 int indentXLast = StartOffset + (indentLevel - 1) * IndentOffset;
                 Rect drawIndent = new Rect(selectionRect)
                 {
@@ -240,7 +250,7 @@ namespace SaintsHierarchy.Editor
                     width = IndentOffset,
                 };
                 // GUI.Label(drawIndent, "─");
-                DrawRightThrough(drawIndent, TreeColor);
+                DrawRightThrough(drawIndent, useColor);
             }
             #endregion
 
@@ -759,14 +769,25 @@ namespace SaintsHierarchy.Editor
         {
             if (inherentDepth == 1)
             {
+                Color useColor = TreeColor;
+                Transform parent = trans.parent;
+                if (parent != null)
+                {
+                    var config = GetGameObjectConfig(parent.gameObject);
+                    if (config.hasColor)
+                    {
+                        useColor = config.color;
+                    }
+                }
+
                 bool hasNext = HasNextSibling(trans);
                 if (hasNext)
                 {
-                    DrawDownThroughRight(drawIndent, TreeColor);
+                    DrawDownThroughRight(drawIndent, useColor);
                 }
                 else
                 {
-                    DrawDownRight(drawIndent, TreeColor);
+                    DrawDownRight(drawIndent, useColor);
                 }
 
                 // EditorGUI.DrawRect(drawIndent, Color.blue);
@@ -791,7 +812,16 @@ namespace SaintsHierarchy.Editor
                 bool preParentHasNext = HasNextSibling(preParent);
                 if (preParentHasNext)
                 {
-                    DrawDownThrough(drawIndent, TreeColor);
+                    Color useColor = TreeColor;
+                    if (parent != null)
+                    {
+                        SaintsHierarchyConfig.GameObjectConfig config = GetGameObjectConfig(parent.gameObject);
+                        if (config.hasColor)
+                        {
+                            useColor = config.color;
+                        }
+                    }
+                    DrawDownThrough(drawIndent, useColor);
                 }
             }
         }
