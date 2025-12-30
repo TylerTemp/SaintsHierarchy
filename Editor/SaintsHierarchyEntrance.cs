@@ -98,7 +98,7 @@ namespace SaintsHierarchy.Editor
             if (curScenePath.EndsWith(".prefab"))
             {
                 string absPath = string.Join("/", GetAbsPath(go.transform).Skip(1));
-                Debug.Log($"popup absPath: {absPath} for {go.name}");
+                // Debug.Log($"popup absPath: {absPath} for {go.name}");
                 GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(curScenePath);
                 GameObject newGo;
                 if (absPath == "")
@@ -107,8 +107,8 @@ namespace SaintsHierarchy.Editor
                 }
                 else
                 {
-                    Debug.Log(prefab.name);
-                    Debug.Log(prefab.transform);
+                    // Debug.Log(prefab.name);
+                    // Debug.Log(prefab.transform);
                     newGo = prefab.transform.Find(absPath).gameObject;
                 }
                 Debug.Assert(newGo != null, absPath);
@@ -748,7 +748,13 @@ namespace SaintsHierarchy.Editor
             // Debug.Log(prop);
             object treeViewControllerStateRaw = _treeViewControllerStateField.GetValue(treeViewController);
             // Debug.Log(treeViewControllerStateRaw);
-            if (treeViewControllerStateRaw is not TreeViewState<EntityId> treeViewControllerState)
+            if (treeViewControllerStateRaw is not
+#if UNITY_6000_3_OR_NEWER
+                TreeViewState<EntityId>
+#else
+                TreeViewState
+#endif
+                treeViewControllerState)
             {
                 return ("treeViewControllerState not found", null);
             }
