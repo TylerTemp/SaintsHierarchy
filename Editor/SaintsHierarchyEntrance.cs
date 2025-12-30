@@ -748,7 +748,13 @@ namespace SaintsHierarchy.Editor
             // Debug.Log(prop);
             object treeViewControllerStateRaw = _treeViewControllerStateField.GetValue(treeViewController);
             // Debug.Log(treeViewControllerStateRaw);
-            if (treeViewControllerStateRaw is not TreeViewState<EntityId> treeViewControllerState)
+            if (treeViewControllerStateRaw is not
+#if UNITY_6000_3_OR_NEWER
+                TreeViewState<EntityId>
+#else
+                TreeViewState
+#endif
+                treeViewControllerState)
             {
                 return ("treeViewControllerState not found", null);
             }
