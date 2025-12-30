@@ -11,7 +11,6 @@ using UnityEditor.IMGUI.Controls;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 
 namespace SaintsHierarchy.Editor
@@ -37,7 +36,13 @@ namespace SaintsHierarchy.Editor
                 return instanceID == _selectedInstance;
             }
 
-            return Selection.entityIds.Contains(instanceID);
+            return Selection.
+#if UNITY_6000_3_OR_NEWER
+                entityIds
+#else
+                instanceIDs
+#endif
+                .Contains(instanceID);
         }
 
         private static readonly Color TreeColor = new Color(0.4f, 0.4f, 0.4f);
@@ -45,7 +50,13 @@ namespace SaintsHierarchy.Editor
         private static void OnHierarchyGUI(int instanceID, Rect selectionRect)
         {
             // Get the object corresponding to the ID
-            Object obj = EditorUtility.EntityIdToObject(instanceID);
+            Object obj = EditorUtility.
+#if UNITY_6000_3_OR_NEWER
+                EntityIdToObject
+#else
+                InstanceIDToObject
+#endif
+                (instanceID);
 
             if (obj == null)
             {
@@ -253,38 +264,16 @@ namespace SaintsHierarchy.Editor
             #region Main Icon
 
             // string customIcon = null;
-            Texture iconTexture = null;
+            Texture iconTexture;
             if (!string.IsNullOrEmpty(goConfig.icon))
             {
                 iconTexture = Utils.LoadResource<Texture2D>(goConfig.icon);
                 // customIcon = goConfig.icon;
             }
-            else if (trans.GetComponent<Camera>())
+            else
             {
-                iconTexture = EditorGUIUtility.IconContent("d_Camera Icon").image;
+                iconTexture = GetIconByComponent(trans);
             }
-            else if (trans.GetComponent<Light>())
-            {
-                iconTexture = EditorGUIUtility.IconContent("d_DirectionalLight Icon").image;
-            }
-            else if (trans.GetComponent<Volume>())
-            {
-                iconTexture = Utils.LoadResource<Texture2D>("d_Volume Icon.asset");
-            }
-            else if (trans.GetComponent<Canvas>())
-            {
-                iconTexture = Utils.LoadResource<Texture2D>("d_Canvas Icon");
-            }
-            else if (trans.GetComponent<EventSystem>())
-            {
-                iconTexture = Utils.LoadResource<Texture2D>("d_EventSystem Icon");
-            }
-#if SAINTSHIERARCHY_WWISE
-            else if (trans.GetComponent<AkInitializer>())
-            {
-                iconTexture = Utils.LoadResource<Texture2D>("wwise-logo.png");
-            }
-#endif
 
             Texture prefabTexture = null;
             bool isAnyPrefabInstanceRoot = PrefabUtility.IsAnyPrefabInstanceRoot(go);
@@ -420,6 +409,33 @@ namespace SaintsHierarchy.Editor
                     textColor = new Color32(211, 106, 106, 255),
                 },
             };
+        }
+        private static Texture2D GetIconByComponent(Transform trans)
+        {
+            foreach (Component comp in trans.GetComponents<Component>())
+            {
+                switch (comp)
+                {
+                    case Camera:
+                        return (Texture2D)EditorGUIUtility.IconContent("d_Camera Icon").image;
+                    case Light:
+                        return (Texture2D)EditorGUIUtility.IconContent("d_DirectionalLight Icon").image;
+                    case Canvas:
+                        return (Texture2D)EditorGUIUtility.IconContent("d_Canvas Icon").image;
+                    case EventSystem:
+                        return (Texture2D)EditorGUIUtility.IconContent("d_EventSystem Icon").image;
+#if SAINTSHIERARCHY_UNITY_RENDER_PIPELINES_CORE
+                    case UnityEngine.Rendering.Volume:
+                        return Utils.LoadResource<Texture2D>("d_Volume Icon.asset");
+#endif
+#if SAINTSHIERARCHY_WWISE
+                    case AkInitializer:
+                        return Utils.LoadResource<Texture2D>("wwise-logo.png");
+#endif
+                }
+            }
+
+            return null;
         }
 
         private static IReadOnlyList<(GameObject root, string path)> GetPrefabRootTopToBottom(GameObject go)

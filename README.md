@@ -2,6 +2,8 @@
 
 Unity Hierarchy enhancement (WIP). Use `Alt`+`Left Mouse Button` to select.
 
+![](https://github.com/user-attachments/assets/35037962-3488-426a-98ca-25c9dae696a0)
+
 **Features**
 
 1.  Draw indent guild
