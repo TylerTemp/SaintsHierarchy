@@ -3,7 +3,8 @@
     "rootNamespace": "SaintsHierarchy",
     "references": [
         "Unity.RenderPipelines.Core.Runtime",
-        "AK.Wwise.Unity.MonoBehaviour"
+        "AK.Wwise.Unity.MonoBehaviour",
+        "SaintsHierarchy"
     ],
     "includePlatforms": [
         "Editor"

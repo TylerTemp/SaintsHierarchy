@@ -1,0 +1,16 @@
+{
+    "name": "SaintsHierarchy.Samples",
+    "rootNamespace": "SaintsHierarchy",
+    "references": [
+        "GUID:a6fcfbf480ce49b995971567d4a4c176"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

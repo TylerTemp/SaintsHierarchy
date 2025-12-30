@@ -80,6 +80,7 @@ namespace SaintsHierarchy.Editor
 
             Vector2 mousePosition = Event.current.mousePosition;
             bool isHover = fullRect.Contains(mousePosition);
+            // ReSharper disable once ConvertIfStatementToSwitchStatement
             if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && isHover)
             {
                 _selectedInstance = instanceID;
@@ -99,6 +100,7 @@ namespace SaintsHierarchy.Editor
                 // Debug.Log($"popup absPath: {absPath} for {go.name}");
                 GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(curScenePath);
                 GameObject newGo;
+                // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
                 if (absPath == "")
                 {
                     newGo = prefab;
@@ -114,18 +116,28 @@ namespace SaintsHierarchy.Editor
                 // Debug.Log($"popup re-id: {GlobalObjectId.GetGlobalObjectIdSlow(targetGo)}");
             }
 
-            SaintsHierarchyConfig.GameObjectConfig goConfig = GetGameObjectConfig(go);
+            SaintsHierarchyConfig.GameObjectConfig goConfig;
             if (EditorApplication.isPlayingOrWillChangePlaymode)
             {
                 (bool runtimeFound, SaintsHierarchyConfig.GameObjectConfig runtimeConfig) = RuntimeCacheConfig.instance.Search(instanceID);
+                // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
                 if (runtimeFound)
                 {
                     goConfig = runtimeConfig;
                 }
+                else
+                {
+                    goConfig = GetGameObjectConfig(go).config;
+                }
             }
             else
             {
-                RuntimeCacheConfig.instance.Upsert(instanceID, goConfig);
+                bool found;
+                (found, goConfig) = GetGameObjectConfig(go);
+                if(found)
+                {
+                    RuntimeCacheConfig.instance.Upsert(instanceID, goConfig);
+                }
             }
 
             Transform trans = go.transform;
@@ -139,7 +151,7 @@ namespace SaintsHierarchy.Editor
                 return;
             }
 
-            (string bgError, SelectStatus bgStatus) = GetBgColor(sceneHierarchyWindow, sceneHierarchy, selectionRect, instanceID, isHover);
+            (string bgError, SelectStatus bgStatus) = GetBgColor(sceneHierarchyWindow, sceneHierarchy, instanceID, isHover);
             if (bgError != "")
             {
 #if SAINTSHIERARCHY_DEBUG
@@ -243,11 +255,11 @@ namespace SaintsHierarchy.Editor
 
             if (!hasFoldout && indentLevel > 0)
             {
-                var parentTrans = trans.parent;
+                Transform parentTrans = trans.parent;
                 Color useColor = TreeColor;
                 if (parentTrans != null)
                 {
-                    var config = GetGameObjectConfig(parentTrans.gameObject);
+                    SaintsHierarchyConfig.GameObjectConfig config = GetGameObjectConfig(parentTrans.gameObject).config;
                     if (config.hasColor)
                     {
                         useColor = config.color;
@@ -285,6 +297,7 @@ namespace SaintsHierarchy.Editor
 
             // string customIcon = null;
             Texture iconTexture;
+            // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
             if (!string.IsNullOrEmpty(goConfig.icon))
             {
                 iconTexture = Utils.LoadResource<Texture2D>(goConfig.icon);
@@ -338,6 +351,7 @@ namespace SaintsHierarchy.Editor
 
             if (iconTexture is null)
             {
+                // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
                 if (prefabTexture is null)
                 {
                     GUI.DrawTexture(iconRect, EditorGUIUtility.IconContent("d_GameObject Icon").image, ScaleMode.ScaleToFit, true);
@@ -436,6 +450,10 @@ namespace SaintsHierarchy.Editor
             {
                 switch (comp)
                 {
+                    case IHierarchyIconPath hierarchyIconPath:
+                        return Utils.LoadResource<Texture2D>(hierarchyIconPath.HierarchyIconPath);
+                    case IHierarchyIconTexture2D hierarchyIconTexture2D:
+                        return hierarchyIconTexture2D.HierarchyIconTexture2D;
                     case Camera:
                         return (Texture2D)EditorGUIUtility.IconContent("d_Camera Icon").image;
                     case Light:
@@ -510,7 +528,7 @@ namespace SaintsHierarchy.Editor
             return names;
         }
 
-        private static SaintsHierarchyConfig.GameObjectConfig GetGameObjectConfig(GameObject go)
+        private static (bool found, SaintsHierarchyConfig.GameObjectConfig config) GetGameObjectConfig(GameObject go)
         {
             GlobalObjectId goId = GlobalObjectId.GetGlobalObjectIdSlow(go);
             // if (go.name == "PrefabInsideAPrefab")
@@ -536,7 +554,7 @@ namespace SaintsHierarchy.Editor
             // (bool found, SaintsHierarchyConfig.GameObjectConfig config) = FindConfig(sceneGuid, upkId);
             if (found)
             {
-                return config;
+                return (true, config);
             }
 
             // IReadOnlyList<GameObject> prefabRootTopToBottom = GetPrefabRootTopToBottom(go);
@@ -579,11 +597,11 @@ namespace SaintsHierarchy.Editor
                 (bool found, SaintsHierarchyConfig.GameObjectConfig config) prefabConfig = FindConfig(guid, prefabSubGoIdStr);
                 if (prefabConfig.found)
                 {
-                    return prefabConfig.config;
+                    return (true, prefabConfig.config);
                 }
             }
 
-            return default;
+            return (false, default);
         }
 
         private static (bool found, SaintsHierarchyConfig.GameObjectConfig config) FindConfig(string sceneGuid, string goIdString)
@@ -638,7 +656,7 @@ namespace SaintsHierarchy.Editor
             }
 
             List<EditorWindow> sceneHierarchyWindows = ((IList)_sceneHierarchyWindowsField.GetValue(null)).Cast<EditorWindow>().ToList();
-            EditorWindow sceneHierarchyWindow = null;
+            EditorWindow sceneHierarchyWindow;
             if (sceneHierarchyWindows.Count == 1)
             {
                 sceneHierarchyWindow = sceneHierarchyWindows[0];
@@ -683,7 +701,7 @@ namespace SaintsHierarchy.Editor
             SelectUnfocus,
         }
 
-        private static (string error, SelectStatus selectStatus) GetBgColor(EditorWindow sceneHierarchyWindow, object sceneHierarchy, Rect selectionRect, int instanceID, bool isHover)
+        private static (string error, SelectStatus selectStatus) GetBgColor(EditorWindow sceneHierarchyWindow, object sceneHierarchy, int instanceID, bool isHover)
         {
             if (IsSelected(instanceID))
             {
@@ -789,7 +807,7 @@ namespace SaintsHierarchy.Editor
                 Transform parent = trans.parent;
                 if (parent != null)
                 {
-                    var config = GetGameObjectConfig(parent.gameObject);
+                    SaintsHierarchyConfig.GameObjectConfig config = GetGameObjectConfig(parent.gameObject).config;
                     if (config.hasColor)
                     {
                         useColor = config.color;
@@ -831,7 +849,7 @@ namespace SaintsHierarchy.Editor
                     Color useColor = TreeColor;
                     if (parent != null)
                     {
-                        SaintsHierarchyConfig.GameObjectConfig config = GetGameObjectConfig(parent.gameObject);
+                        SaintsHierarchyConfig.GameObjectConfig config = GetGameObjectConfig(parent.gameObject).config;
                         if (config.hasColor)
                         {
                             useColor = config.color;

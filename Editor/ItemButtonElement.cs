@@ -1,6 +1,6 @@
 using UnityEngine.UIElements;
 
-namespace SaintsHierarchy.Editor.Editor_Default_Resources
+namespace SaintsHierarchy.Editor
 {
     public class ItemButtonElement: VisualElement
     {

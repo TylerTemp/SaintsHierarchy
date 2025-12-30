@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SaintsHierarchy.Editor.Editor_Default_Resources;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -172,6 +171,7 @@ namespace SaintsHierarchy.Editor
 
 #if !UNITY_6000_3_OR_NEWER
             colorField.style.width = 46;
+            colorRow.Q<VisualElement>(name: "CustomColorIcon").style.display = DisplayStyle.None;
 #endif
 
             VisualElement iconRow = root.Q<ScrollView>(name: "IconContainer").contentContainer;
