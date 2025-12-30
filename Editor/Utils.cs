@@ -84,9 +84,9 @@ namespace SaintsHierarchy.Editor
             return _config;
         }
 
-        public static void PopupConfig(Rect worldBound, GameObject go, string customIcon)
+        public static void PopupConfig(Rect worldBound, GameObject go, SaintsHierarchyConfig.GameObjectConfig goConfig)
         {
-            PopupWindow.Show(worldBound, new GameObjectConfigPopup(go, customIcon));
+            PopupWindow.Show(worldBound, new GameObjectConfigPopup(go, goConfig));
         }
 
         // public static GlobalObjectId ScenePrefabGidToUnpackedGid(GlobalObjectId id, string prefabId)

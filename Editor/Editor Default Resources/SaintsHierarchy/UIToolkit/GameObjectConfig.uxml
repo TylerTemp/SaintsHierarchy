@@ -1,6 +1,11 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
     <Style src="project://database/Packages/today.comes.saintshierarchy/Editor/Editor%20Default%20Resources/SaintsHierarchy/UIToolkit/GameObjectConfigStyle.uss?fileID=7433441132597879392&amp;guid=064a7a0385783364b9a4779323e69a91&amp;type=3#GameObjectConfigStyle"/>
-    <uie:ToolbarSearchField name="ToolbarSearchField" class="Search"/>
-    <ui:VisualElement name="ColorContainer" class="ColorContainer"/>
+    <ui:VisualElement name="ColorContainer" class="ColorContainer">
+        <ui:VisualElement name="CustomColorContainer">
+            <uie:ColorField name="CustomColor"/>
+            <ui:VisualElement name="CustomColorIcon" style="flex-grow: 1;"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <uie:ToolbarSearchField name="ToolbarSearchField" placeholder-text="Path or Search for Icon" class="Search"/>
     <ui:ScrollView name="IconContainer"/>
 </ui:UXML>

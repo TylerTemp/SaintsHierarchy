@@ -152,10 +152,10 @@ namespace SaintsHierarchy.Editor
                 switch (bgStatus)
                 {
                     case SelectStatus.Normal:
-                        bgColor = new Color(oriColor.r, oriColor.g, oriColor.b, oriColor.r * 0.8f);
+                        bgColor = new Color(oriColor.r, oriColor.g, oriColor.b, oriColor.a * 0.7f);
                         break;
                     case SelectStatus.NormalHover:
-                        bgColor = new Color(oriColor.r, oriColor.g, oriColor.b, oriColor.r * 0.9f);
+                        bgColor = new Color(oriColor.r, oriColor.g, oriColor.b, oriColor.a * 0.8f);
                         break;
                     case SelectStatus.SelectFocus:
                     case SelectStatus.SelectUnfocus:
@@ -252,12 +252,12 @@ namespace SaintsHierarchy.Editor
 
             #region Main Icon
 
-            string customIcon = null;
+            // string customIcon = null;
             Texture iconTexture = null;
             if (!string.IsNullOrEmpty(goConfig.icon))
             {
                 iconTexture = Utils.LoadResource<Texture2D>(goConfig.icon);
-                customIcon = goConfig.icon;
+                // customIcon = goConfig.icon;
             }
             else if (trans.GetComponent<Camera>())
             {
@@ -390,7 +390,7 @@ namespace SaintsHierarchy.Editor
                 // Debug.Log($"popup id: {GlobalObjectId.GetGlobalObjectIdSlow(go)}");
                 // var parentRoots = GetPrefabRootTopToBottom(go);
 
-                Utils.PopupConfig(new Rect(mousePosition.x, mousePosition.y, 0, 0), go, customIcon);
+                Utils.PopupConfig(new Rect(mousePosition.x, mousePosition.y, 0, 0), go, goConfig);
             }
 
             #endregion

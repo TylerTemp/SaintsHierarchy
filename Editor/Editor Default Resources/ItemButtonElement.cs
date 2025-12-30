@@ -14,5 +14,18 @@ namespace SaintsHierarchy.Editor.Editor_Default_Resources
             Add(root);
             Button = root.Q<Button>();
         }
+
+        public void SetSelected(bool selected)
+        {
+            const string className = "ItemButtonSelected";
+            if (selected)
+            {
+                Button.AddToClassList(className);
+            }
+            else
+            {
+                Button.RemoveFromClassList(className);
+            }
+        }
     }
 }

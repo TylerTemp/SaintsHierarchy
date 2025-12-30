@@ -127,7 +127,7 @@ namespace SaintsHierarchy.Editor
             new Color(0.53287494f, 0.20212498f, 0.4501876f),
         };
 
-        public GameObjectConfigPanel(GameObject go, string customIcon)
+        public GameObjectConfigPanel(GameObject go, SaintsHierarchyConfig.GameObjectConfig goConfig)
         {
             _gameObjectConfigTemplate ??= Utils.LoadResource<VisualTreeAsset>("UIToolkit/GameObjectConfig.uxml");
             TemplateContainer root = _gameObjectConfigTemplate.CloneTree();
@@ -135,14 +135,39 @@ namespace SaintsHierarchy.Editor
 
             VisualElement colorRow = root.Q<VisualElement>(name: "ColorContainer");
 
+            ItemButtonElement noColorButton = MakeIconButton(EditorGUIUtility.IconContent("d_Close").image as Texture2D);
+            colorRow.Insert(0, noColorButton);
+            noColorButton.Button.clicked += () => SetColor(go, false, default, true);
+
+            List<ItemButtonElement> colorButtons = new List<ItemButtonElement>(Colors.Length);
             foreach (Color color in Colors)
             {
                 ItemButtonElement colorButton = MakeColorButton(color);
                 colorRow.Add(colorButton);
 
-                colorButton.Button.clicked += () => SetColor(go, true, color);
+                if (goConfig.hasColor && goConfig.color == color)
+                {
+                    colorButton.SetSelected(true);
+                    colorButton.Button.clicked += () => SetColor(go, false, default, true);
+                }
+                else
+                {
+                    colorButton.Button.clicked += () => SetColor(go, true, color, true);
+                }
+                colorButtons.Add(colorButton);
             }
 
+            ColorField colorField = colorRow.Q<ColorField>(name: "CustomColor");
+            colorField.value = goConfig.hasColor ? goConfig.color : Color.black;
+            colorField.RegisterValueChangedCallback(evt =>
+            {
+                Color newColor = evt.newValue;
+                SetColor(go, true, newColor, false);
+                foreach (ItemButtonElement presetColorButton in colorButtons)
+                {
+                    presetColorButton.SetSelected(false);
+                }
+            });
 
             VisualElement iconRow = root.Q<ScrollView>(name: "IconContainer").contentContainer;
 
@@ -150,9 +175,9 @@ namespace SaintsHierarchy.Editor
             iconRow.Add(customButton);
             customButton.Button.tooltip = "Current Custom Icon";
             customButton.Button.clicked += () => SetIcon(go, "");
-            if(!string.IsNullOrEmpty(customIcon) && !DefaultIcons.Contains(customIcon))
+            if(!string.IsNullOrEmpty(goConfig.icon) && !DefaultIcons.Contains(goConfig.icon))
             {
-                customButton.Button.style.backgroundImage = Utils.LoadResource<Texture2D>(customIcon);
+                customButton.Button.style.backgroundImage = Utils.LoadResource<Texture2D>(goConfig.icon);
             }
             else
             {
@@ -167,10 +192,10 @@ namespace SaintsHierarchy.Editor
             foreach (string iconPath in DefaultIcons)
             {
                 ItemButtonElement btn = MakeIconButton(Utils.LoadResource<Texture2D>(iconPath));
-                bool isCurrent = iconPath == customIcon;
+                bool isCurrent = iconPath == goConfig.icon;
                 if (isCurrent)
                 {
-                    btn.Button.AddToClassList("ItemButtonSelected");
+                    btn.SetSelected(true);
                     btn.Button.clicked += () => SetIcon(go, "");
                 }
                 else
@@ -326,7 +351,7 @@ namespace SaintsHierarchy.Editor
             NeedCloseEvent.Invoke(true);
         }
 
-        private void SetColor(GameObject go, bool hasColor, Color color)
+        private void SetColor(GameObject go, bool hasColor, Color color, bool needClose)
         {
             SaintsHierarchyConfig config = Utils.EnsureConfig();
 
@@ -363,7 +388,10 @@ namespace SaintsHierarchy.Editor
                                     MakeGameObjectColorConfig(gameObjectConfig, hasColor, color);
                             }
                             EditorUtility.SetDirty(config);
-                            NeedCloseEvent.Invoke(true);
+                            if(needClose)
+                            {
+                                NeedCloseEvent.Invoke(true);
+                            }
                             return;
                         }
 
@@ -405,7 +433,10 @@ namespace SaintsHierarchy.Editor
                 targetList.configs.Add(newConfig);
             }
 
-            NeedCloseEvent.Invoke(true);
+            if(needClose)
+            {
+                NeedCloseEvent.Invoke(true);
+            }
         }
 
         private static SaintsHierarchyConfig.GameObjectConfig MakeGameObjectColorConfig(SaintsHierarchyConfig.GameObjectConfig gameObjectConfig, bool hasColor, Color color)
