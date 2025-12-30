@@ -49,7 +49,6 @@ namespace SaintsHierarchy.Editor
             "transparent.png",
             "d_Folder Icon",
             "d_FolderFavorite Icon",
-            "d_greenLight",
             "d_Canvas Icon",
             "d_AvatarMask On Icon",
             "d_cs Script Icon",
@@ -136,7 +135,7 @@ namespace SaintsHierarchy.Editor
             VisualElement colorRow = root.Q<VisualElement>(name: "ColorContainer");
 
             ItemButtonElement noColorButton = MakeIconButton(EditorGUIUtility.IconContent("d_Close").image as Texture2D);
-            colorRow.Insert(0, noColorButton);
+            colorRow.Insert(1, noColorButton);
             noColorButton.Button.tooltip = "Remove Color Config";
             noColorButton.Button.clicked += () => SetColor(go, false, default, true);
 
@@ -170,6 +169,10 @@ namespace SaintsHierarchy.Editor
                     presetColorButton.SetSelected(false);
                 }
             });
+
+// #if !UNITY_6000_3_OR_NEWER
+//             colorField.style.width = 45;
+// #endif
 
             VisualElement iconRow = root.Q<ScrollView>(name: "IconContainer").contentContainer;
 
