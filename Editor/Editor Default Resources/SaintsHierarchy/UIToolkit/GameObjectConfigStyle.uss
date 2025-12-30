@@ -1,5 +1,5 @@
 :root {
-    margin-top: 2;
+    margin-top: 2px;
 }
 
 #IconContainer #unity-content-container {
@@ -18,9 +18,9 @@
     flex-wrap: wrap;
     flex-direction: row;
     flex-shrink: 0;
-    padding-bottom: 2;
-    margin-bottom: 2;
-    border-bottom-width: 1;
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+    border-bottom-width: 1px;
     border-bottom-color: gray;
 }
 
@@ -34,8 +34,8 @@
 }
 
 #CustomColor {
-    width: 20;
-    height: 20;
+    width: 20px;
+    height: 20px;
 }
 
 #CustomColor #unity-eyedropper {
@@ -46,7 +46,7 @@
     position: absolute;
     right: 0;
     top: 0;
-    width: 10;
-    height: 10;
+    width: 10px;
+    height: 10px;
     background-image: url("project://database/Packages/today.comes.saintshierarchy/Editor/Editor%20Default%20Resources/SaintsHierarchy/d_eyeDropper.Large.png?fileID=2800000&guid=013c61f5fdd9bad4fa758c84dfebbbe1&type=3#d_eyeDropper.Large");
 }
