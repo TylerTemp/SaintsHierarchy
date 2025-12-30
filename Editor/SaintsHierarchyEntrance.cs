@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.IMGUI.Controls;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -56,11 +57,15 @@ namespace SaintsHierarchy.Editor
                 return;
             }
 
+            // Debug.Log($"insId:  {instanceID} obj: {go.name}");
+
             Rect fullRect = new Rect(selectionRect)
             {
                 x = LeftStartX,
                 xMax = selectionRect.xMax + 16,
             };
+
+            // EditorGUI.DrawRect(fullRect, Color.yellow);
 
             Vector2 mousePosition = Event.current.mousePosition;
             bool isHover = fullRect.Contains(mousePosition);
@@ -75,7 +80,7 @@ namespace SaintsHierarchy.Editor
 
 
 
-            var curScenePath = go.scene.path;
+            string curScenePath = go.scene.path;
             // Debug.Log($"popup parent: {string.Join(",", parentRoots)}");
             // Debug.Log($"popup scene: {curScenePath}");
             // GameObject targetGo = go;
@@ -104,9 +109,93 @@ namespace SaintsHierarchy.Editor
 
             Transform trans = go.transform;
 
-            #region Tree
+            (string sceneHierarchyError, EditorWindow sceneHierarchyWindow, object sceneHierarchy) = GetSceneHierarchyWindow(selectionRect);
+            if (sceneHierarchyError != "")
+            {
+#if SAINTSHIERARCHY_DEBUG
+                Debug.LogWarning(sceneHierarchyError);
+#endif
+                return;
+            }
+
+            (string bgError, SelectStatus bgStatus) = GetBgColor(sceneHierarchyWindow, sceneHierarchy, selectionRect, instanceID, isHover);
+            if (bgError != "")
+            {
+#if SAINTSHIERARCHY_DEBUG
+                Debug.LogWarning(bgError);
+#endif
+                return;
+            }
+
+            Color bgColor;
+            Color bgDefaultColor;
+            switch (bgStatus)
+            {
+                case SelectStatus.Normal:
+                    bgDefaultColor = ColorNormal;
+                    break;
+                case SelectStatus.NormalHover:
+                    bgDefaultColor = ColorHover;
+                    break;
+                case SelectStatus.SelectFocus:
+                    bgDefaultColor = ColorSelectFocus;
+                    break;
+                case SelectStatus.SelectUnfocus:
+                    bgDefaultColor = ColorSelectUnfocus;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(bgStatus), bgStatus, null);
+            }
+            if (goConfig.hasColor)
+            {
+                Color oriColor = goConfig.color;
+                switch (bgStatus)
+                {
+                    case SelectStatus.Normal:
+                        bgColor = new Color(oriColor.r, oriColor.g, oriColor.b, oriColor.r * 0.8f);
+                        break;
+                    case SelectStatus.NormalHover:
+                        bgColor = new Color(oriColor.r, oriColor.g, oriColor.b, oriColor.r * 0.9f);
+                        break;
+                    case SelectStatus.SelectFocus:
+                    case SelectStatus.SelectUnfocus:
+                        bgColor = oriColor;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(bgStatus), bgStatus, null);
+                }
+            }
+            else
+            {
+                bgColor = bgDefaultColor;
+            }
+
+            if (goConfig.hasColor)
+            {
+                // cover the alpha, to override Unity's default drawing
+                // EditorGUI.DrawRect(fullRect, bgDefaultColor);
+                EditorGUI.DrawRect(fullRect, bgDefaultColor);
+            }
+            EditorGUI.DrawRect(fullRect, bgColor);
 
             bool hasFoldout = trans.childCount >= 1;
+            bool thisExpand = false;
+            if (hasFoldout)
+            {
+                (string expandedError, int[] expandedIds) = GetExpandedIds(sceneHierarchy);
+                if (expandedError != "")
+                {
+#if SAINTSHIERARCHY_DEBUG
+                    Debug.LogWarning(expandedError);
+#endif
+                    return;
+                }
+
+                thisExpand = expandedIds.Contains(instanceID);
+                // Debug.Log($"this expanded: {thisExpand}, {go.name}");
+            }
+
+            #region Tree
 
             int startX = Mathf.RoundToInt(selectionRect.x);
             int offset = startX - 60;
@@ -143,6 +232,23 @@ namespace SaintsHierarchy.Editor
                 DrawRightThrough(drawIndent, TreeColor);
             }
             #endregion
+
+            #region Foldout
+
+            if (hasFoldout)
+            {
+                Rect foldoutRect = new Rect(fullRect)
+                {
+                    x = selectionRect.x - IndentOffset,
+                    width = IndentOffset,
+                };
+                // EditorGUI.DrawRect(foldoutRect, Color.red);
+                EditorGUI.Foldout(foldoutRect, thisExpand, GUIContent.none);
+            }
+
+            #endregion
+
+            GUIStyle textColorStyle = EditorStyles.label;
 
             #region Main Icon
 
@@ -182,8 +288,10 @@ namespace SaintsHierarchy.Editor
 
             Texture prefabTexture = null;
             bool isAnyPrefabInstanceRoot = PrefabUtility.IsAnyPrefabInstanceRoot(go);
+            bool isMissingPrefab = false;
             if(isAnyPrefabInstanceRoot)
             {
+                textColorStyle = GetLabelStylePrefab();
                 PrefabAssetType assetType =
                     PrefabUtility.GetPrefabAssetType(go);
                 PrefabInstanceStatus instanceStatus =
@@ -206,6 +314,8 @@ namespace SaintsHierarchy.Editor
 
                 if (instanceStatus == PrefabInstanceStatus.MissingAsset)
                 {
+                    isMissingPrefab = true;
+                    textColorStyle = GetLabelStyleMissingPrefab();
                     iconTexture = EditorGUIUtility.IconContent("d_Prefab Icon").image;
                     prefabTexture = EditorGUIUtility.IconContent("d_console.warnicon").image;
                     // prefabTexture = EditorGUIUtility.IconContent("d_PrefabVariant On Icon").image;
@@ -217,21 +327,63 @@ namespace SaintsHierarchy.Editor
                 width = IndentOffset,
             };
 
-            if(iconTexture is not null)
+            if (iconTexture is null)
             {
-                Color bg = GetBgColor(selectionRect, instanceID, isHover);
-                EditorGUI.DrawRect(iconRect, bg);
+                if (prefabTexture is null)
+                {
+                    GUI.DrawTexture(iconRect, EditorGUIUtility.IconContent("d_GameObject Icon").image, ScaleMode.ScaleToFit, true);
+                }
+                else
+                {
+                    GUI.DrawTexture(iconRect, prefabTexture, ScaleMode.ScaleToFit, true);
+                }
+            }
+            else
+            {
                 GUI.DrawTexture(iconRect, iconTexture, ScaleMode.ScaleToFit, true);
 
                 if (prefabTexture is not null)
                 {
                     const float scale = 0.7f;
-                    Rect footerIconRect = new Rect(iconRect.x + iconRect.width * (1 - scale) + 5, iconRect.y + iconRect.height *
+                    Rect footerIconRect = new Rect(iconRect.x + iconRect.width * (1 - scale) + 5, iconRect.y +
+                        iconRect.height *
                         (1 - scale),
                         iconRect.width * scale, iconRect.height * scale);
-                    GUI.DrawTexture(footerIconRect, prefabTexture);
+                    GUI.DrawTexture(footerIconRect, prefabTexture, ScaleMode.ScaleToFit, true);
                 }
             }
+
+            #region Label
+
+            const int labelXOffset = 3;
+            Rect labelRect = new Rect(selectionRect)
+            {
+                x = iconRect.xMax + labelXOffset,
+                width = selectionRect.xMax - iconRect.xMax - labelXOffset,
+            };
+
+            EditorGUI.LabelField(labelRect, trans.name, textColorStyle);
+
+            #endregion
+
+            #region Prefab Expand
+
+            if (isAnyPrefabInstanceRoot && !isMissingPrefab)
+            {
+                Rect rightExpandRect = new Rect(selectionRect)
+                {
+                    x = selectionRect.xMax,
+                    width = 16,
+                };
+                if (rightExpandRect.Contains(mousePosition))
+                {
+                    EditorGUI.DrawRect(rightExpandRect, new Color(1, 1, 1, 0.1f));
+                }
+
+                GUI.DrawTexture(rightExpandRect, EditorGUIUtility.IconContent("ArrowNavigationRight").image, ScaleMode.ScaleToFit, true);
+            }
+
+            #endregion
 
             if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && isHover && (Event.current.modifiers & EventModifiers.Alt) != 0)
             {
@@ -242,6 +394,32 @@ namespace SaintsHierarchy.Editor
             }
 
             #endregion
+        }
+
+        private static GUIStyle _labelStylePrefab;
+
+        private static GUIStyle GetLabelStylePrefab()
+        {
+            return _labelStylePrefab ??= new GUIStyle(EditorStyles.label)
+            {
+                normal =
+                {
+                    textColor = new Color32(115, 156, 217, 255),
+                },
+            };
+        }
+
+        private static GUIStyle _labelStyleMissingPrefab;
+
+        private static GUIStyle GetLabelStyleMissingPrefab()
+        {
+            return _labelStyleMissingPrefab ??= new GUIStyle(EditorStyles.label)
+            {
+                normal =
+                {
+                    textColor = new Color32(211, 106, 106, 255),
+                },
+            };
         }
 
         private static IReadOnlyList<(GameObject root, string path)> GetPrefabRootTopToBottom(GameObject go)
@@ -279,7 +457,7 @@ namespace SaintsHierarchy.Editor
             Transform current = trans;
             while (current != null)
             {
-                Debug.Log($"add {current.name}");
+                // Debug.Log($"add {current.name}");
                 names.Insert(0, current.name);
 
                 if (stage != null &&
@@ -292,7 +470,7 @@ namespace SaintsHierarchy.Editor
                 current = current.parent;
 
             }
-            Debug.Log($"names={string.Join("/",  names)}");
+            // Debug.Log($"names={string.Join("/",  names)}");
             return names;
         }
 
@@ -396,60 +574,164 @@ namespace SaintsHierarchy.Editor
             return (false, default);
         }
 
+        private static bool _sceneHierarchyWindowsFieldInit;
+        private static FieldInfo _sceneHierarchyWindowsField;
+        private static bool _sceneHierarchyFieldInit;
+        private static FieldInfo _sceneHierarchyField;
 
-        private static Color GetBgColor(Rect selectionRect, int instanceID, bool isHover)
+        private static (string Error, EditorWindow sceneHierarchyWindow, object sceneHierarchy) GetSceneHierarchyWindow(Rect selectionRect)
+        {
+            if (!_sceneHierarchyWindowsFieldInit)
+            {
+                _sceneHierarchyWindowsFieldInit = true;
+                _sceneHierarchyWindowsField ??= typeof(UnityEditor.Editor).Assembly
+                    .GetType("UnityEditor.SceneHierarchyWindow").GetField(
+                        "s_SceneHierarchyWindows",
+                        BindingFlags.Static | BindingFlags.NonPublic
+                    );
+            }
+
+            if (_sceneHierarchyWindowsField == null)
+            {
+                return ("_sceneHierarchyWindowsField not found", null, null);
+            }
+
+            if (_sceneHierarchyFieldInit && _sceneHierarchyField == null)
+            {
+                return ("_sceneHierarchyField not found", null, null);
+            }
+
+            List<EditorWindow> sceneHierarchyWindows = ((IList)_sceneHierarchyWindowsField.GetValue(null)).Cast<EditorWindow>().ToList();
+            EditorWindow sceneHierarchyWindow = null;
+            if (sceneHierarchyWindows.Count == 1)
+            {
+                sceneHierarchyWindow = sceneHierarchyWindows[0];
+            }
+            else
+            {
+                Vector2 screenPoint = GUIUtility.GUIToScreenPoint(selectionRect.center);
+                sceneHierarchyWindow =
+                    sceneHierarchyWindows.FirstOrDefault(r => r.hasFocus && r.position.Contains(screenPoint));
+                if (sceneHierarchyWindow == null)
+                {
+                    return ("sceneHierarchyWindow focused not found", null, null);
+                }
+            }
+
+            const BindingFlags instanceNonPublic = BindingFlags.Instance | BindingFlags.NonPublic;
+            // Type type = sceneHierarchyWindow.GetType();
+            if (!_sceneHierarchyFieldInit)
+            {
+                _sceneHierarchyFieldInit = true;
+                _sceneHierarchyField = sceneHierarchyWindow.GetType().GetField("m_SceneHierarchy", instanceNonPublic);
+                if (_sceneHierarchyField == null)
+                {
+                    return ("_sceneHierarchyField not found", sceneHierarchyWindow, null);
+                }
+            }
+
+            object sceneHierarchy = _sceneHierarchyField.GetValue(sceneHierarchyWindow);
+            string error = sceneHierarchy == null ? "sceneHierarchy not found" : "";
+
+            return (error, sceneHierarchyWindow, sceneHierarchy);
+        }
+
+        private static FieldInfo _keyboardControlIdField;
+        private static bool _keyboardControlIdFieldInit;
+
+        private enum SelectStatus
+        {
+            Normal,
+            NormalHover,
+            SelectFocus,
+            SelectUnfocus,
+        }
+
+        private static (string error, SelectStatus selectStatus) GetBgColor(EditorWindow sceneHierarchyWindow, object sceneHierarchy, Rect selectionRect, int instanceID, bool isHover)
         {
             if (IsSelected(instanceID))
             {
-                Assembly editorAssembly = typeof(UnityEditor.Editor).Assembly;
-                Type sceneHierarchyWindowType =
-                    editorAssembly.GetType("UnityEditor.SceneHierarchyWindow");
-                FieldInfo field = sceneHierarchyWindowType.GetField(
-                    "s_SceneHierarchyWindows",
-                    BindingFlags.Static | BindingFlags.NonPublic
-                );
-
-                List<EditorWindow> sceneHierarchyWindows = ((IList)field.GetValue(null)).Cast<EditorWindow>().ToList();
-                EditorWindow sceneHierarchyWindow = null;
-                if (sceneHierarchyWindows.Count == 1)
-                {
-                    sceneHierarchyWindow = sceneHierarchyWindows[0];
-                }
-                else
-                {
-                    Vector2 screenPoint = GUIUtility.GUIToScreenPoint(selectionRect.center);
-                    sceneHierarchyWindow = sceneHierarchyWindows.FirstOrDefault(r =>
-                        r.hasFocus && r.position.Contains(screenPoint));
-                }
                 bool isTreeFocused = false;
+                // ReSharper disable once InvertIf
                 if (EditorWindow.focusedWindow == sceneHierarchyWindow)
                 {
-                    const BindingFlags instanceNonPublic = BindingFlags.Instance | BindingFlags.NonPublic;
-                    Type type = sceneHierarchyWindow.GetType();
-                    FieldInfo sceneField = type.GetField("m_SceneHierarchy", instanceNonPublic);
-                    object sceneHierarchy = sceneField.GetValue(sceneHierarchyWindow);   //
-                    // Debug.Log(sceneHierarchy);
-                    FieldInfo keyboardControlIdField =
-                        sceneHierarchy.GetType().GetField(
-                            "m_TreeViewKeyboardControlID", instanceNonPublic);
-                    int keyboardControlId = (int)keyboardControlIdField.GetValue(sceneHierarchy);
+                    if (!_keyboardControlIdFieldInit)
+                    {
+                        _keyboardControlIdFieldInit = true;
+                        const BindingFlags instanceNonPublic = BindingFlags.Instance | BindingFlags.NonPublic;
+                        _keyboardControlIdField =
+                            sceneHierarchy.GetType().GetField(
+                                "m_TreeViewKeyboardControlID", instanceNonPublic);
+                        if (_keyboardControlIdField == null)
+                        {
+                            return ("_keyboardControlIdFieldInit not found", default);
+                        }
+                    }
+                    int keyboardControlId = (int)_keyboardControlIdField.GetValue(sceneHierarchy);
                     if (GUIUtility.keyboardControl == keyboardControlId)
                     {
                         isTreeFocused = true;
                     }
+                    // var treeViewControllerState = treeViewController.GetPropertyValue<TreeViewState>("state");
+                    // expandedIds = treeViewControllerState?.expandedIDs.ToInts() ?? new();
                     // && GUIUtility.keyboardControl == sceneHierarchy?.GetMemberValue<int>("m_TreeViewKeyboardControlID");
                 }
 
 
-                return isTreeFocused? ColorSelectFocus: ColorSelectUnfocus;
+                return ("", isTreeFocused ? SelectStatus.SelectFocus : SelectStatus.SelectUnfocus);
             }
 
             // ReSharper disable once ConvertIfStatementToReturnStatement
             if (isHover)
             {
-                return ColorHover;
+                return ("", SelectStatus.NormalHover);
             }
-            return ColorNormal;
+            return ("", SelectStatus.Normal);
+        }
+
+        private static FieldInfo _treeViewField;
+        private static bool _treeViewFieldInit;
+        private static PropertyInfo _treeViewControllerStateField;
+        private static bool _treeViewControllerStateFieldInit;
+
+        private static (string error, int[] expandedIds) GetExpandedIds(object sceneHierarchy)
+        {
+            if (!_treeViewFieldInit)
+            {
+                _treeViewFieldInit = true;
+                _treeViewField = sceneHierarchy.GetType().GetField("m_TreeView", BindingFlags.Instance | BindingFlags.NonPublic);
+            }
+
+            if (_treeViewField == null)
+            {
+                return ("_treeViewField not found", null);
+            }
+            object treeViewController = _treeViewField.GetValue(sceneHierarchy);
+            // Debug.Log(treeViewController);
+            if (!_treeViewControllerStateFieldInit)
+            {
+                _treeViewControllerStateFieldInit = true;
+                _treeViewControllerStateField = treeViewController.GetType().GetProperty("state", BindingFlags.Instance | BindingFlags.Public);
+
+                if (_treeViewControllerStateField == null)
+                {
+                    return ("_treeViewControllerStateField not found", null);
+                }
+            }
+
+            // Debug.Log(prop);
+            object treeViewControllerStateRaw = _treeViewControllerStateField.GetValue(treeViewController);
+            // Debug.Log(treeViewControllerStateRaw);
+            if (treeViewControllerStateRaw is not TreeViewState<EntityId> treeViewControllerState)
+            {
+                return ("treeViewControllerState not found", null);
+            }
+            // Debug.Log(treeViewControllerState);
+            // Debug.Log(treeViewControllerState.expandedIDs);
+
+            int[] expandedIds = treeViewControllerState.expandedIDs.Select(each => (int)each).ToArray();
+            // Debug.Log($"expanded: {string.Join(", ", treeViewControllerState.expandedIDs)}");
+            return ("", expandedIds);
         }
 
         private static readonly Color ColorSelectFocus = new Color(.17f, .365f, .535f);

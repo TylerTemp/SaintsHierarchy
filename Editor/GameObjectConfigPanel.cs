@@ -46,6 +46,7 @@ namespace SaintsHierarchy.Editor
 
         private static readonly string[] DefaultIcons =
         {
+            "transparent.png",
             "d_Folder Icon",
             "d_FolderFavorite Icon",
             "d_greenLight",
@@ -59,7 +60,7 @@ namespace SaintsHierarchy.Editor
 
             "d_Camera Icon",
             "d_ParticleSystem Icon",
-            "LineRenderer Icon",
+            "d_LineRenderer Icon",
             "d_Material Icon",
             "d_ReflectionProbe Icon",
 
@@ -107,8 +108,23 @@ namespace SaintsHierarchy.Editor
 
             "d_greenLight",
             "d_orangeLight",
+            "d_redLight",
+
             "d_lightOff",
             "d_lightRim",
+        };
+
+        private static readonly Color[] Colors = new Color[]
+        {
+            new Color(0.16f, 0.16f, 0.16f),
+            new Color(0.609f, 0.231f, 0.23100014f),
+            new Color(0.55825f, 0.471625f, 0.21175f),
+            new Color(0.34999996f, 0.5075f, 0.1925f),
+            new Color(0.1925f, 0.5075f, 0.27124998f),
+            new Color(0.1925f, 0.50750005f, 0.5075f),
+            new Color(0.259875f, 0.36618757f, 0.685125f),
+            new Color(0.4550001f, 0.25024998f, 0.65975f),
+            new Color(0.53287494f, 0.20212498f, 0.4501876f),
         };
 
         public GameObjectConfigPanel(GameObject go, string customIcon)
@@ -117,9 +133,20 @@ namespace SaintsHierarchy.Editor
             TemplateContainer root = _gameObjectConfigTemplate.CloneTree();
             Add(root);
 
+            VisualElement colorRow = root.Q<VisualElement>(name: "ColorContainer");
+
+            foreach (Color color in Colors)
+            {
+                ItemButtonElement colorButton = MakeColorButton(color);
+                colorRow.Add(colorButton);
+
+                colorButton.Button.clicked += () => SetColor(go, true, color);
+            }
+
+
             VisualElement iconRow = root.Q<ScrollView>(name: "IconContainer").contentContainer;
 
-            ItemButtonElement customButton = MakeIcon(null);
+            ItemButtonElement customButton = MakeIconButton(null);
             iconRow.Add(customButton);
             customButton.Button.tooltip = "Current Custom Icon";
             customButton.Button.clicked += () => SetIcon(go, "");
@@ -132,14 +159,14 @@ namespace SaintsHierarchy.Editor
                 customButton.style.display = DisplayStyle.None;
             }
 
-            ItemButtonElement searchButton = MakeIcon(null);
+            ItemButtonElement searchButton = MakeIconButton(null);
             iconRow.Add(searchButton);
             searchButton.Button.tooltip = "Searched Icon";
             searchButton.style.display = DisplayStyle.None;
 
             foreach (string iconPath in DefaultIcons)
             {
-                ItemButtonElement btn = MakeIcon(Utils.LoadResource<Texture2D>(iconPath));
+                ItemButtonElement btn = MakeIconButton(Utils.LoadResource<Texture2D>(iconPath));
                 bool isCurrent = iconPath == customIcon;
                 if (isCurrent)
                 {
@@ -244,14 +271,14 @@ namespace SaintsHierarchy.Editor
                     {
                         if (gameObjectConfig.globalObjectIdString == goIdString)
                         {
-                            if (needRemoveIcon)
+                            if (!gameObjectConfig.hasColor && needRemoveIcon)
                             {
                                 sceneGuidToGoConfig.configs.RemoveAt(gameObjectIndex);
                             }
                             else
                             {
                                 sceneGuidToGoConfig.configs[gameObjectIndex] =
-                                    MakeGameObjectConfig(goIdString, iconPath);
+                                    MakeGameObjectConfig(gameObjectConfig, iconPath);
                             }
                             EditorUtility.SetDirty(config);
                             NeedCloseEvent.Invoke(true);
@@ -272,7 +299,10 @@ namespace SaintsHierarchy.Editor
                 return;
             }
 
-            SaintsHierarchyConfig.GameObjectConfig newConfig = MakeGameObjectConfig(goIdString, iconPath);
+            SaintsHierarchyConfig.GameObjectConfig newConfig = MakeGameObjectConfig(new SaintsHierarchyConfig.GameObjectConfig
+            {
+                globalObjectIdString = goIdString,
+            }, iconPath);
             if (foundSceneIndex == -1)
             {
                 EditorUtility.SetDirty(config);
@@ -296,38 +326,128 @@ namespace SaintsHierarchy.Editor
             NeedCloseEvent.Invoke(true);
         }
 
-        private static SaintsHierarchyConfig.GameObjectConfig MakeGameObjectConfig(string goIdString, string iconPath)
+        private void SetColor(GameObject go, bool hasColor, Color color)
+        {
+            SaintsHierarchyConfig config = Utils.EnsureConfig();
+
+            string scenePath = go.scene.path;
+            if (string.IsNullOrEmpty(scenePath))
+            {
+                scenePath = AssetDatabase.GetAssetPath(go);
+            }
+            // Debug.Log($"scenePath={scenePath}");
+            string sceneGuid = AssetDatabase.AssetPathToGUID(scenePath);
+            // Debug.Log($"path={scenePath}; guid={sceneGuid}");
+            GlobalObjectId goId = GlobalObjectId.GetGlobalObjectIdSlow(go);
+            string goIdString = Utils.GlobalObjectIdNormString(goId);
+
+            int foundSceneIndex = -1;
+            int sceneIndex = 0;
+            foreach (SaintsHierarchyConfig.SceneGuidToGoConfigs sceneGuidToGoConfig in config.sceneGuidToGoConfigsList)
+            {
+                if (sceneGuidToGoConfig.sceneGuid == sceneGuid)
+                {
+                    foundSceneIndex = sceneIndex;
+                    int gameObjectIndex = 0;
+                    foreach (SaintsHierarchyConfig.GameObjectConfig gameObjectConfig in sceneGuidToGoConfig.configs)
+                    {
+                        if (gameObjectConfig.globalObjectIdString == goIdString)
+                        {
+                            if (string.IsNullOrEmpty(gameObjectConfig.icon) && !hasColor)
+                            {
+                                sceneGuidToGoConfig.configs.RemoveAt(gameObjectIndex);
+                            }
+                            else
+                            {
+                                sceneGuidToGoConfig.configs[gameObjectIndex] =
+                                    MakeGameObjectColorConfig(gameObjectConfig, hasColor, color);
+                            }
+                            EditorUtility.SetDirty(config);
+                            NeedCloseEvent.Invoke(true);
+                            return;
+                        }
+
+                        gameObjectIndex++;
+                    }
+
+                    break;
+                }
+
+                sceneIndex++;
+            }
+
+            if (!hasColor)
+            {
+                return;
+            }
+
+            SaintsHierarchyConfig.GameObjectConfig newConfig = MakeGameObjectColorConfig(new SaintsHierarchyConfig.GameObjectConfig
+            {
+                globalObjectIdString = goIdString,
+            }, true, color);
+            if (foundSceneIndex == -1)
+            {
+                EditorUtility.SetDirty(config);
+                config.sceneGuidToGoConfigsList.Add(new SaintsHierarchyConfig.SceneGuidToGoConfigs
+                {
+                    sceneGuid = sceneGuid,
+                    configs = new List<SaintsHierarchyConfig.GameObjectConfig>
+                    {
+                        newConfig,
+                    },
+                });
+            }
+
+            else
+            {
+                SaintsHierarchyConfig.SceneGuidToGoConfigs targetList = config.sceneGuidToGoConfigsList[foundSceneIndex];
+                EditorUtility.SetDirty(config);
+                targetList.configs.Add(newConfig);
+            }
+
+            NeedCloseEvent.Invoke(true);
+        }
+
+        private static SaintsHierarchyConfig.GameObjectConfig MakeGameObjectColorConfig(SaintsHierarchyConfig.GameObjectConfig gameObjectConfig, bool hasColor, Color color)
         {
             return new SaintsHierarchyConfig.GameObjectConfig
             {
-                globalObjectIdString = goIdString,
-                icon = iconPath,
+                globalObjectIdString = gameObjectConfig.globalObjectIdString,
+                icon = gameObjectConfig.icon,
+                hasColor = hasColor,
+                color = color,
             };
         }
 
-        private static ItemButtonElement MakeIcon(Texture2D icon)
+
+        private static SaintsHierarchyConfig.GameObjectConfig MakeGameObjectConfig(SaintsHierarchyConfig.GameObjectConfig gameObjectConfig, string iconPath)
+        {
+            return new SaintsHierarchyConfig.GameObjectConfig
+            {
+                globalObjectIdString = gameObjectConfig.globalObjectIdString,
+                icon = iconPath,
+                hasColor =  gameObjectConfig.hasColor,
+                color = gameObjectConfig.color,
+            };
+        }
+
+        private static ItemButtonElement MakeIconButton(Texture2D icon)
         {
             ItemButtonElement itemButtonElement = new ItemButtonElement();
             itemButtonElement.Button.style.backgroundImage = icon;
             return itemButtonElement;
-//             return new Button
-//             {
-//                 style =
-//                 {
-//                     backgroundImage = Utils.LoadResource<Texture2D>(icon),
-//                     width = 20,
-//                     height = 20,
-//
-// #if UNITY_2022_2_OR_NEWER
-//                     backgroundPositionX = new BackgroundPosition(BackgroundPositionKeyword.Center),
-//                     backgroundPositionY = new BackgroundPosition(BackgroundPositionKeyword.Center),
-//                     backgroundRepeat = new BackgroundRepeat(Repeat.NoRepeat, Repeat.NoRepeat),
-//                     backgroundSize = new BackgroundSize(16, 16),
-// #else
-//                     unityBackgroundScaleMode = ScaleMode.ScaleToFit,
-// #endif
-//                 },
-//             };
+        }
+
+        private static Texture2D _whiteRectTexture;
+
+        private static ItemButtonElement MakeColorButton(Color color)
+        {
+            _whiteRectTexture ??= Utils.LoadResource<Texture2D>("rect.png");
+
+            ItemButtonElement itemButtonElement = new ItemButtonElement();
+            itemButtonElement.Button.style.backgroundImage = _whiteRectTexture;
+            itemButtonElement.Button.style.unityBackgroundImageTintColor = color;
+            return itemButtonElement;
         }
     }
 }

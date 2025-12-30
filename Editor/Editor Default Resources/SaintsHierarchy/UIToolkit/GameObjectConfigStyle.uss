@@ -11,3 +11,10 @@
     flex-shrink: 1;
     width: auto;
 }
+
+.ColorContainer {
+    flex-grow: 1;
+    flex-wrap: wrap;
+    flex-direction: row;
+    flex-shrink: 0;
+}

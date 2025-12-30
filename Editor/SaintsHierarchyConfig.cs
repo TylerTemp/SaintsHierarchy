@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 namespace SaintsHierarchy.Editor
@@ -12,6 +11,8 @@ namespace SaintsHierarchy.Editor
         {
             public string globalObjectIdString;
             public string icon;
+            public bool hasColor;
+            public Color color;
         }
 
         [Serializable]

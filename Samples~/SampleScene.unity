@@ -659,7 +659,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1700520027}
   m_Layer: 0
-  m_Name: GameObject (1)
+  m_Name: GameObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -746,7 +746,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1023445588047476743, guid: 94ea1b17dec883d419faaea061262300, type: 3}
       propertyPath: m_Name
-      value: Directional Light (1)
+      value: This Works!
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -765,7 +765,7 @@ GameObject:
   - component: {fileID: 3384853984215276792}
   - component: {fileID: 8431847556987943743}
   m_Layer: 0
-  m_Name: Directional Light (1)
+  m_Name: This Works!
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
