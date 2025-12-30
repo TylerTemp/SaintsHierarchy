@@ -170,9 +170,9 @@ namespace SaintsHierarchy.Editor
                 }
             });
 
-// #if !UNITY_6000_3_OR_NEWER
-//             colorField.style.width = 45;
-// #endif
+#if !UNITY_6000_3_OR_NEWER
+            colorField.style.width = 46;
+#endif
 
             VisualElement iconRow = root.Q<ScrollView>(name: "IconContainer").contentContainer;
 

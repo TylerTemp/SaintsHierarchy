@@ -89,8 +89,6 @@ namespace SaintsHierarchy.Editor
                 _selectedInstance = null;
             }
 
-
-
             string curScenePath = go.scene.path;
             // Debug.Log($"popup parent: {string.Join(",", parentRoots)}");
             // Debug.Log($"popup scene: {curScenePath}");
@@ -117,6 +115,18 @@ namespace SaintsHierarchy.Editor
             }
 
             SaintsHierarchyConfig.GameObjectConfig goConfig = GetGameObjectConfig(go);
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                (bool runtimeFound, SaintsHierarchyConfig.GameObjectConfig runtimeConfig) = RuntimeCacheConfig.instance.Search(instanceID);
+                if (runtimeFound)
+                {
+                    goConfig = runtimeConfig;
+                }
+            }
+            else
+            {
+                RuntimeCacheConfig.instance.Upsert(instanceID, goConfig);
+            }
 
             Transform trans = go.transform;
 
