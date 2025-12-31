@@ -1,3 +1,7 @@
+## 0.0.4 ##
+
+Fix disabled object
+
 ## 0.0.3 ##
 
 Fix error when importing fbx type

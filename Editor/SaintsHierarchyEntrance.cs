@@ -389,6 +389,21 @@ namespace SaintsHierarchy.Editor
 
             #endregion
 
+            #region disabled
+
+            if (!go.activeInHierarchy)
+            {
+                // if (goConfig.hasColor)
+                // {
+                //     // cover the alpha, to override Unity's default drawing
+                //     // EditorGUI.DrawRect(fullRect, bgDefaultColor);
+                //     // EditorGUI.DrawRect(fullRect, new Color(bgDefaultColor.r));
+                // }
+                EditorGUI.DrawRect(fullRect, new Color(bgColor.r, bgColor.g, bgColor.b, 0.5f));
+            }
+
+            #endregion
+
             #region Prefab Expand
 
             if (isAnyPrefabInstanceRoot && !isMissingPrefab)
@@ -581,6 +596,8 @@ namespace SaintsHierarchy.Editor
                 }
                 else  // fbx etc
                 {
+                    Debug.Log(AssetDatabase.LoadAssetAtPath<DefaultAsset>(prefabPath));
+                    // Debug.Log(prefabPath);
                     continue;
                     // foreach (Object o in AssetDatabase
                     //              .LoadAllAssetsAtPath(prefabPath))
@@ -599,7 +616,7 @@ namespace SaintsHierarchy.Editor
                     // }
                 }
 
-                Debug.Log($"{prefabAsset}: {prefabPath}->{relativePath}");
+                // Debug.Log($"{prefabAsset}: {prefabPath}->{relativePath}");
 
                 GameObject prefabSubGo;
                 // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
