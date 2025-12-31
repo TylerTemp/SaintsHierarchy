@@ -311,6 +311,7 @@ namespace SaintsHierarchy.Editor
             Texture prefabTexture = null;
             bool isAnyPrefabInstanceRoot = PrefabUtility.IsAnyPrefabInstanceRoot(go);
             bool isMissingPrefab = false;
+            bool isModelPrefab = false;
             if(isAnyPrefabInstanceRoot)
             {
                 textColorStyle = GetLabelStylePrefab();
@@ -330,6 +331,7 @@ namespace SaintsHierarchy.Editor
                         prefabTexture = EditorGUIUtility.IconContent("d_PrefabVariant Icon").image;
                         break;
                     case PrefabAssetType.Model:
+                        isModelPrefab = true;
                         prefabTexture = EditorGUIUtility.IconContent("d_PrefabModel Icon").image;
                         break;
                 }
@@ -391,7 +393,7 @@ namespace SaintsHierarchy.Editor
 
             #region Prefab Expand
 
-            if (isAnyPrefabInstanceRoot && !isMissingPrefab)
+            if (isAnyPrefabInstanceRoot && !isMissingPrefab && !isModelPrefab)
             {
                 Rect rightExpandRect = new Rect(selectionRect)
                 {
