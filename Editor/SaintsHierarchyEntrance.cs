@@ -64,7 +64,7 @@ namespace SaintsHierarchy.Editor
                 return;
             }
 
-            if (obj is not GameObject go)
+            if (obj is not GameObject originGo)
             {
                 return;
             }
@@ -91,10 +91,11 @@ namespace SaintsHierarchy.Editor
                 _selectedInstance = null;
             }
 
-            string curScenePath = go.scene.path;
+            string curScenePath = originGo.scene.path;
             // Debug.Log($"popup parent: {string.Join(",", parentRoots)}");
             // Debug.Log($"popup scene: {curScenePath}");
             // GameObject targetGo = go;
+            GameObject go = originGo;
             if (curScenePath.EndsWith(".prefab"))
             {
                 string absPath = string.Join("/", GetAbsPath(go.transform).Skip(1));
@@ -294,7 +295,7 @@ namespace SaintsHierarchy.Editor
 
             GUIStyle textColorStyle = EditorStyles.label;
 
-            var allComponents = trans.GetComponents<Component>();
+            Component[] allComponents = trans.GetComponents<Component>();
 
             #region Main Icon
 
@@ -348,6 +349,10 @@ namespace SaintsHierarchy.Editor
                     // prefabTexture = EditorGUIUtility.IconContent("d_PrefabVariant On Icon").image;
                 }
             }
+            else if(PrefabUtility.IsPartOfAnyPrefab(originGo))
+            {
+                textColorStyle = GetLabelStylePrefab();
+            }
 
             Rect iconRect = new Rect(selectionRect)
             {
@@ -381,6 +386,8 @@ namespace SaintsHierarchy.Editor
                 }
             }
 
+            #endregion
+
             #region Label
 
             const int labelXOffset = 3;
@@ -397,7 +404,7 @@ namespace SaintsHierarchy.Editor
 
             #region disabled
 
-            if (!go.activeInHierarchy)
+            if (!ActiveInAnyHierarchy(go))
             {
                 // if (goConfig.hasColor)
                 // {
@@ -451,8 +458,32 @@ namespace SaintsHierarchy.Editor
 
                 Utils.PopupConfig(new Rect(mousePosition.x, mousePosition.y, 0, 0), go, goConfig);
             }
+        }
 
-            #endregion
+        private static bool ActiveInAnyHierarchy(GameObject go)
+        {
+            bool isInPrefabMode =
+                PrefabStageUtility.GetCurrentPrefabStage() != null;
+            if (!isInPrefabMode)
+            {
+                return go.activeInHierarchy;
+            }
+
+            Transform t = go.transform;
+            // Transform prefabRoot = stage.prefabContentsRoot.transform;
+
+            while (t != null)
+            {
+                if (!t.gameObject.activeSelf)
+                    return false;
+
+                // if (t == prefabRoot)
+                //     break;
+
+                t = t.parent;
+            }
+
+            return true;
         }
 
         private static void DrawRect(Component[] allComponents, Rect labelRect, Rect rightRect)
