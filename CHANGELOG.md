@@ -1,3 +1,7 @@
+## 0.0.7 ##
+
+Fix selection color when drag element
+
 ## 0.0.6 ##
 
 1.  Fix children of `prefab` label is not blue

@@ -28,23 +28,23 @@ namespace SaintsHierarchy.Editor
         private const int LeftStartX = 32;
         private const int PrefabExpandWidth = 16;
 
-        private static int? _selectedInstance;
-
-        private static bool IsSelected(int instanceID)
-        {
-            if (_selectedInstance != null)
-            {
-                return instanceID == _selectedInstance;
-            }
-
-            return Selection.
-#if UNITY_6000_3_OR_NEWER
-                entityIds
-#else
-                instanceIDs
-#endif
-                .Contains(instanceID);
-        }
+//         private static int? _selectedInstance;
+//
+//         private static bool IsSelected(int instanceID)
+//         {
+//             if (_selectedInstance != null)
+//             {
+//                 return instanceID == _selectedInstance;
+//             }
+//
+//             return Selection.
+// #if UNITY_6000_3_OR_NEWER
+//                 entityIds
+// #else
+//                 instanceIDs
+// #endif
+//                 .Contains(instanceID);
+//         }
 
         private static readonly Color TreeColor = new Color(0.4f, 0.4f, 0.4f);
 
@@ -82,14 +82,14 @@ namespace SaintsHierarchy.Editor
             Vector2 mousePosition = Event.current.mousePosition;
             bool isHover = fullRect.Contains(mousePosition);
             // ReSharper disable once ConvertIfStatementToSwitchStatement
-            if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && isHover)
-            {
-                _selectedInstance = instanceID;
-            }
-            else if (Event.current.type == EventType.MouseUp)
-            {
-                _selectedInstance = null;
-            }
+            // if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && isHover)
+            // {
+            //     _selectedInstance = instanceID;
+            // }
+            // else if (Event.current.type == EventType.MouseUp)
+            // {
+            //     _selectedInstance = null;
+            // }
 
             string curScenePath = originGo.scene.path;
             // Debug.Log($"popup parent: {string.Join(",", parentRoots)}");
@@ -846,7 +846,13 @@ namespace SaintsHierarchy.Editor
 
         private static (string error, SelectStatus selectStatus) GetBgColor(EditorWindow sceneHierarchyWindow, object sceneHierarchy, int instanceID, bool isHover)
         {
-            if (IsSelected(instanceID))
+            (string selectedError, int[] selectedIds) = GetSelectedIds(sceneHierarchy);
+            if (selectedError != "")
+            {
+                return (selectedError, default);
+            }
+
+            if (selectedIds.Contains(instanceID))
             {
                 bool isTreeFocused = false;
                 // ReSharper disable once InvertIf
@@ -935,6 +941,52 @@ namespace SaintsHierarchy.Editor
             int[] expandedIds = treeViewControllerState.expandedIDs.Select(each => (int)each).ToArray();
             // Debug.Log($"expanded: {string.Join(", ", treeViewControllerState.expandedIDs)}");
             return ("", expandedIds);
+        }
+
+        private static (string error, int[] selectedIds) GetSelectedIds(object sceneHierarchy)
+        {
+            if (!_treeViewFieldInit)
+            {
+                _treeViewFieldInit = true;
+                _treeViewField = sceneHierarchy.GetType().GetField("m_TreeView", BindingFlags.Instance | BindingFlags.NonPublic);
+            }
+
+            if (_treeViewField == null)
+            {
+                return ("_treeViewField not found", null);
+            }
+            object treeViewController = _treeViewField.GetValue(sceneHierarchy);
+            // Debug.Log(treeViewController);
+            if (!_treeViewControllerStateFieldInit)
+            {
+                _treeViewControllerStateFieldInit = true;
+                _treeViewControllerStateField = treeViewController.GetType().GetProperty("state", BindingFlags.Instance | BindingFlags.Public);
+
+                if (_treeViewControllerStateField == null)
+                {
+                    return ("_treeViewControllerStateField not found", null);
+                }
+            }
+
+            // Debug.Log(prop);
+            object treeViewControllerStateRaw = _treeViewControllerStateField.GetValue(treeViewController);
+            // Debug.Log(treeViewControllerStateRaw);
+            if (treeViewControllerStateRaw is not
+#if UNITY_6000_3_OR_NEWER
+                TreeViewState<EntityId>
+#else
+                TreeViewState
+#endif
+                treeViewControllerState)
+            {
+                return ("treeViewControllerState not found", null);
+            }
+            // Debug.Log(treeViewControllerState);
+            // Debug.Log(treeViewControllerState.expandedIDs);
+
+            int[] selectedIDs = treeViewControllerState.selectedIDs.Select(each => (int)each).ToArray();
+            // Debug.Log($"expanded: {string.Join(", ", treeViewControllerState.expandedIDs)}");
+            return ("", selectedIDs);
         }
 
         private static readonly Color ColorSelectFocus = new Color(.17f, .365f, .535f);
@@ -1027,14 +1079,14 @@ namespace SaintsHierarchy.Editor
 
         private static void DrawDownThrough(Rect rect, Color color)
         {
-            float startX = rect.x + rect.width / 2 -  0.5f;
+            float startX = rect.x + rect.width / 2 - 0.5f;
             Rect downThrough = new Rect(startX, rect.y, 1, rect.height);
             EditorGUI.DrawRect(downThrough, color);
         }
 
         private static void DrawDownRight(Rect rect, Color color)
         {
-            float startX = rect.x + rect.width / 2 -  0.5f;
+            float startX = rect.x + rect.width / 2 - 0.5f;
             Rect down = new Rect(startX, rect.y, 1, rect.height / 2);
             EditorGUI.DrawRect(down, color);
 
