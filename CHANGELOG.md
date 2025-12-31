@@ -1,3 +1,9 @@
+## 0.0.5 ##
+
+1.  Component Icon Support
+2.  Script controll of what to draw
+3.  Fix an error when a path is not found inside a prefab
+
 ## 0.0.4 ##
 
 Fix disabled object

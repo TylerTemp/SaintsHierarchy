@@ -112,8 +112,7 @@ namespace SaintsHierarchy.Editor
             "d_lightRim",
         };
 
-        private static readonly Color[] Colors = new Color[]
-        {
+        private static readonly Color[] Colors = {
             new Color(0.16f, 0.16f, 0.16f),
             new Color(0.609f, 0.231f, 0.23100014f),
             new Color(0.55825f, 0.471625f, 0.21175f),
@@ -125,6 +124,8 @@ namespace SaintsHierarchy.Editor
             new Color(0.53287494f, 0.20212498f, 0.4501876f),
         };
 
+        private static Texture2D _closeIcon;
+
         public GameObjectConfigPanel(GameObject go, SaintsHierarchyConfig.GameObjectConfig goConfig)
         {
             _gameObjectConfigTemplate ??= Utils.LoadResource<VisualTreeAsset>("UIToolkit/GameObjectConfig.uxml");
@@ -133,7 +134,7 @@ namespace SaintsHierarchy.Editor
 
             VisualElement colorRow = root.Q<VisualElement>(name: "ColorContainer");
 
-            ItemButtonElement noColorButton = MakeIconButton(EditorGUIUtility.IconContent("d_Close").image as Texture2D);
+            ItemButtonElement noColorButton = MakeIconButton(_closeIcon ??= Utils.LoadResource<Texture2D>("close.png"));
             colorRow.Insert(1, noColorButton);
             noColorButton.Button.tooltip = "Remove Color Config";
             noColorButton.Button.clicked += () => SetColor(go, false, default, true);

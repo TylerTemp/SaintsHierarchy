@@ -26,6 +26,7 @@ namespace SaintsHierarchy.Editor
         private const int StartOffset = 60;
         private const int IndentOffset = 14;
         private const int LeftStartX = 32;
+        private const int PrefabExpandWidth = 16;
 
         private static int? _selectedInstance;
 
@@ -293,6 +294,8 @@ namespace SaintsHierarchy.Editor
 
             GUIStyle textColorStyle = EditorStyles.label;
 
+            var allComponents = trans.GetComponents<Component>();
+
             #region Main Icon
 
             // string customIcon = null;
@@ -305,7 +308,7 @@ namespace SaintsHierarchy.Editor
             }
             else
             {
-                iconTexture = GetIconByComponent(trans);
+                iconTexture = GetIconByComponent(allComponents);
             }
 
             Texture prefabTexture = null;
@@ -387,8 +390,9 @@ namespace SaintsHierarchy.Editor
                 width = selectionRect.xMax - iconRect.xMax - labelXOffset,
             };
 
-            EditorGUI.LabelField(labelRect, trans.name, textColorStyle);
-
+            GUIContent content = new GUIContent(trans.name);
+            EditorGUI.LabelField(labelRect, content, textColorStyle);
+            float labelWidth = textColorStyle.CalcSize(content).x;
             #endregion
 
             #region disabled
@@ -406,6 +410,21 @@ namespace SaintsHierarchy.Editor
 
             #endregion
 
+            #region Right Space
+
+            Rect rightRect = new Rect(selectionRect)
+            {
+                x = labelRect.x + labelWidth,
+                xMax = selectionRect.xMax,
+            };
+            // EditorGUI.DrawRect(rightRect, Color.blueViolet);
+            DrawRect(allComponents, new Rect(labelRect)
+            {
+                width = labelWidth,
+            }, rightRect);
+
+            #endregion
+
             #region Prefab Expand
 
             if (isAnyPrefabInstanceRoot && !isMissingPrefab && !isModelPrefab)
@@ -413,7 +432,7 @@ namespace SaintsHierarchy.Editor
                 Rect rightExpandRect = new Rect(selectionRect)
                 {
                     x = selectionRect.xMax,
-                    width = 16,
+                    width = PrefabExpandWidth,
                 };
                 if (rightExpandRect.Contains(mousePosition))
                 {
@@ -434,6 +453,37 @@ namespace SaintsHierarchy.Editor
             }
 
             #endregion
+        }
+
+        private static void DrawRect(Component[] allComponents, Rect labelRect, Rect rightRect)
+        {
+            float xLeft = rightRect.x;
+            float xRight = rightRect.xMax;
+
+            HierarchyArea hierarchyArea = new HierarchyArea(
+                rightRect.y,
+                rightRect.height,
+                labelRect.x, labelRect.xMax,
+                rightRect.x, rightRect.xMax);
+
+            foreach (Component component in allComponents)
+            {
+                switch (component)
+                {
+                    case IHierarchyDraw rightDraw:
+                    {
+                        HierarchyUsed hierarchyUsed = rightDraw.HierarchyDraw(hierarchyArea.EditorWrapX(xLeft, xRight));
+                        xRight = hierarchyUsed.UsedRect.x;
+                    }
+                        break;
+                    case IHierarchyLeftDraw leftDraw:
+                    {
+                        HierarchyUsed hierarchyUsed = leftDraw.HierarchyLeftDraw(hierarchyArea.EditorWrapX(xLeft, xRight));
+                        xLeft = hierarchyUsed.UsedRect.xMax;
+                    }
+                        break;
+                }
+            }
         }
 
         private static GUIStyle _labelStylePrefab;
@@ -461,9 +511,9 @@ namespace SaintsHierarchy.Editor
                 },
             };
         }
-        private static Texture2D GetIconByComponent(Transform trans)
+        private static Texture2D GetIconByComponent(IEnumerable<Component> components)
         {
-            foreach (Component comp in trans.GetComponents<Component>())
+            foreach (Component comp in components)
             {
                 switch (comp)
                 {
@@ -629,7 +679,16 @@ namespace SaintsHierarchy.Editor
                 }
                 else
                 {
-                    prefabSubGo = prefabAsset.transform.Find(relativePath).gameObject;
+                    Transform subTarget = prefabAsset.transform.Find(relativePath);
+                    if (subTarget == null)
+                    {
+
+#if SAINTSHIERARCHY_DEBUG
+                        Debug.LogWarning($"Could not find prefab asset {prefabPath} relative to {relativePath}");
+#endif
+                        continue;
+                    }
+                    prefabSubGo = subTarget.gameObject;
                 }
                 GlobalObjectId prefabSubGoId = GlobalObjectId.GetGlobalObjectIdSlow(prefabSubGo);
                 string prefabSubGoIdStr = Utils.GlobalObjectIdNormString(prefabSubGoId);

@@ -30,16 +30,6 @@ namespace SaintsHierarchy
         /// </summary>
         public readonly float SpaceEndX;
 
-        /// <summary>
-        /// The x drawing position. It's recommend to use this as your start drawing point, as SaintsField will
-        /// change this value accordingly everytime an item is drawn.
-        /// </summary>
-        public readonly float GroupStartX;
-        /// <summary>
-        /// When using `GroupBy`, you can see the vertical rect which already used by others in this group
-        /// </summary>
-        public readonly IReadOnlyList<Rect> GroupUsedRect;
-
         public float TitleWidth => TitleEndX - TitleStartX;
         public float SpaceWidth => SpaceEndX - SpaceStartX;
 
@@ -49,21 +39,17 @@ namespace SaintsHierarchy
         /// <param name="x">where to start</param>
         /// <param name="width">width of the rect</param>
         /// <returns>rect space you want to draw</returns>
-        public Rect MakeXWidthRect(float x, float width) => new Rect(x, Y, width, Height);
+        public Rect MakeXWidthRect(float x, float width)
+        {
+            // ReSharper disable once ConvertIfStatementToReturnStatement
+            if(width >= 0)
+            {
+                return new Rect(x, Y, width, Height);
+            }
+            return new Rect(x + width, Y, -width, Height);
+        }
 
-        public HierarchyArea EditorWrap(float groupStart, IReadOnlyList<Rect> groupUsedRect) => new HierarchyArea(
-                Y,
-                Height,
-                TitleStartX,
-                TitleEndX,
-                SpaceStartX,
-                SpaceEndX,
-
-                groupStart,
-                groupUsedRect
-            );
-
-        public HierarchyArea(float y, float height, float titleStartX, float titleEndX, float spaceStartX, float spaceEndX, float groupStartX, IReadOnlyList<Rect> groupUsedRect)
+        public HierarchyArea(float y, float height, float titleStartX, float titleEndX, float spaceStartX, float spaceEndX)
         {
             Y = y;
             Height = height;
@@ -71,8 +57,9 @@ namespace SaintsHierarchy
             TitleEndX = titleEndX;
             SpaceStartX = spaceStartX;
             SpaceEndX = spaceEndX;
-            GroupStartX = groupStartX;
-            GroupUsedRect = groupUsedRect;
         }
+
+        public HierarchyArea EditorWrapX(float startX, float endX) =>
+            new HierarchyArea(Y, Height, TitleStartX, TitleEndX, startX, endX);
     }
 }
