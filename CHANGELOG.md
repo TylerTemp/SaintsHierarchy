@@ -1,3 +1,7 @@
+## 0.0.3 ##
+
+Fix error when importing fbx type
+
 ## 0.0.2 ##
 
 1.  Add background color custom support
