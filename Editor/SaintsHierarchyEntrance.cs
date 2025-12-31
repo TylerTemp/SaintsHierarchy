@@ -354,7 +354,7 @@ namespace SaintsHierarchy.Editor
                 width = IndentOffset,
             };
 
-            if (iconTexture is null)
+            if (iconTexture == null)
             {
                 // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
                 if (prefabTexture is null)
