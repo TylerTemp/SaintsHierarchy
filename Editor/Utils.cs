@@ -72,7 +72,7 @@ namespace SaintsHierarchy.Editor
                     "Assets/Editor Default Resources/SaintsHierarchy/SaintsHierarchyConfig.asset";
                 _config = AssetDatabase.LoadAssetAtPath<SaintsHierarchyConfig>(assetPath);
                 // ReSharper disable once InvertIf
-                if (_config == null)
+                if (_config == null && !File.Exists(assetPath))
                 {
                     _config = ScriptableObject.CreateInstance<SaintsHierarchyConfig>();
                     Debug.Log("Create SaintsHierarchyConfig");

@@ -596,7 +596,8 @@ namespace SaintsHierarchy.Editor
                 }
                 else  // fbx etc
                 {
-                    Debug.Log(AssetDatabase.LoadAssetAtPath<DefaultAsset>(prefabPath));
+                    // Debug.Log(AssetDatabase.LoadAssetAtPath<DefaultAsset>(prefabPath));
+                    // Debug.Log(go);
                     // Debug.Log(prefabPath);
                     continue;
                     // foreach (Object o in AssetDatabase
@@ -651,6 +652,13 @@ namespace SaintsHierarchy.Editor
         {
 
             SaintsHierarchyConfig config = Utils.EnsureConfig();
+            if (config == null)
+            {
+#if SAINTSHIERARCHY_DEBUG
+                Debug.LogError("failed to load config");
+#endif
+                return (false, default);
+            }
             // string goIdString = goId.ToString();
             // string goIdString = Utils.GlobalObjectIdNormString(goId);
 
