@@ -581,17 +581,25 @@ namespace SaintsHierarchy.Editor
                 }
                 else  // fbx etc
                 {
-                    prefabAsset = AssetDatabase
-                        .LoadAllAssetsAtPath(prefabPath)
-                        .OfType<GameObject>()
-                        .FirstOrDefault();
-                    if (prefabAsset == null)
-                    {
-                        Debug.LogWarning($"Failed to load file {prefabPath}. Please report this issue");
-                        // return (false, default);
-                        continue;
-                    }
+                    continue;
+                    // foreach (Object o in AssetDatabase
+                    //              .LoadAllAssetsAtPath(prefabPath))
+                    // {
+                    //     Debug.Log($"out: {o}");
+                    // }
+                    // prefabAsset = AssetDatabase
+                    //     .LoadAllAssetsAtPath(prefabPath)
+                    //     .OfType<GameObject>()
+                    //     .FirstOrDefault();
+                    // if (prefabAsset == null)
+                    // {
+                    //     Debug.LogWarning($"Failed to load file {prefabPath}. Please report this issue");
+                    //     // return (false, default);
+                    //     continue;
+                    // }
                 }
+
+                Debug.Log($"{prefabAsset}: {prefabPath}->{relativePath}");
 
                 GameObject prefabSubGo;
                 // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
