@@ -391,6 +391,21 @@ namespace SaintsHierarchy.Editor
 
             #endregion
 
+            #region disabled
+
+            if (!go.activeInHierarchy)
+            {
+                // if (goConfig.hasColor)
+                // {
+                //     // cover the alpha, to override Unity's default drawing
+                //     // EditorGUI.DrawRect(fullRect, bgDefaultColor);
+                //     // EditorGUI.DrawRect(fullRect, new Color(bgDefaultColor.r));
+                // }
+                EditorGUI.DrawRect(fullRect, new Color(bgColor.r, bgColor.g, bgColor.b, 0.5f));
+            }
+
+            #endregion
+
             #region Prefab Expand
 
             if (isAnyPrefabInstanceRoot && !isMissingPrefab && !isModelPrefab)
@@ -575,7 +590,36 @@ namespace SaintsHierarchy.Editor
                 {
                     return default;
                 }
-                GameObject prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+                // Debug.Log(prefabPath);
+                GameObject prefabAsset;
+                if(prefabPath.EndsWith(".prefab"))
+                {
+                    prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+                }
+                else  // fbx etc
+                {
+                    // Debug.Log(AssetDatabase.LoadAssetAtPath<DefaultAsset>(prefabPath));
+                    // Debug.Log(go);
+                    // Debug.Log(prefabPath);
+                    continue;
+                    // foreach (Object o in AssetDatabase
+                    //              .LoadAllAssetsAtPath(prefabPath))
+                    // {
+                    //     Debug.Log($"out: {o}");
+                    // }
+                    // prefabAsset = AssetDatabase
+                    //     .LoadAllAssetsAtPath(prefabPath)
+                    //     .OfType<GameObject>()
+                    //     .FirstOrDefault();
+                    // if (prefabAsset == null)
+                    // {
+                    //     Debug.LogWarning($"Failed to load file {prefabPath}. Please report this issue");
+                    //     // return (false, default);
+                    //     continue;
+                    // }
+                }
+
+                // Debug.Log($"{prefabAsset}: {prefabPath}->{relativePath}");
 
                 GameObject prefabSubGo;
                 // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
@@ -610,6 +654,13 @@ namespace SaintsHierarchy.Editor
         {
 
             SaintsHierarchyConfig config = Utils.EnsureConfig();
+            if (config == null)
+            {
+#if SAINTSHIERARCHY_DEBUG
+                Debug.LogError("failed to load config");
+#endif
+                return (false, default);
+            }
             // string goIdString = goId.ToString();
             // string goIdString = Utils.GlobalObjectIdNormString(goId);
 

@@ -22,6 +22,6 @@ namespace SaintsHierarchy.Editor
             public List<GameObjectConfig> configs;
         }
 
-        public List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList;
+        public List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList = new List<SceneGuidToGoConfigs>();
     }
 }
