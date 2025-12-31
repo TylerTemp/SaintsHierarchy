@@ -1,3 +1,8 @@
+## 0.0.6 ##
+
+1.  Fix children of `prefab` label is not blue
+2.  Fix prefab editor always displayed as disabled gameObject
+
 ## 0.0.5 ##
 
 1.  Component Icon Support
