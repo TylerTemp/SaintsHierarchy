@@ -6,6 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using SaintsHierarchy.Editor.Draw;
+using SaintsHierarchy.Editor.Utils;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.SceneManagement;
@@ -304,7 +306,7 @@ namespace SaintsHierarchy.Editor
             // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
             if (!string.IsNullOrEmpty(goConfig.icon))
             {
-                iconTexture = Utils.LoadResource<Texture2D>(goConfig.icon);
+                iconTexture = Util.LoadResource<Texture2D>(goConfig.icon);
                 // customIcon = goConfig.icon;
             }
             else
@@ -456,7 +458,7 @@ namespace SaintsHierarchy.Editor
                 // Debug.Log($"popup id: {GlobalObjectId.GetGlobalObjectIdSlow(go)}");
                 // var parentRoots = GetPrefabRootTopToBottom(go);
 
-                Utils.PopupConfig(new Rect(mousePosition.x, mousePosition.y, 0, 0), go, goConfig);
+                Util.PopupConfig(new Rect(mousePosition.x, mousePosition.y, 0, 0), go, goConfig);
             }
         }
 
@@ -488,6 +490,8 @@ namespace SaintsHierarchy.Editor
 
         private static void DrawRect(Component[] allComponents, Rect labelRect, Rect rightRect)
         {
+            HierarchyButtonDrawer.Update();
+
             float xLeft = rightRect.x;
             float xRight = rightRect.xMax;
 
@@ -495,24 +499,238 @@ namespace SaintsHierarchy.Editor
                 rightRect.y,
                 rightRect.height,
                 labelRect.x, labelRect.xMax,
-                rightRect.x, rightRect.xMax);
+                rightRect.x, rightRect.xMax,
+                rightRect.x, Array.Empty<Rect>());
+
+            string preLeftGroupBy = null;
+            List<Rect> preLeftUsedRects = new List<Rect>();
+            string preRightGroupBy = null;
+            List<Rect> preRightUsedRects = new List<Rect>();
 
             foreach (Component component in allComponents)
             {
-                switch (component)
+                foreach (RenderTargetInfo renderTargetInfo in Util.GetRenderTargetInfos(component))
                 {
-                    case IHierarchyDraw rightDraw:
+                    switch (renderTargetInfo.Attribute)
                     {
-                        HierarchyUsed hierarchyUsed = rightDraw.HierarchyDraw(hierarchyArea.EditorWrapX(xLeft, xRight));
-                        xRight = hierarchyUsed.UsedRect.x;
+                        case HierarchyButtonAttribute hierarchyButtonAttribute:
+                        {
+                            if (hierarchyButtonAttribute.IsLeft)
+                            {
+                                preLeftGroupBy = null;
+                                if(preLeftUsedRects.Count > 0)
+                                {
+                                    xLeft = Mathf.Max(xLeft, preLeftUsedRects.Max(each => each.xMax));
+                                    preLeftUsedRects.Clear();
+                                }
+                            }
+                            else
+                            {
+                                preRightGroupBy = null;
+                                if(preRightUsedRects.Count > 0)
+                                {
+                                    xRight = Mathf.Min(xRight, preRightUsedRects.Min(each => each.x));
+                                    preRightUsedRects.Clear();
+                                }
+                            }
+
+                            float x = hierarchyButtonAttribute.IsLeft ? xLeft : xRight;
+                            (bool buttonUsed, HierarchyUsed buttonHeaderUsed) = HierarchyButtonDrawer.Draw(
+                                component,
+                                hierarchyArea.EditorWrap(x, Array.Empty<Rect>()),
+                                hierarchyButtonAttribute,
+                                renderTargetInfo
+                            );
+                            if (buttonUsed)
+                            {
+                                if (hierarchyButtonAttribute.IsLeft)
+                                {
+                                    xLeft = buttonHeaderUsed.UsedRect.xMax;
+
+                                }
+                                else
+                                {
+                                    xRight = buttonHeaderUsed.UsedRect.x;
+
+                                }
+                            }
+
+                            break;
+                        }
+                        case HierarchyDrawAttribute hierarchyDrawAttribute:
+                        {
+                            string groupBy = hierarchyDrawAttribute.GroupBy;
+                            IReadOnlyList<Rect> usedRects = Array.Empty<Rect>();
+                            if (!string.IsNullOrEmpty(groupBy))
+                            {
+                                // get used rect
+                                usedRects = hierarchyDrawAttribute.IsLeft ? preLeftUsedRects : preRightUsedRects;
+
+                                // check if it's new group
+                                if (hierarchyDrawAttribute.IsLeft)
+                                {
+                                    if (preLeftGroupBy != hierarchyDrawAttribute.GroupBy && preLeftUsedRects.Count > 0)
+                                    {
+                                        preLeftGroupBy = hierarchyDrawAttribute.GroupBy;
+                                        xLeft = Mathf.Max(xLeft, preLeftUsedRects.Max(each => each.xMax));
+                                        preLeftUsedRects.Clear();
+                                    }
+                                }
+                                else
+                                {
+                                    if (preRightGroupBy != hierarchyDrawAttribute.GroupBy && preRightUsedRects.Count > 0)
+                                    {
+                                        preRightGroupBy = hierarchyDrawAttribute.GroupBy;
+                                        xRight = Mathf.Min(xRight, preRightUsedRects.Min(each => each.x));
+                                        preRightUsedRects.Clear();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (hierarchyDrawAttribute.IsLeft)
+                                {
+                                    preLeftGroupBy = null;
+                                    if(preLeftUsedRects.Count > 0)
+                                    {
+                                        xLeft = Mathf.Max(xLeft, preLeftUsedRects.Max(each => each.xMax));
+                                        preLeftUsedRects.Clear();
+                                    }
+                                }
+                                else
+                                {
+                                    preRightGroupBy = null;
+                                    if(preRightUsedRects.Count > 0)
+                                    {
+                                        xRight = Mathf.Min(xRight, preRightUsedRects.Min(each => each.x));
+                                        preRightUsedRects.Clear();
+                                    }
+                                }
+                            }
+
+                            (bool used, var headerUsed) = HierarchyDrawDrawer.Draw(
+                                component,
+                                hierarchyArea.EditorWrap(hierarchyDrawAttribute.IsLeft ? xLeft : xRight, usedRects),
+                                renderTargetInfo
+                            );
+
+                            if (used)
+                            {
+                                if (string.IsNullOrEmpty(groupBy))
+                                {
+                                    if (hierarchyDrawAttribute.IsLeft)
+                                    {
+                                        xLeft = headerUsed.UsedRect.xMax;
+                                    }
+                                    else
+                                    {
+                                        xRight = headerUsed.UsedRect.x;
+                                    }
+                                }
+                                else
+                                {
+                                    if (hierarchyDrawAttribute.IsLeft)
+                                    {
+                                        preLeftUsedRects.Add(headerUsed.UsedRect);
+                                        preLeftGroupBy = hierarchyDrawAttribute.GroupBy;
+                                    }
+                                    else
+                                    {
+                                        preRightUsedRects.Add(headerUsed.UsedRect);
+                                        preRightGroupBy = hierarchyDrawAttribute.GroupBy;
+                                    }
+                                }
+                            }
+                        }
+                            break;
+                        case HierarchyLabelAttribute hierarchyLabelAttribute:
+                        {
+                            string groupBy = hierarchyLabelAttribute.GroupBy;
+                            IReadOnlyList<Rect> usedRects = Array.Empty<Rect>();
+                            if (!string.IsNullOrEmpty(groupBy))
+                            {
+                                // get used rect
+                                usedRects = hierarchyLabelAttribute.IsLeft ? preLeftUsedRects : preRightUsedRects;
+
+                                // check if it's new group
+                                if (hierarchyLabelAttribute.IsLeft)
+                                {
+                                    if (preLeftGroupBy != hierarchyLabelAttribute.GroupBy && preLeftUsedRects.Count > 0)
+                                    {
+                                        preLeftGroupBy = hierarchyLabelAttribute.GroupBy;
+                                        xLeft = Mathf.Max(xLeft, preLeftUsedRects.Max(each => each.xMax));
+                                        preLeftUsedRects.Clear();
+                                    }
+                                }
+                                else
+                                {
+                                    if (preRightGroupBy != hierarchyLabelAttribute.GroupBy && preRightUsedRects.Count > 0)
+                                    {
+                                        preRightGroupBy = hierarchyLabelAttribute.GroupBy;
+                                        xRight = Mathf.Min(xRight, preRightUsedRects.Min(each => each.x));
+                                        preRightUsedRects.Clear();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (hierarchyLabelAttribute.IsLeft)
+                                {
+                                    preLeftGroupBy = null;
+                                    if(preLeftUsedRects.Count > 0)
+                                    {
+                                        xLeft = Mathf.Max(xLeft, preLeftUsedRects.Max(each => each.xMax));
+                                        preLeftUsedRects.Clear();
+                                    }
+                                }
+                                else
+                                {
+                                    preRightGroupBy = null;
+                                    if(preRightUsedRects.Count > 0)
+                                    {
+                                        xRight = Mathf.Min(xRight, preRightUsedRects.Min(each => each.x));
+                                        preRightUsedRects.Clear();
+                                    }
+                                }
+                            }
+
+                            (bool used, HierarchyUsed headerUsed) = HierarchyLabelDrawer.Draw(
+                                component,
+                                hierarchyArea.EditorWrap(hierarchyLabelAttribute.IsLeft ? xLeft : xRight, usedRects),
+                                hierarchyLabelAttribute,
+                                renderTargetInfo
+                            );
+
+                            if (used)
+                            {
+                                if (string.IsNullOrEmpty(groupBy))
+                                {
+                                    if (hierarchyLabelAttribute.IsLeft)
+                                    {
+                                        xLeft = headerUsed.UsedRect.xMax;
+                                    }
+                                    else
+                                    {
+                                        xRight = headerUsed.UsedRect.x;
+                                    }
+                                }
+                                else
+                                {
+                                    if (hierarchyLabelAttribute.IsLeft)
+                                    {
+                                        preLeftUsedRects.Add(headerUsed.UsedRect);
+                                        preLeftGroupBy = hierarchyLabelAttribute.GroupBy;
+                                    }
+                                    else
+                                    {
+                                        preRightUsedRects.Add(headerUsed.UsedRect);
+                                        preRightGroupBy = hierarchyLabelAttribute.GroupBy;
+                                    }
+                                }
+                            }
+                        }
+                            break;
                     }
-                        break;
-                    case IHierarchyLeftDraw leftDraw:
-                    {
-                        HierarchyUsed hierarchyUsed = leftDraw.HierarchyLeftDraw(hierarchyArea.EditorWrapX(xLeft, xRight));
-                        xLeft = hierarchyUsed.UsedRect.xMax;
-                    }
-                        break;
                 }
             }
         }
@@ -549,7 +767,7 @@ namespace SaintsHierarchy.Editor
                 switch (comp)
                 {
                     case IHierarchyIconPath hierarchyIconPath:
-                        return Utils.LoadResource<Texture2D>(hierarchyIconPath.HierarchyIconPath);
+                        return Util.LoadResource<Texture2D>(hierarchyIconPath.HierarchyIconPath);
                     case IHierarchyIconTexture2D hierarchyIconTexture2D:
                         return hierarchyIconTexture2D.HierarchyIconTexture2D;
                     case Camera:
@@ -562,11 +780,11 @@ namespace SaintsHierarchy.Editor
                         return (Texture2D)EditorGUIUtility.IconContent("d_EventSystem Icon").image;
 #if SAINTSHIERARCHY_UNITY_RENDER_PIPELINES_CORE
                     case UnityEngine.Rendering.Volume:
-                        return Utils.LoadResource<Texture2D>("d_Volume Icon.asset");
+                        return Util.LoadResource<Texture2D>("d_Volume Icon.asset");
 #endif
 #if SAINTSHIERARCHY_WWISE
                     case AkInitializer:
-                        return Utils.LoadResource<Texture2D>("wwise-logo.png");
+                        return Util.LoadResource<Texture2D>("wwise-logo.png");
 #endif
                 }
             }
@@ -641,7 +859,7 @@ namespace SaintsHierarchy.Editor
                 scenePath = AssetDatabase.GetAssetPath(go);
             }
             string sceneGuid = AssetDatabase.AssetPathToGUID(scenePath);
-            string norId = Utils.GlobalObjectIdNormString(goId);
+            string norId = Util.GlobalObjectIdNormString(goId);
             // (bool found, SaintsHierarchyConfig.GameObjectConfig config) = FindConfig(sceneGuid, Utils.GlobalObjectIdNormStringNoPrefabLink(goId));
             // if (go.name == "PrefabInsideAPrefab")
             // {
@@ -722,7 +940,7 @@ namespace SaintsHierarchy.Editor
                     prefabSubGo = subTarget.gameObject;
                 }
                 GlobalObjectId prefabSubGoId = GlobalObjectId.GetGlobalObjectIdSlow(prefabSubGo);
-                string prefabSubGoIdStr = Utils.GlobalObjectIdNormString(prefabSubGoId);
+                string prefabSubGoIdStr = Util.GlobalObjectIdNormString(prefabSubGoId);
                 string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(prefabAsset));
                 // if (go.name == "PrefabInsideAPrefab")
                 // {
@@ -743,7 +961,7 @@ namespace SaintsHierarchy.Editor
         private static (bool found, SaintsHierarchyConfig.GameObjectConfig config) FindConfig(string sceneGuid, string goIdString)
         {
 
-            SaintsHierarchyConfig config = Utils.EnsureConfig();
+            SaintsHierarchyConfig config = Util.EnsureConfig();
             if (config == null)
             {
 #if SAINTSHIERARCHY_DEBUG

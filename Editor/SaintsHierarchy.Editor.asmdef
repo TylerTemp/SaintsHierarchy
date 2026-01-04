@@ -4,7 +4,8 @@
     "references": [
         "Unity.RenderPipelines.Core.Runtime",
         "AK.Wwise.Unity.MonoBehaviour",
-        "SaintsHierarchy"
+        "SaintsHierarchy",
+        "SaintsField.Runtime"
     ],
     "includePlatforms": [
         "Editor"
@@ -20,6 +21,11 @@
             "name": "com.unity.render-pipelines.core",
             "expression": "",
             "define": "SAINTSHIERARCHY_UNITY_RENDER_PIPELINES_CORE"
+        },
+        {
+            "name": "today.comes.saintsfield",
+            "expression": "",
+            "define": "SAINTSHIERARCHY_SAINTSFIELD"
         }
     ],
     "noEngineReferences": false

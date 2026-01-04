@@ -30,6 +30,16 @@ namespace SaintsHierarchy
         /// </summary>
         public readonly float SpaceEndX;
 
+        /// <summary>
+        /// The x drawing position. It's recommend to use this as your start drawing point, as SaintsField will
+        /// change this value accordingly everytime an item is drawn.
+        /// </summary>
+        public readonly float GroupStartX;
+        /// <summary>
+        /// When using `GroupBy`, you can see the vertical rect which already used by others in this group
+        /// </summary>
+        public readonly IReadOnlyList<Rect> GroupUsedRect;
+
         public float TitleWidth => TitleEndX - TitleStartX;
         public float SpaceWidth => SpaceEndX - SpaceStartX;
 
@@ -49,7 +59,7 @@ namespace SaintsHierarchy
             return new Rect(x + width, Y, -width, Height);
         }
 
-        public HierarchyArea(float y, float height, float titleStartX, float titleEndX, float spaceStartX, float spaceEndX)
+        public HierarchyArea(float y, float height, float titleStartX, float titleEndX, float spaceStartX, float spaceEndX, float groupStartX, IReadOnlyList<Rect> groupUsedRect)
         {
             Y = y;
             Height = height;
@@ -57,9 +67,21 @@ namespace SaintsHierarchy
             TitleEndX = titleEndX;
             SpaceStartX = spaceStartX;
             SpaceEndX = spaceEndX;
+
+            GroupStartX = groupStartX;
+            GroupUsedRect = groupUsedRect;
         }
 
-        public HierarchyArea EditorWrapX(float startX, float endX) =>
-            new HierarchyArea(Y, Height, TitleStartX, TitleEndX, startX, endX);
+        public HierarchyArea EditorWrap(float groupStart, IReadOnlyList<Rect> groupUsedRect) => new HierarchyArea(
+            Y,
+            Height,
+            TitleStartX,
+            TitleEndX,
+            SpaceStartX,
+            SpaceEndX,
+
+            groupStart,
+            groupUsedRect
+        );
     }
 }

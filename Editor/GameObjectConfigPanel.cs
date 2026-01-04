@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SaintsHierarchy.Editor.Utils;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -128,13 +129,13 @@ namespace SaintsHierarchy.Editor
 
         public GameObjectConfigPanel(GameObject go, SaintsHierarchyConfig.GameObjectConfig goConfig)
         {
-            _gameObjectConfigTemplate ??= Utils.LoadResource<VisualTreeAsset>("UIToolkit/GameObjectConfig.uxml");
+            _gameObjectConfigTemplate ??= Util.LoadResource<VisualTreeAsset>("UIToolkit/GameObjectConfig.uxml");
             TemplateContainer root = _gameObjectConfigTemplate.CloneTree();
             Add(root);
 
             VisualElement colorRow = root.Q<VisualElement>(name: "ColorContainer");
 
-            ItemButtonElement noColorButton = MakeIconButton(_closeIcon ??= Utils.LoadResource<Texture2D>("close.png"));
+            ItemButtonElement noColorButton = MakeIconButton(_closeIcon ??= Util.LoadResource<Texture2D>("close.png"));
             colorRow.Insert(1, noColorButton);
             noColorButton.Button.tooltip = "Remove Color Config";
             noColorButton.Button.clicked += () => SetColor(go, false, default, true);
@@ -183,7 +184,7 @@ namespace SaintsHierarchy.Editor
             customButton.Button.clicked += () => SetIcon(go, "");
             if(!string.IsNullOrEmpty(goConfig.icon) && !DefaultIcons.Contains(goConfig.icon))
             {
-                customButton.Button.style.backgroundImage = Utils.LoadResource<Texture2D>(goConfig.icon);
+                customButton.Button.style.backgroundImage = Util.LoadResource<Texture2D>(goConfig.icon);
             }
             else
             {
@@ -197,7 +198,7 @@ namespace SaintsHierarchy.Editor
 
             foreach (string iconPath in DefaultIcons)
             {
-                ItemButtonElement btn = MakeIconButton(Utils.LoadResource<Texture2D>(iconPath));
+                ItemButtonElement btn = MakeIconButton(Util.LoadResource<Texture2D>(iconPath));
                 bool isCurrent = iconPath == goConfig.icon;
                 if (isCurrent)
                 {
@@ -244,7 +245,7 @@ namespace SaintsHierarchy.Editor
                     return;
                 }
 
-                Texture2D icon = Utils.LoadResource<Texture2D>(searchText);
+                Texture2D icon = Util.LoadResource<Texture2D>(searchText);
                 if (icon == null)
                 {
                     searchButton.style.display = DisplayStyle.None;
@@ -277,7 +278,7 @@ namespace SaintsHierarchy.Editor
         private void SetIcon(GameObject go, string iconPath)
         {
             bool needRemoveIcon = string.IsNullOrEmpty(iconPath);
-            SaintsHierarchyConfig config = Utils.EnsureConfig();
+            SaintsHierarchyConfig config = Util.EnsureConfig();
 
             string scenePath = go.scene.path;
             if (string.IsNullOrEmpty(scenePath))
@@ -288,7 +289,7 @@ namespace SaintsHierarchy.Editor
             string sceneGuid = AssetDatabase.AssetPathToGUID(scenePath);
             // Debug.Log($"path={scenePath}; guid={sceneGuid}");
             GlobalObjectId goId = GlobalObjectId.GetGlobalObjectIdSlow(go);
-            string goIdString = Utils.GlobalObjectIdNormString(goId);
+            string goIdString = Util.GlobalObjectIdNormString(goId);
 
             int foundSceneIndex = -1;
             int sceneIndex = 0;
@@ -359,7 +360,7 @@ namespace SaintsHierarchy.Editor
 
         private void SetColor(GameObject go, bool hasColor, Color color, bool needClose)
         {
-            SaintsHierarchyConfig config = Utils.EnsureConfig();
+            SaintsHierarchyConfig config = Util.EnsureConfig();
 
             string scenePath = go.scene.path;
             if (string.IsNullOrEmpty(scenePath))
@@ -370,7 +371,7 @@ namespace SaintsHierarchy.Editor
             string sceneGuid = AssetDatabase.AssetPathToGUID(scenePath);
             // Debug.Log($"path={scenePath}; guid={sceneGuid}");
             GlobalObjectId goId = GlobalObjectId.GetGlobalObjectIdSlow(go);
-            string goIdString = Utils.GlobalObjectIdNormString(goId);
+            string goIdString = Util.GlobalObjectIdNormString(goId);
 
             int foundSceneIndex = -1;
             int sceneIndex = 0;
@@ -479,7 +480,7 @@ namespace SaintsHierarchy.Editor
 
         private static ItemButtonElement MakeColorButton(Color color)
         {
-            _whiteRectTexture ??= Utils.LoadResource<Texture2D>("rect.png");
+            _whiteRectTexture ??= Util.LoadResource<Texture2D>("rect.png");
 
             ItemButtonElement itemButtonElement = new ItemButtonElement();
             itemButtonElement.Button.style.backgroundImage = _whiteRectTexture;

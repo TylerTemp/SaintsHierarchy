@@ -1,3 +1,4 @@
+using SaintsHierarchy.Editor.Utils;
 using UnityEngine.UIElements;
 
 namespace SaintsHierarchy.Editor
@@ -9,7 +10,7 @@ namespace SaintsHierarchy.Editor
 
         public ItemButtonElement()
         {
-            _template ??= Utils.LoadResource<VisualTreeAsset>("UIToolkit/ItemButton.uxml");
+            _template ??= Util.LoadResource<VisualTreeAsset>("UIToolkit/ItemButton.uxml");
             TemplateContainer root = _template.CloneTree();
             Add(root);
             Button = root.Q<Button>();
