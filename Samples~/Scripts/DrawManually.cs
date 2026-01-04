@@ -32,8 +32,6 @@ namespace SaintsHierarchy.Samples.Scripts
             }
         }
 
-
-
         [HierarchyDraw("my progress bar")]
         private HierarchyUsed DrawRight1G1(HierarchyArea headerArea)
         {

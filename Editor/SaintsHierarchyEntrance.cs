@@ -52,6 +52,12 @@ namespace SaintsHierarchy.Editor
 
         private static void OnHierarchyGUI(int instanceID, Rect selectionRect)
         {
+            SaintsHierarchyConfig projectConfig = Util.EnsureConfig();
+            if (projectConfig == null || projectConfig.disabled)
+            {
+                return;
+            }
+
             // Get the object corresponding to the ID
             Object obj = EditorUtility.
 #if UNITY_6000_3_OR_NEWER

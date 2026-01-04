@@ -1,6 +1,6 @@
 # Saints Hierarchy #
 
-Unity Hierarchy enhancement (WIP). Use `Alt`+`Left Mouse Button` to select.
+Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ![](https://github.com/user-attachments/assets/35037962-3488-426a-98ca-25c9dae696a0)
 
@@ -50,57 +50,196 @@ public class HierarchyIconTexture2DExample: MonoBehaviour, IHierarchyIconTexture
 
 ![](https://github.com/user-attachments/assets/e62907fe-818e-4666-9b68-e724f2fbb387)
 
-### Scripted Draw ###
+### `HierarchyLabel`/`HierarchyLeftLabel` ###
 
-Draw on left example:
+Draw label. Callback & tag supported.
+
+Parameters:
+
+*   `string label = null`: label to draw. Use `"$" + name` to make a callback/property
+*   `string tooltip = null`: tooltip to show
 
 ```csharp
-public class LeftDrawExample2 : MonoBehaviour, IHierarchyLeftDraw
+using SaintsHierarchy;
+
+[HierarchyLabel("<color=CadetBlue><field/>")]
+[HierarchyLeftLabel("<color=CadetBlue>|LEFT|")]
+public string content;
+```
+![](https://github.com/user-attachments/assets/375905ab-67b1-4e2f-a793-afd35a5f5087)
+
+### `HierarchyButton`/`HierarchyLeftButton`/`HierarchyGhostButton`/`HierarchyGhostLeftButton` ###
+
+Draw button. Callback & tag supported.
+
+Parameters:
+
+*   `string label = null`: label of the button. `null` to use function name. use `"$" + name` to use a callback label
+*   `string tooltip = null`: tooltip to show
+
+```csharp
+using SaintsHierarchy;
+
+public string c;
+
+[HierarchyGhostButton("$" + nameof(c), "Click Me!")]  // dynamic label
+private void OnBtnClick()
 {
-    public string c;
+    Debug.Log($"click {c}");
+}
+
+[HierarchyLeftButton("C <color=Burlywood>Left")]
+private void LeftClick()
+{
+    Debug.Log("Left Click");
+}
+```
+
+![](https://github.com/user-attachments/assets/78728c9f-e0f3-4e6d-afa5-7d167c97d7ed)
+
+### `HierarchyDraw`/`HierarchyLeftDraw` ###
+
+Manually draw content
+
+Parameters:
+
+*   `string groupBy = null`: group the items virtically by this name. If `null`, it will not share space with anyone.
+
+Signature:
+
+The method must have this signaure:
+
+```csharp
+HierarchyUsed FuncName(HierarchyArea hierarchyArea)
+```
+
+`HierarchyArea` has the following fields:
+
+```csharp
+/// <summary>
+/// Rect.y for drawing
+/// </summary>
+public readonly float Y;
+/// <summary>
+/// Rect.height for drawing
+/// </summary>
+public readonly float Height;
+/// <summary>
+/// the x value where the title (gameObject name) started
+/// </summary>
+public readonly float TitleStartX;
+/// <summary>
+/// the x value where the title (gameObject name) ended
+/// </summary>
+public readonly float TitleEndX;
+/// <summary>
+/// the x value where the empty space start. You may want to start draw here
+/// </summary>
+public readonly float SpaceStartX;
+/// <summary>
+/// the x value where the empty space ends. When drawing from right, you need to backward drawing starts here
+/// </summary>
+public readonly float SpaceEndX;
+
+/// <summary>
+/// The x drawing position. It's recommend to use this as your start drawing point, as SaintsHierarchy will
+/// change this value accordingly everytime an item is drawn.
+/// </summary>
+public readonly float GroupStartX;
+/// <summary>
+/// When using `GroupBy`, you can see the vertical rect which already used by others in this group
+/// </summary>
+public readonly IReadOnlyList<Rect> GroupUsedRect;
+
+public float TitleWidth => TitleEndX - TitleStartX;
+public float SpaceWidth => SpaceEndX - SpaceStartX;
+
+/// <summary>
+/// A quick way to make a rect
+/// </summary>
+/// <param name="x">where to start</param>
+/// <param name="width">width of the rect</param>
+/// <returns>rect space you want to draw</returns>
+public Rect MakeXWidthRect(float x, float width)
+{
+    if(width >= 0)
+    {
+        return new Rect(x, Y, width, Height);
+    }
+    return new Rect(x + width, Y, -width, Height);
+}
+```
+
+After you draw your item, use `return new HierarchyUsed(useRect);` to tell the space you've used. Use `return default` if you don't draw this time.
+
+```csharp
+public bool play;
+[Range(0f, 1f)] public float range1;
+[Range(0f, 1f)] public float range2;
+
+private string ButtonLabel => play ? "Pause" : "Play";
+
 #if UNITY_EDITOR
-    public HierarchyUsed HierarchyLeftDraw(HierarchyArea hierarchyArea)
-    {
-        GUIContent content = new GUIContent(c);
-        float width = new GUIStyle("button").CalcSize(content).x;
-        Rect useRect = hierarchyArea.MakeXWidthRect(hierarchyArea.SpaceStartX, width);
-
-        if (GUI.Button(useRect, content))
-        {
-            Debug.Log($"click {c}");
-        }
-
-        return new HierarchyUsed(useRect);
-    }
-#endif
-}
-```
-
-On right:
-
-```csharp
-public class RightDrawExample2 : MonoBehaviour, IHierarchyDraw
+[HierarchyLeftButton("$" + nameof(ButtonLabel))]
+private IEnumerator LeftBtn()
 {
-    public Texture2D icon;
-    public HierarchyUsed HierarchyDraw(HierarchyArea hierarchyArea)
+    play = !play;
+    // ReSharper disable once InvertIf
+    if (play)
     {
-        if (icon == null)
+        while (play)
         {
-            return new HierarchyUsed(hierarchyArea.MakeXWidthRect(hierarchyArea.SpaceEndX, 0));
+            range1 = (range1 + 0.0005f) % 1;
+            range2 = (range2 + 0.0009f) % 1;
+            EditorApplication.RepaintHierarchyWindow();
+            yield return null;
         }
-
-        float width = icon.width;
-
-        Rect useRect = hierarchyArea.MakeXWidthRect(hierarchyArea.SpaceEndX, -width);
-
-        GUI.DrawTexture(useRect, icon, ScaleMode.ScaleToFit, true);
-
-        return new HierarchyUsed(useRect);
     }
 }
+
+[HierarchyDraw("my progress bar")]
+private HierarchyUsed DrawRight1G1(HierarchyArea headerArea)
+{
+    Rect useRect = new Rect(headerArea.MakeXWidthRect(headerArea.GroupStartX - 40, 40))
+    {
+        height = headerArea.Height / 2,
+    };
+    Rect progressRect = new Rect(useRect)
+    {
+        width = range1 * useRect.width,
+    };
+
+    EditorGUI.DrawRect(useRect, Color.gray);
+    EditorGUI.DrawRect(progressRect, Color.red);
+
+    return new HierarchyUsed(useRect);
+}
+[HierarchyDraw("my progress bar")]
+private HierarchyUsed DrawRight1G2(HierarchyArea headerArea)
+{
+    Rect useRect = new Rect(headerArea.MakeXWidthRect(headerArea.GroupStartX - 40, 40))
+    {
+        y = headerArea.Y + headerArea.Height / 2,
+        height = headerArea.Height / 2,
+    };
+    Rect progressRect = new Rect(useRect)
+    {
+        width = range2 * useRect.width,
+    };
+
+    EditorGUI.DrawRect(useRect, Color.gray);
+    EditorGUI.DrawRect(progressRect, Color.yellow);
+
+    return new HierarchyUsed(useRect);
+}
+#endif
 ```
 
-![](https://github.com/user-attachments/assets/07720af8-9c61-4332-84fd-b2cfce2f8799)
+[![](https://github.com/user-attachments/assets/bd5db3ef-da03-4455-b665-1dc661901b15)](https://github.com/user-attachments/assets/260c9661-e7c2-4e0f-b666-a36287fe9eb4)
+
+## Config ##
+
+`Window`-`Saints`-`Disable Saints Hierarchy` to disable this plugin
 
 ## TODO ##
 

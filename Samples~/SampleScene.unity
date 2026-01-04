@@ -790,8 +790,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SaintsHierarchy.Samples::SaintsHierarchy.Samples.Scripts.DrawManually
   play: 0
-  range1: 0.036343046
-  range2: 0.29819146
+  range1: 0
+  range2: 0
 --- !u!1 &1533356194
 GameObject:
   m_ObjectHideFlags: 0

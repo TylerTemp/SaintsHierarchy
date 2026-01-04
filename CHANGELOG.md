@@ -1,3 +1,8 @@
+## 0.0.8 ##
+
+1.  Use decoration instead of interface for easier label, button, and custom drawing
+2.  Add `Window`-`Saints`-`Disable Saints Hierarchy` to enable/disable this plugin
+
 ## 0.0.7 ##
 
 Fix selection color when drag element
