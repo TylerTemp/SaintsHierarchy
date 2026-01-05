@@ -1,3 +1,12 @@
+## 1.0.0 ##
+
+1.  Better background color to not conflict with default one
+2.  Component icons supported
+3.  Background strip supported
+4.  Config tweaks supported
+5.  GameObject self enabled checker supported
+6.  GameObject icon supported
+
 ## 0.0.8 ##
 
 1.  Use decoration instead of interface for easier label, button, and custom drawing

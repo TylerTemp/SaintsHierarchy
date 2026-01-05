@@ -24,6 +24,8 @@ namespace SaintsHierarchy.Editor
 
         public bool disabled;
         public bool backgroundStrip;
+        public bool gameObjectEnabledChecker;
+        public bool componentIcons;
 
         public List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList = new List<SceneGuidToGoConfigs>();
     }

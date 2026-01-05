@@ -11,7 +11,53 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 3.  Auto set icons for camera, cavans, light, eventSystem & Wwise Initializer
 4.  Prefab footer icon if you have custom icon set
 
+
+## Config ##
+
+`Window` - `Saints` - `Hierarchy` - `Disable Saints Hierarchy` to disable this plugin
+
+This will automaticlly add indent tree, and icon for camera, light, canvas, event system, wwise
+
+![](https://github.com/user-attachments/assets/f9b3f079-0a7e-46c6-91b2-2ef83f9feff2)
+
+### Background Strip ###
+
+`Window` - `Saints` - `Hierarchy` - `Background Strip`
+
+![](https://github.com/user-attachments/assets/a4c4cf02-7bc0-4161-9592-99a0f7d3bc44)
+
+### Component Icons ###
+
+You can set the script icon and show the icons at the end of row
+
+Setup:
+
+![](https://github.com/user-attachments/assets/81ab960d-1abd-425f-858c-b79344284088)
+
+Result:
+
+![](https://github.com/user-attachments/assets/423da9d8-1282-4d53-8ba9-d4bb4a83bdc6)
+
+
 ## Usage ##
+
+### GameObject Icon ###
+
+GameObject icon (including custom icons) will be used as hierarchy icon:
+
+![](https://github.com/user-attachments/assets/08563fd4-afd5-4185-ac07-9144db4b21d2)
+
+Result:
+
+![](https://github.com/user-attachments/assets/2753aa05-c782-41e2-a084-caafb8f51ad5)
+
+GameObject label will be used as hierarchy label underline:
+
+![](https://github.com/user-attachments/assets/80643e95-1b5c-48a5-a261-ed30a0646017)
+
+Result:
+
+![](https://github.com/user-attachments/assets/0c30c68e-6d50-4829-a10a-628b6dc85ea6)
 
 ### Color ###
 
@@ -19,13 +65,15 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 2.  use `x` button to clean the color config
 3.  use the color picker (second button) to manually change the color you want
 
-![](https://github.com/user-attachments/assets/c1d3ebdf-0ff8-419a-afdb-ecda45895eb2)
+![](https://github.com/user-attachments/assets/156b467c-b534-412f-9a79-cde1dca61ec2)
 
-### Icon ###
+### Custom Icon ###
 
 1.  select an icon to change
 2.  to use your custom icon, first right click on you icon - copy path, then paste it into the search field. The icon will appear as the first item on the result
 3.  select the same icon to remove icon config
+
+![](https://github.com/user-attachments/assets/25a0f472-8496-4087-9e0c-b75ef87be67b)
 
 ### Scripted Icon ###
 
@@ -236,7 +284,3 @@ private HierarchyUsed DrawRight1G2(HierarchyArea headerArea)
 ```
 
 [![](https://github.com/user-attachments/assets/bd5db3ef-da03-4455-b665-1dc661901b15)](https://github.com/user-attachments/assets/260c9661-e7c2-4e0f-b666-a36287fe9eb4)
-
-## Config ##
-
-`Window`-`Saints`-`Disable Saints Hierarchy` to disable this plugin

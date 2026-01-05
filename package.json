@@ -1,6 +1,6 @@
 {
     "name": "today.comes.saintshierarchy",
-    "version": "0.0.8",
+    "version": "1.0.0",
     "displayName": "SaintsHierarchy",
     "description": "A Unity plugin for hierarchy in inspector",
     "unity": "2022.2",

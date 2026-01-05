@@ -51,6 +51,44 @@ namespace SaintsHierarchy.Editor.Utils
             Refresh();
         }
 
+        private const string GameObjectEnabledCheckerPath = MenuRoot + "GameObject Enabled Checker";
+
+        [MenuItem(GameObjectEnabledCheckerPath)]
+        public static void GameObjectEnabledChecker()
+        {
+            SaintsHierarchyConfig config = Util.EnsureConfig();
+            if (config != null)
+            {
+                EditorUtility.SetDirty(config);
+                config.gameObjectEnabledChecker = !config.gameObjectEnabledChecker;
+            }
+            else
+            {
+                Debug.LogWarning("SaintsHierarchy config not found");
+            }
+
+            Refresh();
+        }
+
+        private const string ComponentIconsPath = MenuRoot + "Component Icons";
+
+        [MenuItem(ComponentIconsPath)]
+        public static void ComponentIcons()
+        {
+            SaintsHierarchyConfig config = Util.EnsureConfig();
+            if (config != null)
+            {
+                EditorUtility.SetDirty(config);
+                config.componentIcons = !config.componentIcons;
+            }
+            else
+            {
+                Debug.LogWarning("SaintsHierarchy config not found");
+            }
+
+            Refresh();
+        }
+
         private static void Refresh()
         {
             EditorApplication.RepaintHierarchyWindow();
@@ -66,6 +104,12 @@ namespace SaintsHierarchy.Editor.Utils
 
             bool backgroundStrip = config != null && config.backgroundStrip;
             Menu.SetChecked(BackgroundStripPath, backgroundStrip);
+
+            bool gameObjectEnabledChecker = config != null && config.gameObjectEnabledChecker;
+            Menu.SetChecked(GameObjectEnabledCheckerPath, gameObjectEnabledChecker);
+
+            bool componentIcons = config != null && config.componentIcons;
+            Menu.SetChecked(ComponentIconsPath, componentIcons);
         }
     }
 }

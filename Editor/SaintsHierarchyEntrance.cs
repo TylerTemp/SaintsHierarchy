@@ -526,7 +526,7 @@ namespace SaintsHierarchy.Editor
                 xMax = selectionRect.xMax,
             };
             // EditorGUI.DrawRect(rightRect, Color.blueViolet);
-            DrawRect(allComponents, new Rect(labelRect)
+            DrawRect(projectConfig, originGo, allComponents, new Rect(labelRect)
             {
                 width = labelWidth,
             }, rightRect);
@@ -587,19 +587,141 @@ namespace SaintsHierarchy.Editor
             return true;
         }
 
-        private static void DrawRect(Component[] allComponents, Rect labelRect, Rect rightRect)
+        private static Texture2D _closePng;
+
+        private static void DrawRect(SaintsHierarchyConfig projectConfig, GameObject originGo, Component[] allComponents, Rect labelRect, Rect rightRect)
         {
             HierarchyButtonDrawer.Update();
+            Rect useRect = new Rect(rightRect);
+            if (projectConfig != null && projectConfig.gameObjectEnabledChecker)
+            {
+                useRect.xMax -= 18;
+                Rect checkerRect = new Rect(useRect.xMax + 2,  useRect.y, 16, useRect.height);
+                using EditorGUI.ChangeCheckScope changeCheckScope = new EditorGUI.ChangeCheckScope();
+                bool goEnable = EditorGUI.Toggle(checkerRect, originGo.activeSelf);
+                if (changeCheckScope.changed)
+                {
+                    originGo.SetActive(goEnable);
+                }
+            }
 
-            float xLeft = rightRect.x;
-            float xRight = rightRect.xMax;
+            if (projectConfig != null && projectConfig.componentIcons)
+            {
+                List<(Component component, bool canToggle, Texture2D icon)> componentAndIcon = new List<(Component, bool, Texture2D)>(allComponents.Length);
+                bool hasCanvas = false;
+                RectTransform rectTransform = null;
+                foreach (Component component in allComponents)
+                {
+                    switch (component)
+                    {
+                        case Camera:
+                        case Light:
+                        case EventSystem:
+#if SAINTSHIERARCHY_UNITY_RENDER_PIPELINES_CORE
+                        case UnityEngine.Rendering.Volume:
+#endif
+#if SAINTSHIERARCHY_WWISE
+                        case AkInitializer:
+#endif
+                        case CanvasRenderer:
+                            break;
+                        case RectTransform rt:
+                            rectTransform = rt;
+                            break;
+                        case Transform:
+                            break;
+                        case Canvas:
+                            hasCanvas = true;
+                            break;
+                        default:
+                        {
+                            Texture2D icon = EditorGUIUtility.GetIconForObject(component);
+                            if (icon == null)
+                            {
+                                icon = EditorGUIUtility.IconContent($"d_{component.GetType().Name} Icon").image as Texture2D;
+                                if(icon == null)
+                                {
+                                    icon =
+                                        EditorGUIUtility.IconContent($"{component.GetType().Name} Icon")
+                                            .image as Texture2D;
+                                }
+                            }
+
+                            if (icon == null && component is MonoBehaviour mb)
+                            {
+                                MonoScript script = MonoScript.FromMonoBehaviour(mb);
+                                if(script != null)
+                                {
+                                    Texture2D scriptIcon = AssetPreview.GetMiniThumbnail(script);
+                                    if(scriptIcon != null && scriptIcon.name != "d_cs Script Icon")
+                                    {
+                                        icon = scriptIcon;
+                                    }
+                                }
+                            }
+                            if (icon != null)
+                            {
+                                componentAndIcon.Add((component, component is Behaviour, icon));
+                            }
+                        }
+                            break;
+                    }
+                }
+
+                // rectTransform always at end
+                if (!hasCanvas && rectTransform is not null)
+                {
+                    componentAndIcon.Add((rectTransform, false,
+                        EditorGUIUtility.IconContent("d_RectTransform Icon").image as Texture2D));
+                }
+
+                if (componentAndIcon.Count > 0)
+                {
+                    float startX = useRect.xMax -= RowHeight * componentAndIcon.Count;
+                    for (int index = 0; index < componentAndIcon.Count; index++)
+                    {
+                        (Component component, bool canToggle, Texture2D icon) compInfo = componentAndIcon[index];
+                        float x = startX + index * RowHeight;
+                        Rect iconRect = new Rect(x, useRect.y, RowHeight, RowHeight);
+                        if (compInfo.canToggle)
+                        {
+                            Behaviour behavior = (Behaviour)compInfo.component;
+                            if (GUI.Button(iconRect, new GUIContent(compInfo.icon), EditorStyles.iconButton))
+                            {
+                                behavior.enabled = !behavior.enabled;
+                            }
+
+                            if (!behavior.enabled)
+                            {
+                                const float rectScale = 0.7f;
+                                Rect sideNote = new Rect(iconRect.x + iconRect.width * (1 - rectScale), iconRect.y + iconRect.height * (1 - rectScale),
+                                    iconRect.width * rectScale, iconRect.height * rectScale);
+                                // Rect sideNote = iconRect;
+                                using (new GUIColorScoop(Color.black))
+                                {
+                                    GUI.DrawTexture(sideNote, _closePng ?? Util.LoadResource<Texture2D>("close.png"), ScaleMode.StretchToFill, true);
+                                }
+                            }
+
+                        }
+                        else
+                        {
+                            GUI.DrawTexture(iconRect, compInfo.icon,
+                                ScaleMode.ScaleToFit, true);
+                        }
+                    }
+                }
+            }
+
+            float xLeft = useRect.x;
+            float xRight = useRect.xMax;
 
             HierarchyArea hierarchyArea = new HierarchyArea(
-                rightRect.y,
-                rightRect.height,
+                useRect.y,
+                useRect.height,
                 labelRect.x, labelRect.xMax,
-                rightRect.x, rightRect.xMax,
-                rightRect.x, Array.Empty<Rect>());
+                useRect.x, useRect.xMax,
+                useRect.x, Array.Empty<Rect>());
 
             string preLeftGroupBy = null;
             List<Rect> preLeftUsedRects = new List<Rect>();
@@ -707,7 +829,7 @@ namespace SaintsHierarchy.Editor
                                 }
                             }
 
-                            (bool used, var headerUsed) = HierarchyDrawDrawer.Draw(
+                            (bool used, HierarchyUsed headerUsed) = HierarchyDrawDrawer.Draw(
                                 component,
                                 hierarchyArea.EditorWrap(hierarchyDrawAttribute.IsLeft ? xLeft : xRight, usedRects),
                                 renderTargetInfo
