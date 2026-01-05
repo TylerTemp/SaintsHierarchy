@@ -17,6 +17,12 @@ namespace SaintsHierarchy.Editor.Utils
             "Assets/Editor Default Resources/SaintsHierarchy",
             // this is readonly, put it to last so user can easily override it
             "Packages/today.comes.saintshierarchy/Editor/Editor Default Resources/SaintsHierarchy", // Unity UPM
+#if SAINTSHIERARCHY_SAINTSFIELD
+            "Assets/Editor Default Resources/SaintsField",
+            "Assets/SaintsField/Editor/Editor Default Resources/SaintsField",  // unitypackage
+            // this is readonly, put it to last so user  can easily override it
+            "Packages/today.comes.saintsfield/Editor/Editor Default Resources/SaintsField", // Unity UPM
+#endif
         };
 
         public static T LoadResource<T>(string resourcePath) where T: Object

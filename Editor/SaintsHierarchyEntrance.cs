@@ -345,6 +345,11 @@ namespace SaintsHierarchy.Editor
             GUIStyle textColorStyle = EditorStyles.label;
 
             Component[] allComponents = trans.GetComponents<Component>();
+            Texture2D goIcon = EditorGUIUtility.GetIconForObject(originGo);
+            if (goIcon == null)
+            {
+                goIcon = EditorGUIUtility.GetIconForObject(go);
+            }
 
             #region Main Icon
 
@@ -355,6 +360,10 @@ namespace SaintsHierarchy.Editor
             {
                 iconTexture = Util.LoadResource<Texture2D>(goConfig.icon);
                 // customIcon = goConfig.icon;
+            }
+            else if (goIcon != null && !goIcon.name.StartsWith("sv_label_"))
+            {
+                iconTexture = goIcon;
             }
             else
             {
@@ -447,8 +456,51 @@ namespace SaintsHierarchy.Editor
             };
 
             GUIContent content = new GUIContent(trans.name);
-            EditorGUI.LabelField(labelRect, content, textColorStyle);
             float labelWidth = textColorStyle.CalcSize(content).x;
+
+            if (goIcon != null && goIcon.name.StartsWith("sv_label_"))
+            {
+                Color labelColor = goIcon.name switch
+                {
+                    "sv_label_0" => new Color32(140, 140, 140, 255),
+                    "sv_label_1" => new Color32(70, 119, 202, 255),
+                    "sv_label_2" => new Color32(65, 184, 161, 255),
+                    "sv_label_3" => new Color32(48, 188, 47, 255),
+                    "sv_label_4" => new Color32(234, 206, 43, 255),
+                    "sv_label_5" => new Color32(229, 135, 35, 255),
+                    "sv_label_6" => new Color32(204, 39, 39, 255),
+                    "sv_label_7" => new Color32(187, 72, 170, 255),
+                    _ => Color.clear,
+                };
+                // Debug.Log(goIcon.name);
+                EditorGUI.DrawRect(new Rect(labelRect)
+                {
+                    y = labelRect.yMax - 1,
+                    height = 1,
+                    width = labelWidth,
+                }, labelColor);
+
+                // GUI.DrawTexture(new Rect(labelRect)
+                // {
+                //     width = labelWidth,
+                // },goIcon, ScaleMode.StretchToFill, true);
+
+                // GUIStyle style = new GUIStyle();
+                // style.normal.background = goIcon;
+                // const int border = 6;
+                // style.border = new RectOffset(border, border, border, border); // left, right, top, bottom
+                //
+                // GUI.Box(new Rect(labelRect)
+                // {
+                //     x = labelRect.x - 4,
+                //     y = labelRect.y - 1,
+                //     width = labelWidth + 8,
+                //     height = labelRect.height + 2,
+                // }, GUIContent.none, style);
+            }
+
+
+            EditorGUI.LabelField(labelRect, content, textColorStyle);
             #endregion
 
             #region disabled

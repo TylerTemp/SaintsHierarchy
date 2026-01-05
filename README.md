@@ -240,10 +240,3 @@ private HierarchyUsed DrawRight1G2(HierarchyArea headerArea)
 ## Config ##
 
 `Window`-`Saints`-`Disable Saints Hierarchy` to disable this plugin
-
-## TODO ##
-
-- [x] Background Color
-- [ ] Background Strip Color
-- [x] Component Icon Support
-- [x] Script controll of what to draw
