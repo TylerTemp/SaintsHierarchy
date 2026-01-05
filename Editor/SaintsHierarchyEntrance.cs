@@ -29,6 +29,7 @@ namespace SaintsHierarchy.Editor
         private const int IndentOffset = 14;
         private const int LeftStartX = 32;
         private const int PrefabExpandWidth = 16;
+        private const int RowHeight = 16;
 
 //         private static int? _selectedInstance;
 //
@@ -49,9 +50,11 @@ namespace SaintsHierarchy.Editor
 //         }
 
         private static readonly Color TreeColor = new Color(0.4f, 0.4f, 0.4f);
+        private static Texture2D _colorStripTex;
 
         private static void OnHierarchyGUI(int instanceID, Rect selectionRect)
         {
+            // Debug.Log(selectionRect.y);
             SaintsHierarchyConfig projectConfig = Util.EnsureConfig();
             if (projectConfig == null || projectConfig.disabled)
             {
@@ -79,6 +82,7 @@ namespace SaintsHierarchy.Editor
 
             // Debug.Log($"insId:  {instanceID} obj: {go.name}");
 
+            int rowIndex = Mathf.RoundToInt(selectionRect.y) / RowHeight;
             Rect fullRect = new Rect(selectionRect)
             {
                 x = LeftStartX,
@@ -170,7 +174,6 @@ namespace SaintsHierarchy.Editor
                 return;
             }
 
-            Color bgColor;
             Color bgDefaultColor;
             switch (bgStatus)
             {
@@ -189,37 +192,75 @@ namespace SaintsHierarchy.Editor
                 default:
                     throw new ArgumentOutOfRangeException(nameof(bgStatus), bgStatus, null);
             }
-            if (goConfig.hasColor)
+            EditorGUI.DrawRect(fullRect, bgDefaultColor);
+            if(projectConfig.backgroundStrip)
             {
-                Color oriColor = goConfig.color;
-                switch (bgStatus)
+                bool needLight = (rowIndex + 1) % 2 == 0;
+                if (needLight)
                 {
-                    case SelectStatus.Normal:
-                        bgColor = new Color(oriColor.r, oriColor.g, oriColor.b, oriColor.a * 0.7f);
-                        break;
-                    case SelectStatus.NormalHover:
-                        bgColor = new Color(oriColor.r, oriColor.g, oriColor.b, oriColor.a * 0.8f);
-                        break;
-                    case SelectStatus.SelectFocus:
-                    case SelectStatus.SelectUnfocus:
-                        bgColor = oriColor;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(bgStatus), bgStatus, null);
+                    EditorGUI.DrawRect(fullRect, ColorStripedLight);
                 }
             }
-            else
-            {
-                bgColor = bgDefaultColor;
-            }
-
             if (goConfig.hasColor)
             {
                 // cover the alpha, to override Unity's default drawing
                 // EditorGUI.DrawRect(fullRect, bgDefaultColor);
-                EditorGUI.DrawRect(fullRect, bgDefaultColor);
+                // EditorGUI.DrawRect(fullRect, bgDefaultColor);
+                _colorStripTex ??= Util.LoadResource<Texture2D>("color-strip.psd");
+                // var tex = Tex.ApplyTextureColor(_colorStripTex, bgColor);
+                using(new GUIColorScoop(goConfig.color))
+                {
+                    GUI.DrawTexture(fullRect, _colorStripTex, ScaleMode.StretchToFill, true);
+                }
             }
-            EditorGUI.DrawRect(fullRect, bgColor);
+            // if (goConfig.hasColor)
+            // {
+            //     Color oriColor = goConfig.color;
+            //     switch (bgStatus)
+            //     {
+            //         case SelectStatus.Normal:
+            //             bgColor = new Color(oriColor.r, oriColor.g, oriColor.b, oriColor.a * 0.7f);
+            //             break;
+            //         case SelectStatus.NormalHover:
+            //             bgColor = new Color(oriColor.r, oriColor.g, oriColor.b, oriColor.a * 0.8f);
+            //             break;
+            //         case SelectStatus.SelectFocus:
+            //         case SelectStatus.SelectUnfocus:
+            //             bgColor = oriColor;
+            //             break;
+            //         default:
+            //             throw new ArgumentOutOfRangeException(nameof(bgStatus), bgStatus, null);
+            //     }
+            // }
+            // else
+            // {
+            //     bgColor = bgDefaultColor;
+            // }
+
+            // if (goConfig.hasColor)
+            // {
+            //     // cover the alpha, to override Unity's default drawing
+            //     // EditorGUI.DrawRect(fullRect, bgDefaultColor);
+            //     EditorGUI.DrawRect(fullRect, bgDefaultColor);
+            //     _colorStripTex ??= Util.LoadResource<Texture2D>("color-strip.psd");
+            //     // var tex = Tex.ApplyTextureColor(_colorStripTex, bgColor);
+            //     using(new GUIColorScoop(bgColor))
+            //     {
+            //         GUI.DrawTexture(fullRect, _colorStripTex, ScaleMode.StretchToFill, true);
+            //     }
+            // }
+            // else
+            // {
+            //     EditorGUI.DrawRect(fullRect, bgColor);
+            // }
+            // if(!goConfig.hasColor && projectConfig.backgroundStrip)
+            // {
+            //     bool needLight = rowIndex != 0 && rowIndex % 2 == 0;
+            //     if (needLight)
+            //     {
+            //         EditorGUI.DrawRect(fullRect, ColorStripedLight);
+            //     }
+            // }
 
             bool hasFoldout = trans.childCount >= 1;
             bool thisExpand = false;
@@ -420,7 +461,7 @@ namespace SaintsHierarchy.Editor
                 //     // EditorGUI.DrawRect(fullRect, bgDefaultColor);
                 //     // EditorGUI.DrawRect(fullRect, new Color(bgDefaultColor.r));
                 // }
-                EditorGUI.DrawRect(fullRect, new Color(bgColor.r, bgColor.g, bgColor.b, 0.5f));
+                EditorGUI.DrawRect(fullRect, new Color(bgDefaultColor.r, bgDefaultColor.g, bgDefaultColor.b, 0.5f));
             }
 
             #endregion
@@ -1217,6 +1258,7 @@ namespace SaintsHierarchy.Editor
         private static readonly Color ColorSelectUnfocus = new Color(.3f, .3f, .3f);
         private static readonly Color ColorNormal = new Color(0.22f, 0.22f, 0.22f);
         private static readonly Color ColorHover = new Color(.265f, .265f, .265f);
+        private static readonly Color ColorStripedLight = new Color(1f, 1f, 1f, 0.025f);
 
         private static void DrawIndentDepth(Rect drawIndent, int inherentDepth, Transform trans)
         {

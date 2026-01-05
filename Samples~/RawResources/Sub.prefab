@@ -40,7 +40,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 452742264528776470}
-  - component: {fileID: 1312224231935392169}
   m_Layer: 0
   m_Name: Sub
   m_TagString: Untagged
@@ -66,18 +65,6 @@ Transform:
   - {fileID: 2716216114366110914}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1312224231935392169
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3489635119547418333}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f49d27f10a52ed418b884a350774441, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: SaintsHierarchy.Samples::SaintsHierarchy.Samples.Scripts.RightDrawExample
 --- !u!1 &4949859103003513039
 GameObject:
   m_ObjectHideFlags: 0

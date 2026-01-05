@@ -169,6 +169,7 @@ namespace SaintsHierarchy.Editor
                 {
                     presetColorButton.SetSelected(false);
                 }
+                EditorApplication.RepaintHierarchyWindow();
             });
 
 #if !UNITY_6000_3_OR_NEWER

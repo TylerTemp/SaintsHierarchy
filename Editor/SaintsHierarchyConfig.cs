@@ -23,6 +23,7 @@ namespace SaintsHierarchy.Editor
         }
 
         public bool disabled;
+        public bool backgroundStrip;
 
         public List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList = new List<SceneGuidToGoConfigs>();
     }
