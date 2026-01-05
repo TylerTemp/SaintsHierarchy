@@ -35,7 +35,7 @@ namespace SaintsHierarchy.Editor.Draw
 
         public override int GetHashCode()
         {
-            return  HashCode.Combine(RawContent, IsIcon, Content, IconColor);
+            return HashCode.Combine(RawContent, IsIcon, Content, IconColor);
         }
     }
 }

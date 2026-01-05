@@ -13,7 +13,7 @@ namespace SaintsHierarchy.Editor.Draw
     {
         private static readonly Dictionary<string, IReadOnlyList<RichTextChunk>> ParsedXmlCache = new Dictionary<string, IReadOnlyList<RichTextChunk>>();
 
-        private static string GetLabelName(object target, RenderTargetInfo renderTargetInfo)
+        private static string GetLabelName(RenderTargetInfo renderTargetInfo)
         {
             switch (renderTargetInfo.MemberType)
             {
@@ -40,7 +40,7 @@ namespace SaintsHierarchy.Editor.Draw
         public static (bool used, HierarchyUsed headerUsed) Draw(object target, HierarchyArea headerArea, HierarchyLabelAttribute headerLabelAttribute, RenderTargetInfo renderTargetInfo)
         {
             string rawLabel;
-            string labelName = GetLabelName(target, renderTargetInfo);
+            string labelName = GetLabelName(renderTargetInfo);
 
             if (string.IsNullOrEmpty(headerLabelAttribute.Label))
             {
