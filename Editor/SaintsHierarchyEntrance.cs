@@ -123,7 +123,12 @@ namespace SaintsHierarchy.Editor
                 {
                     // Debug.Log(prefab.name);
                     // Debug.Log(prefab.transform);
-                    newGo = prefab.transform.Find(absPath).gameObject;
+                    Transform reTarget = prefab.transform.Find(absPath);
+                    if (reTarget == null)
+                    {
+                        return;
+                    }
+                    newGo = reTarget.gameObject;
                 }
                 Debug.Assert(newGo != null, absPath);
                 go = newGo;
