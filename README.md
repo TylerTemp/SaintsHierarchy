@@ -14,9 +14,9 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ## Config ##
 
-`Window` - `Saints` - `Hierarchy` - `Disable Saints Hierarchy` to disable this plugin
-
 This will automaticlly add indent tree, and icon for camera, light, canvas, event system, wwise
+
+`Window` - `Saints` - `Hierarchy` - `Disable Saints Hierarchy` to disable this plugin
 
 ![](https://github.com/user-attachments/assets/f9b3f079-0a7e-46c6-91b2-2ef83f9feff2)
 
@@ -28,6 +28,8 @@ This will automaticlly add indent tree, and icon for camera, light, canvas, even
 
 ### Component Icons ###
 
+`Window` - `Saints` - `Hierarchy` - `Component Icons`
+
 You can set the script icon and show the icons at the end of row
 
 Setup:
@@ -38,6 +40,13 @@ Result:
 
 ![](https://github.com/user-attachments/assets/423da9d8-1282-4d53-8ba9-d4bb4a83bdc6)
 
+### GameObject Enabled Checker ###
+
+`Window` - `Saints` - `Hierarchy` - `GameObject Enabled Checker`
+
+Add a checkbox for each gameObject at the end to toggle it's enable status. This is useful when a parent object is disabled
+
+![](https://github.com/user-attachments/assets/7153ce80-6031-456b-ba54-ca699f0beb61)
 
 ## Usage ##
 

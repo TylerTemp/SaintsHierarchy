@@ -216,11 +216,22 @@ namespace SaintsHierarchy.Editor.Utils
                 }
             }
 
+            if (openTag.Count > 0)
+            {
+                openTag.Reverse();
+                foreach (RuntimeUtil.RichTextParsedChunk parsedChunk in openTag)
+                {
+                    richText.Append($"</{parsedChunk.TagName}>");
+                }
+            }
+
             string richTextFinal = richText.ToString();
             if (richTextFinal != "")
             {
                 yield return new RichTextChunk(richTextFinal, false, richTextFinal);
             }
+
+
         }
 
         public static string TagStringFormatter(object finalValue, string parsedResultValue)
