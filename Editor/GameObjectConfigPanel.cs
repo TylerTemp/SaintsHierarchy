@@ -127,7 +127,7 @@ namespace SaintsHierarchy.Editor
 
         private static Texture2D _closeIcon;
 
-        public GameObjectConfigPanel(GameObject go, SaintsHierarchyConfig.GameObjectConfig goConfig)
+        public GameObjectConfigPanel(GameObject go, GameObjectConfig goConfig)
         {
             _gameObjectConfigTemplate ??= Util.LoadResource<VisualTreeAsset>("UIToolkit/GameObjectConfig.uxml");
             TemplateContainer root = _gameObjectConfigTemplate.CloneTree();
@@ -279,7 +279,7 @@ namespace SaintsHierarchy.Editor
         private void SetIcon(GameObject go, string iconPath)
         {
             bool needRemoveIcon = string.IsNullOrEmpty(iconPath);
-            SaintsHierarchyConfig config = Util.EnsureConfig();
+            // SaintsHierarchyConfig config = Util.EnsureConfig();
 
             string scenePath = go.scene.path;
             if (string.IsNullOrEmpty(scenePath))
@@ -294,13 +294,19 @@ namespace SaintsHierarchy.Editor
 
             int foundSceneIndex = -1;
             int sceneIndex = 0;
-            foreach (SaintsHierarchyConfig.SceneGuidToGoConfigs sceneGuidToGoConfig in config.sceneGuidToGoConfigsList)
+
+            bool personalDisabled = !PersonalHierarchyConfig.instance.personalEnabled;
+            List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList = (PersonalHierarchyConfig.instance.personalEnabled
+                ? PersonalHierarchyConfig.instance.sceneGuidToGoConfigsList
+                : SaintsHierarchyConfig.instance.sceneGuidToGoConfigsList);
+
+            foreach (SceneGuidToGoConfigs sceneGuidToGoConfig in sceneGuidToGoConfigsList)
             {
                 if (sceneGuidToGoConfig.sceneGuid == sceneGuid)
                 {
                     foundSceneIndex = sceneIndex;
                     int gameObjectIndex = 0;
-                    foreach (SaintsHierarchyConfig.GameObjectConfig gameObjectConfig in sceneGuidToGoConfig.configs)
+                    foreach (GameObjectConfig gameObjectConfig in sceneGuidToGoConfig.configs)
                     {
                         if (gameObjectConfig.globalObjectIdString == goIdString)
                         {
@@ -313,7 +319,8 @@ namespace SaintsHierarchy.Editor
                                 sceneGuidToGoConfig.configs[gameObjectIndex] =
                                     MakeGameObjectConfig(gameObjectConfig, iconPath);
                             }
-                            EditorUtility.SetDirty(config);
+
+                            EditorUtility.SetDirty(personalDisabled? SaintsHierarchyConfig.instance: PersonalHierarchyConfig.instance);
                             NeedCloseEvent.Invoke(true);
                             return;
                         }
@@ -332,17 +339,19 @@ namespace SaintsHierarchy.Editor
                 return;
             }
 
-            SaintsHierarchyConfig.GameObjectConfig newConfig = MakeGameObjectConfig(new SaintsHierarchyConfig.GameObjectConfig
+            GameObjectConfig newConfig = MakeGameObjectConfig(new GameObjectConfig
             {
                 globalObjectIdString = goIdString,
             }, iconPath);
+
+            EditorUtility.SetDirty(personalDisabled? SaintsHierarchyConfig.instance: PersonalHierarchyConfig.instance);
             if (foundSceneIndex == -1)
             {
-                EditorUtility.SetDirty(config);
-                config.sceneGuidToGoConfigsList.Add(new SaintsHierarchyConfig.SceneGuidToGoConfigs
+
+                sceneGuidToGoConfigsList.Add(new SceneGuidToGoConfigs
                 {
                     sceneGuid = sceneGuid,
-                    configs = new List<SaintsHierarchyConfig.GameObjectConfig>
+                    configs = new List<GameObjectConfig>
                     {
                         newConfig,
                     },
@@ -351,9 +360,17 @@ namespace SaintsHierarchy.Editor
 
             else
             {
-                SaintsHierarchyConfig.SceneGuidToGoConfigs targetList = config.sceneGuidToGoConfigsList[foundSceneIndex];
-                EditorUtility.SetDirty(config);
+                SceneGuidToGoConfigs targetList = sceneGuidToGoConfigsList[foundSceneIndex];
                 targetList.configs.Add(newConfig);
+            }
+
+            if (personalDisabled)
+            {
+                SaintsHierarchyConfig.instance.SaveToDisk();
+            }
+            else
+            {
+                PersonalHierarchyConfig.instance.SaveToDisk();
             }
 
             NeedCloseEvent.Invoke(true);
@@ -361,7 +378,10 @@ namespace SaintsHierarchy.Editor
 
         private void SetColor(GameObject go, bool hasColor, Color color, bool needClose)
         {
-            SaintsHierarchyConfig config = Util.EnsureConfig();
+            bool personalDisabled = !PersonalHierarchyConfig.instance.personalEnabled;
+            List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList = personalDisabled
+                ? SaintsHierarchyConfig.instance.sceneGuidToGoConfigsList
+                : PersonalHierarchyConfig.instance.sceneGuidToGoConfigsList;
 
             string scenePath = go.scene.path;
             if (string.IsNullOrEmpty(scenePath))
@@ -376,13 +396,13 @@ namespace SaintsHierarchy.Editor
 
             int foundSceneIndex = -1;
             int sceneIndex = 0;
-            foreach (SaintsHierarchyConfig.SceneGuidToGoConfigs sceneGuidToGoConfig in config.sceneGuidToGoConfigsList)
+            foreach (SceneGuidToGoConfigs sceneGuidToGoConfig in sceneGuidToGoConfigsList)
             {
                 if (sceneGuidToGoConfig.sceneGuid == sceneGuid)
                 {
                     foundSceneIndex = sceneIndex;
                     int gameObjectIndex = 0;
-                    foreach (SaintsHierarchyConfig.GameObjectConfig gameObjectConfig in sceneGuidToGoConfig.configs)
+                    foreach (GameObjectConfig gameObjectConfig in sceneGuidToGoConfig.configs)
                     {
                         if (gameObjectConfig.globalObjectIdString == goIdString)
                         {
@@ -395,7 +415,7 @@ namespace SaintsHierarchy.Editor
                                 sceneGuidToGoConfig.configs[gameObjectIndex] =
                                     MakeGameObjectColorConfig(gameObjectConfig, hasColor, color);
                             }
-                            EditorUtility.SetDirty(config);
+                            EditorUtility.SetDirty(personalDisabled? SaintsHierarchyConfig.instance: PersonalHierarchyConfig.instance);
                             if(needClose)
                             {
                                 NeedCloseEvent.Invoke(true);
@@ -417,28 +437,36 @@ namespace SaintsHierarchy.Editor
                 return;
             }
 
-            SaintsHierarchyConfig.GameObjectConfig newConfig = MakeGameObjectColorConfig(new SaintsHierarchyConfig.GameObjectConfig
+            GameObjectConfig newConfig = MakeGameObjectColorConfig(new GameObjectConfig
             {
                 globalObjectIdString = goIdString,
             }, true, color);
             if (foundSceneIndex == -1)
             {
-                EditorUtility.SetDirty(config);
-                config.sceneGuidToGoConfigsList.Add(new SaintsHierarchyConfig.SceneGuidToGoConfigs
+                EditorUtility.SetDirty(personalDisabled? SaintsHierarchyConfig.instance: PersonalHierarchyConfig.instance);
+                sceneGuidToGoConfigsList.Add(new SceneGuidToGoConfigs
                 {
                     sceneGuid = sceneGuid,
-                    configs = new List<SaintsHierarchyConfig.GameObjectConfig>
+                    configs = new List<GameObjectConfig>
                     {
                         newConfig,
                     },
                 });
             }
-
             else
             {
-                SaintsHierarchyConfig.SceneGuidToGoConfigs targetList = config.sceneGuidToGoConfigsList[foundSceneIndex];
-                EditorUtility.SetDirty(config);
+                SceneGuidToGoConfigs targetList = sceneGuidToGoConfigsList[foundSceneIndex];
+                EditorUtility.SetDirty(personalDisabled? SaintsHierarchyConfig.instance: PersonalHierarchyConfig.instance);
                 targetList.configs.Add(newConfig);
+            }
+
+            if (personalDisabled)
+            {
+                SaintsHierarchyConfig.instance.SaveToDisk();
+            }
+            else
+            {
+                PersonalHierarchyConfig.instance.SaveToDisk();
             }
 
             if(needClose)
@@ -447,9 +475,9 @@ namespace SaintsHierarchy.Editor
             }
         }
 
-        private static SaintsHierarchyConfig.GameObjectConfig MakeGameObjectColorConfig(SaintsHierarchyConfig.GameObjectConfig gameObjectConfig, bool hasColor, Color color)
+        private static GameObjectConfig MakeGameObjectColorConfig(GameObjectConfig gameObjectConfig, bool hasColor, Color color)
         {
-            return new SaintsHierarchyConfig.GameObjectConfig
+            return new GameObjectConfig
             {
                 globalObjectIdString = gameObjectConfig.globalObjectIdString,
                 icon = gameObjectConfig.icon,
@@ -459,9 +487,9 @@ namespace SaintsHierarchy.Editor
         }
 
 
-        private static SaintsHierarchyConfig.GameObjectConfig MakeGameObjectConfig(SaintsHierarchyConfig.GameObjectConfig gameObjectConfig, string iconPath)
+        private static GameObjectConfig MakeGameObjectConfig(GameObjectConfig gameObjectConfig, string iconPath)
         {
-            return new SaintsHierarchyConfig.GameObjectConfig
+            return new GameObjectConfig
             {
                 globalObjectIdString = gameObjectConfig.globalObjectIdString,
                 icon = iconPath,

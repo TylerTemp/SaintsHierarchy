@@ -10,12 +10,12 @@ namespace SaintsHierarchy.Editor
         public struct RuntimeConfig
         {
             public int instanceId;
-            public SaintsHierarchyConfig.GameObjectConfig config;
+            public GameObjectConfig config;
         }
 
         public List<RuntimeConfig> configs = new List<RuntimeConfig>();
 
-        public void Upsert(int instanceId, SaintsHierarchyConfig.GameObjectConfig config)
+        public void Upsert(int instanceId, GameObjectConfig config)
         {
             int index = -1;
             for (int searchIndex = 0; searchIndex < configs.Count; searchIndex++)
@@ -44,7 +44,7 @@ namespace SaintsHierarchy.Editor
             }
         }
 
-        public (bool found, SaintsHierarchyConfig.GameObjectConfig config) Search(int instanceId)
+        public (bool found, GameObjectConfig config) Search(int instanceId)
         {
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
             foreach (RuntimeConfig runtimeConfig in configs)

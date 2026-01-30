@@ -64,39 +64,39 @@ namespace SaintsHierarchy.Editor.Utils
 
         private static SaintsHierarchyConfig _config;
 
-        public static SaintsHierarchyConfig EnsureConfig()
-        {
-            // ReSharper disable once InvertIf
-            if (_config == null)
-            {
-                if (!Directory.Exists("Assets/Editor Default Resources"))
-                {
-                    Debug.Log("Create folder: Assets/Editor Default Resources");
-                    AssetDatabase.CreateFolder("Assets", "Editor Default Resources");
-                }
-                if (!Directory.Exists("Assets/Editor Default Resources/SaintsHierarchy"))
-                {
-                    Debug.Log("Create folder: Assets/Editor Default Resources/SaintsHierarchy");
-                    AssetDatabase.CreateFolder("Assets/Editor Default Resources", "SaintsHierarchy");
-                }
+        // public static SaintsHierarchyConfig EnsureConfig()
+        // {
+        //     // ReSharper disable once InvertIf
+        //     if (_config == null)
+        //     {
+        //         if (!Directory.Exists("Assets/Editor Default Resources"))
+        //         {
+        //             Debug.Log("Create folder: Assets/Editor Default Resources");
+        //             AssetDatabase.CreateFolder("Assets", "Editor Default Resources");
+        //         }
+        //         if (!Directory.Exists("Assets/Editor Default Resources/SaintsHierarchy"))
+        //         {
+        //             Debug.Log("Create folder: Assets/Editor Default Resources/SaintsHierarchy");
+        //             AssetDatabase.CreateFolder("Assets/Editor Default Resources", "SaintsHierarchy");
+        //         }
+        //
+        //         const string assetPath =
+        //             "Assets/Editor Default Resources/SaintsHierarchy/SaintsHierarchyConfig.asset";
+        //         _config = AssetDatabase.LoadAssetAtPath<SaintsHierarchyConfig>(assetPath);
+        //         // ReSharper disable once InvertIf
+        //         if (_config == null && !File.Exists(assetPath))
+        //         {
+        //             _config = ScriptableObject.CreateInstance<SaintsHierarchyConfig>();
+        //             Debug.Log("Create SaintsHierarchyConfig");
+        //             AssetDatabase.CreateAsset(_config,
+        //                 assetPath);
+        //         }
+        //     }
+        //
+        //     return _config;
+        // }
 
-                const string assetPath =
-                    "Assets/Editor Default Resources/SaintsHierarchy/SaintsHierarchyConfig.asset";
-                _config = AssetDatabase.LoadAssetAtPath<SaintsHierarchyConfig>(assetPath);
-                // ReSharper disable once InvertIf
-                if (_config == null && !File.Exists(assetPath))
-                {
-                    _config = ScriptableObject.CreateInstance<SaintsHierarchyConfig>();
-                    Debug.Log("Create SaintsHierarchyConfig");
-                    AssetDatabase.CreateAsset(_config,
-                        assetPath);
-                }
-            }
-
-            return _config;
-        }
-
-        public static void PopupConfig(Rect worldBound, GameObject go, SaintsHierarchyConfig.GameObjectConfig goConfig)
+        public static void PopupConfig(Rect worldBound, GameObject go, GameObjectConfig goConfig)
         {
             PopupWindow.Show(worldBound, new GameObjectConfigPopup(go, goConfig));
         }

@@ -4,10 +4,11 @@ using UnityEngine;
 
 namespace SaintsHierarchy.Editor
 {
-    [FilePath("Assets/Editor Default Resources/SaintsHierarchy/SaintsHierarchyConfig.asset", FilePathAttribute.Location.ProjectFolder)]
-
-    public class SaintsHierarchyConfig: ScriptableSingleton<SaintsHierarchyConfig>
+    [FilePath("Library/PersonalHierarchyConfig.asset", FilePathAttribute.Location.ProjectFolder)]
+    public class PersonalHierarchyConfig: ScriptableSingleton<PersonalHierarchyConfig>
     {
+        public bool personalEnabled;
+
         public bool disabled;
         public bool backgroundStrip;
         public bool gameObjectEnabledChecker;

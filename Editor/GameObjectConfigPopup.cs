@@ -6,9 +6,9 @@ namespace SaintsHierarchy.Editor
     public class GameObjectConfigPopup: PopupWindowContent
     {
         private readonly GameObject _go;
-        private readonly SaintsHierarchyConfig.GameObjectConfig _goConfig;
+        private readonly GameObjectConfig _goConfig;
 
-        public GameObjectConfigPopup(GameObject go, SaintsHierarchyConfig.GameObjectConfig goConfig)
+        public GameObjectConfigPopup(GameObject go, GameObjectConfig goConfig)
         {
             _go = go;
             _goConfig = goConfig;

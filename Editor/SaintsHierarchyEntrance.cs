@@ -55,11 +55,7 @@ namespace SaintsHierarchy.Editor
         private static void OnHierarchyGUI(int instanceID, Rect selectionRect)
         {
             // Debug.Log(selectionRect.y);
-            SaintsHierarchyConfig projectConfig = Util.EnsureConfig();
-            if (projectConfig == null || projectConfig.disabled)
-            {
-                return;
-            }
+            bool personalDisabled = !PersonalHierarchyConfig.instance.personalEnabled;
 
             // Get the object corresponding to the ID
             Object obj = EditorUtility.
@@ -135,10 +131,10 @@ namespace SaintsHierarchy.Editor
                 // Debug.Log($"popup re-id: {GlobalObjectId.GetGlobalObjectIdSlow(targetGo)}");
             }
 
-            SaintsHierarchyConfig.GameObjectConfig goConfig;
+            GameObjectConfig goConfig;
             if (EditorApplication.isPlayingOrWillChangePlaymode)
             {
-                (bool runtimeFound, SaintsHierarchyConfig.GameObjectConfig runtimeConfig) = RuntimeCacheConfig.instance.Search(instanceID);
+                (bool runtimeFound, GameObjectConfig runtimeConfig) = RuntimeCacheConfig.instance.Search(instanceID);
                 // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
                 if (runtimeFound)
                 {
@@ -198,7 +194,9 @@ namespace SaintsHierarchy.Editor
                     throw new ArgumentOutOfRangeException(nameof(bgStatus), bgStatus, null);
             }
             EditorGUI.DrawRect(fullRect, bgDefaultColor);
-            if(projectConfig.backgroundStrip)
+            if(personalDisabled
+                   ? SaintsHierarchyConfig.instance.backgroundStrip
+                   : PersonalHierarchyConfig.instance.backgroundStrip)
             {
                 bool needLight = (rowIndex + 1) % 2 == 0;
                 if (needLight)
@@ -315,7 +313,7 @@ namespace SaintsHierarchy.Editor
                 Color useColor = TreeColor;
                 if (parentTrans != null)
                 {
-                    SaintsHierarchyConfig.GameObjectConfig config = GetGameObjectConfig(parentTrans.gameObject).config;
+                    GameObjectConfig config = GetGameObjectConfig(parentTrans.gameObject).config;
                     if (config.hasColor)
                     {
                         useColor = config.color;
@@ -531,7 +529,15 @@ namespace SaintsHierarchy.Editor
                 xMax = selectionRect.xMax,
             };
             // EditorGUI.DrawRect(rightRect, Color.blueViolet);
-            DrawRect(projectConfig, originGo, allComponents, new Rect(labelRect)
+            bool gameObjectEnabledChecker = personalDisabled
+                ? SaintsHierarchyConfig.instance.gameObjectEnabledChecker
+                : PersonalHierarchyConfig.instance.gameObjectEnabledChecker;
+
+            bool componentIcons = personalDisabled
+                ? SaintsHierarchyConfig.instance.componentIcons
+                : PersonalHierarchyConfig.instance.componentIcons;
+
+            DrawRect(gameObjectEnabledChecker, componentIcons, originGo, allComponents, new Rect(labelRect)
             {
                 width = labelWidth,
             }, rightRect);
@@ -594,11 +600,26 @@ namespace SaintsHierarchy.Editor
 
         private static Texture2D _closePng;
 
-        private static void DrawRect(SaintsHierarchyConfig projectConfig, GameObject originGo, Component[] allComponents, Rect labelRect, Rect rightRect)
+        private static bool AnyParentDisabled(GameObject go)
+        {
+            Transform parent = go.transform.parent;
+            while (parent != null)
+            {
+                if (!parent.gameObject.activeSelf)
+                {
+                    return true;
+                }
+                parent = parent.parent;
+            }
+
+            return false;
+        }
+
+        private static void DrawRect(bool gameObjectEnabledChecker, bool componentIcons, GameObject originGo, Component[] allComponents, Rect labelRect, Rect rightRect)
         {
             HierarchyButtonDrawer.Update();
             Rect useRect = new Rect(rightRect);
-            if (projectConfig != null && projectConfig.gameObjectEnabledChecker)
+            if (gameObjectEnabledChecker && AnyParentDisabled(originGo))
             {
                 useRect.xMax -= 18;
                 Rect checkerRect = new Rect(useRect.xMax + 2,  useRect.y, 16, useRect.height);
@@ -610,7 +631,7 @@ namespace SaintsHierarchy.Editor
                 }
             }
 
-            if (projectConfig != null && projectConfig.componentIcons)
+            if (componentIcons)
             {
                 List<(Component component, bool canToggle, Texture2D icon)> componentAndIcon = new List<(Component, bool, Texture2D)>(allComponents.Length);
                 bool hasCanvas = false;
@@ -640,15 +661,30 @@ namespace SaintsHierarchy.Editor
                             break;
                         default:
                         {
+                            if (component == null)
+                            {
+                                break;
+                            }
+
                             Texture2D icon = EditorGUIUtility.GetIconForObject(component);
                             if (icon == null)
                             {
-                                icon = EditorGUIUtility.IconContent($"d_{component.GetType().Name} Icon").image as Texture2D;
-                                if(icon == null)
+                                using(new DisableUnityLogScoop())
                                 {
                                     icon =
-                                        EditorGUIUtility.IconContent($"{component.GetType().Name} Icon")
-                                            .image as Texture2D;
+                                        EditorGUIUtility.IconContent($"d_{component.GetType().Name} Icon")
+                                            ?.image as Texture2D;
+                                }
+
+
+                                if(icon == null)
+                                {
+                                    using(new DisableUnityLogScoop())
+                                    {
+                                        icon =
+                                            EditorGUIUtility.IconContent($"{component.GetType().Name} Icon")
+                                                ?.image as Texture2D;
+                                    }
                                 }
                             }
 
@@ -688,32 +724,34 @@ namespace SaintsHierarchy.Editor
                         (Component component, bool canToggle, Texture2D icon) compInfo = componentAndIcon[index];
                         float x = startX + index * RowHeight;
                         Rect iconRect = new Rect(x, useRect.y, RowHeight, RowHeight);
-                        if (compInfo.canToggle)
-                        {
-                            Behaviour behavior = (Behaviour)compInfo.component;
-                            if (GUI.Button(iconRect, new GUIContent(compInfo.icon), EditorStyles.iconButton))
-                            {
-                                behavior.enabled = !behavior.enabled;
-                            }
-
-                            if (!behavior.enabled)
-                            {
-                                const float rectScale = 0.7f;
-                                Rect sideNote = new Rect(iconRect.x + iconRect.width * (1 - rectScale), iconRect.y + iconRect.height * (1 - rectScale),
-                                    iconRect.width * rectScale, iconRect.height * rectScale);
-                                // Rect sideNote = iconRect;
-                                using (new GUIColorScoop(Color.black))
-                                {
-                                    GUI.DrawTexture(sideNote, _closePng ?? Util.LoadResource<Texture2D>("close.png"), ScaleMode.StretchToFill, true);
-                                }
-                            }
-
-                        }
-                        else
-                        {
-                            GUI.DrawTexture(iconRect, compInfo.icon,
-                                ScaleMode.ScaleToFit, true);
-                        }
+                        GUI.DrawTexture(iconRect, compInfo.icon,
+                            ScaleMode.ScaleToFit, true);
+                        // if (compInfo.canToggle)
+                        // {
+                        //     Behaviour behavior = (Behaviour)compInfo.component;
+                        //     if (GUI.Button(iconRect, new GUIContent(compInfo.icon), EditorStyles.iconButton))
+                        //     {
+                        //         behavior.enabled = !behavior.enabled;
+                        //     }
+                        //
+                        //     if (!behavior.enabled)
+                        //     {
+                        //         const float rectScale = 0.7f;
+                        //         Rect sideNote = new Rect(iconRect.x + iconRect.width * (1 - rectScale), iconRect.y + iconRect.height * (1 - rectScale),
+                        //             iconRect.width * rectScale, iconRect.height * rectScale);
+                        //         // Rect sideNote = iconRect;
+                        //         using (new GUIColorScoop(Color.black))
+                        //         {
+                        //             GUI.DrawTexture(sideNote, _closePng ?? Util.LoadResource<Texture2D>("close.png"), ScaleMode.StretchToFill, true);
+                        //         }
+                        //     }
+                        //
+                        // }
+                        // else
+                        // {
+                        //     GUI.DrawTexture(iconRect, compInfo.icon,
+                        //         ScaleMode.ScaleToFit, true);
+                        // }
                     }
                 }
             }
@@ -1070,7 +1108,7 @@ namespace SaintsHierarchy.Editor
             return names;
         }
 
-        private static (bool found, SaintsHierarchyConfig.GameObjectConfig config) GetGameObjectConfig(GameObject go)
+        private static (bool found, GameObjectConfig config) GetGameObjectConfig(GameObject go)
         {
             GlobalObjectId goId = GlobalObjectId.GetGlobalObjectIdSlow(go);
             // if (go.name == "PrefabInsideAPrefab")
@@ -1091,7 +1129,7 @@ namespace SaintsHierarchy.Editor
             // {
             //     Debug.Log($"nor: {norId}");
             // }
-            (bool found, SaintsHierarchyConfig.GameObjectConfig config) = FindConfig(sceneGuid, norId);
+            (bool found, GameObjectConfig config) = FindConfig(sceneGuid, norId);
             // string upkId = Utils.GlobalObjectIdNormStringNoPrefabLink(goId);
             // (bool found, SaintsHierarchyConfig.GameObjectConfig config) = FindConfig(sceneGuid, upkId);
             if (found)
@@ -1174,7 +1212,7 @@ namespace SaintsHierarchy.Editor
                 //     Debug.Log($"prefab path = {prefabPath}");
                 //     Debug.Log($"prefab={guid}/goId={prefabSubGoIdStr}");
                 // }
-                (bool found, SaintsHierarchyConfig.GameObjectConfig config) prefabConfig = FindConfig(guid, prefabSubGoIdStr);
+                (bool found, GameObjectConfig config) prefabConfig = FindConfig(guid, prefabSubGoIdStr);
                 if (prefabConfig.found)
                 {
                     return (true, prefabConfig.config);
@@ -1184,25 +1222,18 @@ namespace SaintsHierarchy.Editor
             return (false, default);
         }
 
-        private static (bool found, SaintsHierarchyConfig.GameObjectConfig config) FindConfig(string sceneGuid, string goIdString)
+        private static (bool found, GameObjectConfig config) FindConfig(string sceneGuid, string goIdString)
         {
+            bool personalDisabled = PersonalHierarchyConfig.instance.personalEnabled;
+            List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList = personalDisabled
+                ? SaintsHierarchyConfig.instance.sceneGuidToGoConfigsList
+                : PersonalHierarchyConfig.instance.sceneGuidToGoConfigsList;
 
-            SaintsHierarchyConfig config = Util.EnsureConfig();
-            if (config == null)
-            {
-#if SAINTSHIERARCHY_DEBUG
-                Debug.LogError("failed to load config");
-#endif
-                return (false, default);
-            }
-            // string goIdString = goId.ToString();
-            // string goIdString = Utils.GlobalObjectIdNormString(goId);
-
-            foreach (SaintsHierarchyConfig.SceneGuidToGoConfigs sceneGuidToGoConfigs in config.sceneGuidToGoConfigsList)
+            foreach (SceneGuidToGoConfigs sceneGuidToGoConfigs in sceneGuidToGoConfigsList)
             {
                 if (sceneGuidToGoConfigs.sceneGuid == sceneGuid)
                 {
-                    foreach (SaintsHierarchyConfig.GameObjectConfig gameObjectConfig in sceneGuidToGoConfigs.configs)
+                    foreach (GameObjectConfig gameObjectConfig in sceneGuidToGoConfigs.configs)
                     {
                         if (gameObjectConfig.globalObjectIdString == goIdString)
                         {
@@ -1447,7 +1478,7 @@ namespace SaintsHierarchy.Editor
                 Transform parent = trans.parent;
                 if (parent != null)
                 {
-                    SaintsHierarchyConfig.GameObjectConfig config = GetGameObjectConfig(parent.gameObject).config;
+                    GameObjectConfig config = GetGameObjectConfig(parent.gameObject).config;
                     if (config.hasColor)
                     {
                         useColor = config.color;
@@ -1489,7 +1520,7 @@ namespace SaintsHierarchy.Editor
                     Color useColor = TreeColor;
                     if (parent != null)
                     {
-                        SaintsHierarchyConfig.GameObjectConfig config = GetGameObjectConfig(parent.gameObject).config;
+                        GameObjectConfig config = GetGameObjectConfig(parent.gameObject).config;
                         if (config.hasColor)
                         {
                             useColor = config.color;

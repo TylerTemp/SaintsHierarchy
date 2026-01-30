@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,26 +8,54 @@ namespace SaintsHierarchy.Editor.Utils
     {
         private const string MenuRoot =
 #if SAINTSHIERARCHY_DEBUG
-                "Saints/"
+                "SaintsHierarchy/"
 #else
                 "Window/Saints/Hierarchy/"
 #endif
             ;
+
+        private const string PersonalEnabledPath = MenuRoot + "Enable Personal Config";
+
+        [MenuItem(PersonalEnabledPath, priority = -100)]
+        public static void PersonalEnabled()
+        {
+            if (!PersonalHierarchyConfig.instance.personalEnabled)
+            {
+                if (EditorUtility.DisplayDialog("Personal Config", "Copy project config to personal config?", "Yes",
+                        "No"))
+                {
+                    EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
+                    PersonalHierarchyConfig.instance.disabled = SaintsHierarchyConfig.instance.disabled;
+                    PersonalHierarchyConfig.instance.backgroundStrip = SaintsHierarchyConfig.instance.backgroundStrip;
+                    PersonalHierarchyConfig.instance.componentIcons = SaintsHierarchyConfig.instance.componentIcons;
+                    PersonalHierarchyConfig.instance.gameObjectEnabledChecker = SaintsHierarchyConfig.instance.gameObjectEnabledChecker;
+                    PersonalHierarchyConfig.instance.sceneGuidToGoConfigsList = SaintsHierarchyConfig.instance.sceneGuidToGoConfigsList.ToList();
+                    PersonalHierarchyConfig.instance.SaveToDisk();
+                }
+            }
+            EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
+            PersonalHierarchyConfig.instance.personalEnabled = !PersonalHierarchyConfig.instance.personalEnabled;
+            PersonalHierarchyConfig.instance.SaveToDisk();
+            Refresh();
+        }
 
         private const string DisablePath = MenuRoot + "Disable Saints Hierarchy";
 
         [MenuItem(DisablePath)]
         public static void DisableSaintsHierarchy()
         {
-            SaintsHierarchyConfig config = Util.EnsureConfig();
-            if (config != null)
+            bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
+            if (personalEnabled)
             {
-                EditorUtility.SetDirty(config);
-                config.disabled = !config.disabled;
+                EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
+                PersonalHierarchyConfig.instance.disabled = !PersonalHierarchyConfig.instance.disabled;
+                PersonalHierarchyConfig.instance.SaveToDisk();
             }
             else
             {
-                Debug.LogWarning("SaintsHierarchy config not found");
+                EditorUtility.SetDirty(SaintsHierarchyConfig.instance);
+                SaintsHierarchyConfig.instance.disabled = !SaintsHierarchyConfig.instance.disabled;
+                SaintsHierarchyConfig.instance.SaveToDisk();
             }
 
             Refresh();
@@ -37,15 +66,18 @@ namespace SaintsHierarchy.Editor.Utils
         [MenuItem(BackgroundStripPath)]
         public static void BackgroundStrip()
         {
-            SaintsHierarchyConfig config = Util.EnsureConfig();
-            if (config != null)
+            bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
+            if (personalEnabled)
             {
-                EditorUtility.SetDirty(config);
-                config.backgroundStrip = !config.backgroundStrip;
+                EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
+                PersonalHierarchyConfig.instance.backgroundStrip = !PersonalHierarchyConfig.instance.backgroundStrip;
+                PersonalHierarchyConfig.instance.SaveToDisk();
             }
             else
             {
-                Debug.LogWarning("SaintsHierarchy config not found");
+                EditorUtility.SetDirty(SaintsHierarchyConfig.instance);
+                SaintsHierarchyConfig.instance.backgroundStrip = !SaintsHierarchyConfig.instance.backgroundStrip;
+                SaintsHierarchyConfig.instance.SaveToDisk();
             }
 
             Refresh();
@@ -56,15 +88,18 @@ namespace SaintsHierarchy.Editor.Utils
         [MenuItem(GameObjectEnabledCheckerPath)]
         public static void GameObjectEnabledChecker()
         {
-            SaintsHierarchyConfig config = Util.EnsureConfig();
-            if (config != null)
+            bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
+            if (personalEnabled)
             {
-                EditorUtility.SetDirty(config);
-                config.gameObjectEnabledChecker = !config.gameObjectEnabledChecker;
+                EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
+                PersonalHierarchyConfig.instance.gameObjectEnabledChecker = !PersonalHierarchyConfig.instance.gameObjectEnabledChecker;
+                PersonalHierarchyConfig.instance.SaveToDisk();
             }
             else
             {
-                Debug.LogWarning("SaintsHierarchy config not found");
+                EditorUtility.SetDirty(SaintsHierarchyConfig.instance);
+                SaintsHierarchyConfig.instance.gameObjectEnabledChecker = !SaintsHierarchyConfig.instance.gameObjectEnabledChecker;
+                SaintsHierarchyConfig.instance.SaveToDisk();
             }
 
             Refresh();
@@ -75,7 +110,7 @@ namespace SaintsHierarchy.Editor.Utils
         [MenuItem(ComponentIconsPath)]
         public static void ComponentIcons()
         {
-            SaintsHierarchyConfig config = Util.EnsureConfig();
+            var config = SaintsHierarchyConfig.instance;
             if (config != null)
             {
                 EditorUtility.SetDirty(config);
@@ -98,17 +133,19 @@ namespace SaintsHierarchy.Editor.Utils
         [InitializeOnLoadMethod]
         private static void Checkmark()
         {
-            SaintsHierarchyConfig config = Util.EnsureConfig();
-            bool disabled = config == null || config.disabled;
+            bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
+            Menu.SetChecked(PersonalEnabledPath, personalEnabled);
+
+            bool disabled = personalEnabled? PersonalHierarchyConfig.instance.disabled : SaintsHierarchyConfig.instance.disabled;
             Menu.SetChecked(DisablePath, disabled);
 
-            bool backgroundStrip = config != null && config.backgroundStrip;
+            bool backgroundStrip = personalEnabled?  PersonalHierarchyConfig.instance.backgroundStrip : SaintsHierarchyConfig.instance.backgroundStrip;
             Menu.SetChecked(BackgroundStripPath, backgroundStrip);
 
-            bool gameObjectEnabledChecker = config != null && config.gameObjectEnabledChecker;
+            bool gameObjectEnabledChecker = personalEnabled? PersonalHierarchyConfig.instance.gameObjectEnabledChecker : SaintsHierarchyConfig.instance.gameObjectEnabledChecker;
             Menu.SetChecked(GameObjectEnabledCheckerPath, gameObjectEnabledChecker);
 
-            bool componentIcons = config != null && config.componentIcons;
+            bool componentIcons = personalEnabled? PersonalHierarchyConfig.instance.componentIcons : SaintsHierarchyConfig.instance.componentIcons;
             Menu.SetChecked(ComponentIconsPath, componentIcons);
         }
     }
