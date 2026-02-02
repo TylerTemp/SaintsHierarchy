@@ -424,21 +424,6 @@ namespace SaintsHierarchy.Editor
 
             #endregion
 
-            #region disabled
-
-            if (!ActiveInAnyHierarchy(go))
-            {
-                // if (goConfig.hasColor)
-                // {
-                //     // cover the alpha, to override Unity's default drawing
-                //     // EditorGUI.DrawRect(fullRect, bgDefaultColor);
-                //     // EditorGUI.DrawRect(fullRect, new Color(bgDefaultColor.r));
-                // }
-                EditorGUI.DrawRect(fullRect, new Color(bgDefaultColor.r, bgDefaultColor.g, bgDefaultColor.b, 0.5f));
-            }
-
-            #endregion
-
             #region Right Space
 
             Rect rightRect = new Rect(selectionRect)
@@ -526,6 +511,21 @@ namespace SaintsHierarchy.Editor
                 }
             }
             EditorGUI.LabelField(rawRightRect, content, textColorStyle);
+
+            #region disabled
+
+            if (!ActiveInAnyHierarchy(go))
+            {
+                // if (goConfig.hasColor)
+                // {
+                //     // cover the alpha, to override Unity's default drawing
+                //     // EditorGUI.DrawRect(fullRect, bgDefaultColor);
+                //     // EditorGUI.DrawRect(fullRect, new Color(bgDefaultColor.r));
+                // }
+                EditorGUI.DrawRect(fullRect, new Color(bgDefaultColor.r, bgDefaultColor.g, bgDefaultColor.b, 0.5f));
+            }
+
+            #endregion
 
             #region Prefab Expand
 

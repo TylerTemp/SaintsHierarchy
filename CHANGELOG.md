@@ -1,3 +1,7 @@
+## 1.1.2 ##
+
+Disabled item color fix
+
 ## 1.1.1 ##
 
 1.  Fix: Unable to enable "Component Icons"
