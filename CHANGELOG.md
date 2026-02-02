@@ -1,3 +1,11 @@
+## 1.1.1 ##
+
+1.  Fix: Unable to enable "Component Icons"
+2.  Fix: "Component Icons" no longer overflow to label if there are many
+3.  Fix: drawn content will try to not overlap (can not grarrenteed because of the limit of IMGUI)
+4.  Fix: Custom icon not working
+5.  Add: Search Icon now list all possible results from [UnityEditorIcons](https://github.com/nukadelic/UnityEditorIcons)
+
 ## 1.1.0 ##
 
 1.  Fix: Error if the target component is missing for component icons

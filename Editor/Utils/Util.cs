@@ -43,7 +43,11 @@ namespace SaintsHierarchy.Editor.Utils
             {
                 if (!result)
                 {
-                    Texture2D r = EditorGUIUtility.IconContent(resourcePath).image as Texture2D;
+                    Texture2D r;
+                    using(new DisableUnityLogScoop())
+                    {
+                        r = EditorGUIUtility.IconContent(resourcePath).image as Texture2D;
+                    }
                     if (r)
                     {
                         result = r as T;

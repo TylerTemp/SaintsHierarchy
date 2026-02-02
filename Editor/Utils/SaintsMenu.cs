@@ -16,7 +16,7 @@ namespace SaintsHierarchy.Editor.Utils
 
         private const string PersonalEnabledPath = MenuRoot + "Enable Personal Config";
 
-        [MenuItem(PersonalEnabledPath, priority = -100)]
+        [MenuItem(PersonalEnabledPath)]
         public static void PersonalEnabled()
         {
             if (!PersonalHierarchyConfig.instance.personalEnabled)
