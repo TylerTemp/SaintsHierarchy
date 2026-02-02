@@ -44,75 +44,6 @@ namespace SaintsHierarchy.Editor
 
         private readonly List<IconInfo> _iconInfos = new List<IconInfo>();
 
-        private static readonly string[] DefaultIcons =
-        {
-            "transparent.png",
-            "d_Folder Icon",
-            "d_FolderFavorite Icon",
-            "d_Canvas Icon",
-            "d_AvatarMask On Icon",
-            "d_cs Script Icon",
-            "d_StandaloneInputModule Icon",
-            "d_EventSystem Icon",
-            "d_Terrain Icon",
-            "d_ScriptableObject Icon",
-
-            "d_Camera Icon",
-            "d_ParticleSystem Icon",
-            "d_LineRenderer Icon",
-            "d_Material Icon",
-            "d_ReflectionProbe Icon",
-
-            "d_Light Icon",
-            "d_DirectionalLight Icon",
-            "d_LightmapParameters Icon",
-            "d_LightProbes Icon",
-
-            "d_Rigidbody2D Icon",
-            "d_BoxCollider Icon",
-            "d_BoxCollider2D Icon",
-            "d_SphereCollider Icon",
-            "d_CircleCollider2D Icon",
-            "d_CapsuleCollider Icon",
-            "d_WheelCollider Icon",
-            "d_MeshCollider Icon",
-
-            "d_AudioSource Icon",
-            "d_AudioDistortionFilter Icon",
-            "d_AudioListener Icon",
-            "d_AudioEchoFilter Icon",
-            "d_AudioReverbFilter Icon",
-
-            "d_Prefab On Icon",
-            "d_PreMatSphere",
-            "d_PreMatCylinder",
-            "d_Favorite Icon",
-            "d_Settings Icon",
-
-            "sv_icon_dot10_pix16_gizmo",
-            "sv_icon_dot11_pix16_gizmo",
-            "sv_icon_dot12_pix16_gizmo",
-            "sv_icon_dot13_pix16_gizmo",
-            "sv_icon_dot14_pix16_gizmo",
-            "sv_icon_dot15_pix16_gizmo",
-
-            "sv_icon_dot0_pix16_gizmo",
-            "sv_icon_dot1_pix16_gizmo",
-            "sv_icon_dot2_pix16_gizmo",
-            "sv_icon_dot3_pix16_gizmo",
-            "sv_icon_dot4_pix16_gizmo",
-            "sv_icon_dot5_pix16_gizmo",
-            "sv_icon_dot6_pix16_gizmo",
-            "sv_icon_dot7_pix16_gizmo",
-
-            "d_greenLight",
-            "d_orangeLight",
-            "d_redLight",
-
-            "d_lightOff",
-            "d_lightRim",
-        };
-
         private static readonly Color[] Colors = {
             new Color(0.16f, 0.16f, 0.16f),
             new Color(0.609f, 0.231f, 0.23100014f),
@@ -196,6 +127,14 @@ namespace SaintsHierarchy.Editor
             iconRow.Add(searchButton);
             searchButton.Button.tooltip = "Searched Icon";
             searchButton.style.display = DisplayStyle.None;
+
+            if (!string.IsNullOrEmpty(goConfig.icon))  // has icon
+            {
+                ItemButtonElement noIconButton = MakeIconButton(_closeIcon ??= Util.LoadResource<Texture2D>("close.png"));
+                noIconButton.Button.tooltip = "Delete Icon Config";
+                noIconButton.Button.clicked += () => SetIcon(go, "");
+                iconRow.Add(noIconButton);
+            }
 
             foreach (string iconPath in DefaultIcons)
             {
@@ -525,5 +464,79 @@ namespace SaintsHierarchy.Editor
             itemButtonElement.Button.style.unityBackgroundImageTintColor = color;
             return itemButtonElement;
         }
+
+        private static readonly string[] DefaultIcons =
+        {
+            "transparent.png",
+            "d_Folder Icon",
+            "d_FolderFavorite Icon",
+            "d_Canvas Icon",
+            "d_AvatarMask On Icon",
+            "d_cs Script Icon",
+            "d_StandaloneInputModule Icon",
+            "d_EventSystem Icon",
+            "d_Terrain Icon",
+            "d_ScriptableObject Icon",
+
+            "d_Camera Icon",
+            "d_ParticleSystem Icon",
+            "d_LineRenderer Icon",
+            "d_Material Icon",
+            "d_ReflectionProbe Icon",
+
+            "d_Light Icon",
+            "d_DirectionalLight Icon",
+            "d_LightmapParameters Icon",
+            "d_LightProbes Icon",
+
+            "d_Rigidbody2D Icon",
+            "d_BoxCollider Icon",
+            "d_BoxCollider2D Icon",
+            "d_SphereCollider Icon",
+            "d_CircleCollider2D Icon",
+            "d_CapsuleCollider Icon",
+            "d_WheelCollider Icon",
+            "d_MeshCollider Icon",
+
+            "d_AudioSource Icon",
+            "d_AudioDistortionFilter Icon",
+            "d_AudioListener Icon",
+            "d_AudioEchoFilter Icon",
+            "d_AudioReverbFilter Icon",
+
+            "d_Prefab On Icon",
+            "d_PreMatSphere",
+            "d_PreMatCylinder",
+            "d_Favorite Icon",
+            "d_Settings Icon",
+
+            "sv_icon_dot10_pix16_gizmo",
+            "sv_icon_dot11_pix16_gizmo",
+            "sv_icon_dot12_pix16_gizmo",
+            "sv_icon_dot13_pix16_gizmo",
+            "sv_icon_dot14_pix16_gizmo",
+            "sv_icon_dot15_pix16_gizmo",
+
+            "sv_icon_dot0_pix16_gizmo",
+            "sv_icon_dot1_pix16_gizmo",
+            "sv_icon_dot2_pix16_gizmo",
+            "sv_icon_dot3_pix16_gizmo",
+            "sv_icon_dot4_pix16_gizmo",
+            "sv_icon_dot5_pix16_gizmo",
+            "sv_icon_dot6_pix16_gizmo",
+            "sv_icon_dot7_pix16_gizmo",
+
+            "d_greenLight",
+            "d_orangeLight",
+            "d_redLight",
+
+            "d_lightOff",
+            "d_lightRim",
+        };
+
+        private static readonly string[] FullIcons =
+        {
+
+        };
     }
 }
