@@ -462,25 +462,6 @@ namespace SaintsHierarchy.Editor
 
             #endregion
 
-            #region Prefab Expand
-
-            if (isAnyPrefabInstanceRoot && !isMissingPrefab && !isModelPrefab)
-            {
-                Rect rightExpandRect = new Rect(selectionRect)
-                {
-                    x = selectionRect.xMax,
-                    width = PrefabExpandWidth,
-                };
-                if (rightExpandRect.Contains(mousePosition))
-                {
-                    EditorGUI.DrawRect(rightExpandRect, new Color(1, 1, 1, 0.1f));
-                }
-
-                GUI.DrawTexture(rightExpandRect, EditorGUIUtility.IconContent("ArrowNavigationRight").image, ScaleMode.ScaleToFit, true);
-            }
-
-            #endregion
-
             // late draw
             // icon
             EditorGUI.DrawRect(iconRect, bgDefaultColor);
@@ -545,6 +526,25 @@ namespace SaintsHierarchy.Editor
                 }
             }
             EditorGUI.LabelField(rawRightRect, content, textColorStyle);
+
+            #region Prefab Expand
+
+            if (isAnyPrefabInstanceRoot && !isMissingPrefab && !isModelPrefab)
+            {
+                Rect rightExpandRect = new Rect(selectionRect)
+                {
+                    x = selectionRect.xMax,
+                    width = PrefabExpandWidth,
+                };
+                if (rightExpandRect.Contains(mousePosition))
+                {
+                    EditorGUI.DrawRect(rightExpandRect, new Color(1, 1, 1, 0.1f));
+                }
+
+                GUI.DrawTexture(rightExpandRect, EditorGUIUtility.IconContent("ArrowNavigationRight").image, ScaleMode.ScaleToFit, true);
+            }
+
+            #endregion
 
             if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && isHover && (Event.current.modifiers & EventModifiers.Alt) != 0)
             {
