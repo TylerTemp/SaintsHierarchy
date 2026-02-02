@@ -1214,7 +1214,7 @@ namespace SaintsHierarchy.Editor
 
         private static (bool found, GameObjectConfig config) FindConfig(string sceneGuid, string goIdString)
         {
-            bool personalDisabled = PersonalHierarchyConfig.instance.personalEnabled;
+            bool personalDisabled = !PersonalHierarchyConfig.instance.personalEnabled;
             List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList = personalDisabled
                 ? SaintsHierarchyConfig.instance.sceneGuidToGoConfigsList
                 : PersonalHierarchyConfig.instance.sceneGuidToGoConfigsList;
