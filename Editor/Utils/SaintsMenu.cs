@@ -110,15 +110,18 @@ namespace SaintsHierarchy.Editor.Utils
         [MenuItem(ComponentIconsPath)]
         public static void ComponentIcons()
         {
-            var config = SaintsHierarchyConfig.instance;
-            if (config != null)
+            bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
+            if (personalEnabled)
             {
-                EditorUtility.SetDirty(config);
-                config.componentIcons = !config.componentIcons;
+                EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
+                PersonalHierarchyConfig.instance.componentIcons = !PersonalHierarchyConfig.instance.componentIcons;
+                PersonalHierarchyConfig.instance.SaveToDisk();
             }
             else
             {
-                Debug.LogWarning("SaintsHierarchy config not found");
+                EditorUtility.SetDirty(SaintsHierarchyConfig.instance);
+                SaintsHierarchyConfig.instance.componentIcons = !SaintsHierarchyConfig.instance.componentIcons;
+                SaintsHierarchyConfig.instance.SaveToDisk();
             }
 
             Refresh();
