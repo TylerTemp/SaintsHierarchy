@@ -147,6 +147,29 @@ namespace SaintsHierarchy.Editor
                 string searchText = search.value.Trim();
                 string[] searchLowParts = searchText.ToLower().Split();
                 presetIcons = FullIcons.Where(each => TextSearch(each.ToLower(), searchLowParts)).ToArray();
+
+                Texture2D searchedIcon = Util.LoadResource<Texture2D>(searchText);
+                if(searchedIcon != null)
+                {
+                    ItemButtonElement searchInputDirectButton = MakeIconButton(searchedIcon);
+                    iconRow.Add(searchInputDirectButton);
+                    searchInputDirectButton.Button.tooltip = "Searched Icon";
+                    // searchInputDirectButton.style.display = DisplayStyle.None;
+
+                    if(!string.IsNullOrEmpty(goConfig.icon) && goConfig.icon == searchText)
+                    {
+                        searchInputDirectButton.SetSelected(true);
+                    }
+
+                    searchInputDirectButton.Button.clicked += () =>
+                    {
+                        string searchData = search.value;
+                        if (!string.IsNullOrEmpty(searchData))
+                        {
+                            SetIcon(go, searchData);
+                        }
+                    };
+                }
             }
 
             if(!string.IsNullOrEmpty(goConfig.icon) && !presetIcons.Contains(goConfig.icon))
@@ -157,11 +180,6 @@ namespace SaintsHierarchy.Editor
             {
                 customButton.style.display = DisplayStyle.None;
             }
-
-            ItemButtonElement searchInputDirectButton = MakeIconButton(null);
-            iconRow.Add(searchInputDirectButton);
-            searchInputDirectButton.Button.tooltip = "Searched Icon";
-            searchInputDirectButton.style.display = DisplayStyle.None;
 
             if (!string.IsNullOrEmpty(goConfig.icon))  // has icon
             {
@@ -190,14 +208,7 @@ namespace SaintsHierarchy.Editor
                 _iconInfos.Add(new IconInfo(iconPath, btn.Button));
             }
 
-            searchInputDirectButton.Button.clicked += () =>
-            {
-                string searchData = search.value;
-                if(!string.IsNullOrEmpty(searchData))
-                {
-                    SetIcon(go, searchData);
-                }
-            };
+
         }
 
         private static bool TextSearch(string target, string[] searchLowParts)
