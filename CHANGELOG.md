@@ -1,4 +1,4 @@
-## 1.0.1 ##
+## 1.1.0 ##
 
 1.  Fix: Error if the target component is missing for component icons
 2.  Add: Allow setup a personal config which does not get mixed with team config. Saved under `Library/PersonalHierarchyConfig.asset`

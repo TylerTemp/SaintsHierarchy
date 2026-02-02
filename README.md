@@ -44,9 +44,9 @@ Result:
 
 `Window` - `Saints` - `Hierarchy` - `GameObject Enabled Checker`
 
-Add a checkbox for each gameObject at the end to toggle it's enable status. This is useful when a parent object is disabled
+Add a checkbox at the end for gameObject which has any disabled parent gameObjects, to quickly toggle it back.
 
-![](https://github.com/user-attachments/assets/7153ce80-6031-456b-ba54-ca699f0beb61)
+![](https://github.com/user-attachments/assets/22cb4180-4aa6-4dcc-8cfc-6df0ee822e90)
 
 ## Usage ##
 
