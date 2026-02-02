@@ -216,54 +216,6 @@ namespace SaintsHierarchy.Editor
                     GUI.DrawTexture(fullRect, _colorStripTex, ScaleMode.StretchToFill, true);
                 }
             }
-            // if (goConfig.hasColor)
-            // {
-            //     Color oriColor = goConfig.color;
-            //     switch (bgStatus)
-            //     {
-            //         case SelectStatus.Normal:
-            //             bgColor = new Color(oriColor.r, oriColor.g, oriColor.b, oriColor.a * 0.7f);
-            //             break;
-            //         case SelectStatus.NormalHover:
-            //             bgColor = new Color(oriColor.r, oriColor.g, oriColor.b, oriColor.a * 0.8f);
-            //             break;
-            //         case SelectStatus.SelectFocus:
-            //         case SelectStatus.SelectUnfocus:
-            //             bgColor = oriColor;
-            //             break;
-            //         default:
-            //             throw new ArgumentOutOfRangeException(nameof(bgStatus), bgStatus, null);
-            //     }
-            // }
-            // else
-            // {
-            //     bgColor = bgDefaultColor;
-            // }
-
-            // if (goConfig.hasColor)
-            // {
-            //     // cover the alpha, to override Unity's default drawing
-            //     // EditorGUI.DrawRect(fullRect, bgDefaultColor);
-            //     EditorGUI.DrawRect(fullRect, bgDefaultColor);
-            //     _colorStripTex ??= Util.LoadResource<Texture2D>("color-strip.psd");
-            //     // var tex = Tex.ApplyTextureColor(_colorStripTex, bgColor);
-            //     using(new GUIColorScoop(bgColor))
-            //     {
-            //         GUI.DrawTexture(fullRect, _colorStripTex, ScaleMode.StretchToFill, true);
-            //     }
-            // }
-            // else
-            // {
-            //     EditorGUI.DrawRect(fullRect, bgColor);
-            // }
-            // if(!goConfig.hasColor && projectConfig.backgroundStrip)
-            // {
-            //     bool needLight = rowIndex != 0 && rowIndex % 2 == 0;
-            //     if (needLight)
-            //     {
-            //         EditorGUI.DrawRect(fullRect, ColorStripedLight);
-            //     }
-            // }
 
             bool hasFoldout = trans.childCount >= 1;
             bool thisExpand = false;
@@ -618,6 +570,9 @@ namespace SaintsHierarchy.Editor
         private static void DrawRect(bool gameObjectEnabledChecker, bool componentIcons, GameObject originGo, Component[] allComponents, Rect labelRect, Rect rightRect)
         {
             HierarchyButtonDrawer.Update();
+
+            float leftXLimit = rightRect.x;
+
             Rect useRect = new Rect(rightRect);
             if (gameObjectEnabledChecker && AnyParentDisabled(originGo))
             {
@@ -723,6 +678,10 @@ namespace SaintsHierarchy.Editor
                     {
                         (Component component, bool canToggle, Texture2D icon) compInfo = componentAndIcon[index];
                         float x = startX + index * RowHeight;
+                        if (x < leftXLimit)
+                        {
+                            continue;
+                        }
                         Rect iconRect = new Rect(x, useRect.y, RowHeight, RowHeight);
                         GUI.DrawTexture(iconRect, compInfo.icon,
                             ScaleMode.ScaleToFit, true);
