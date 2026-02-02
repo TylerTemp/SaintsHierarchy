@@ -56,6 +56,13 @@ namespace SaintsHierarchy.Editor
         {
             // Debug.Log(selectionRect.y);
             bool personalDisabled = !PersonalHierarchyConfig.instance.personalEnabled;
+            if (personalDisabled
+                    ? SaintsHierarchyConfig.instance.disabled
+                    : PersonalHierarchyConfig.instance.disabled)
+            {
+                return;
+            }
+
 
             // Get the object corresponding to the ID
             Object obj = EditorUtility.
@@ -202,18 +209,6 @@ namespace SaintsHierarchy.Editor
                 if (needLight)
                 {
                     EditorGUI.DrawRect(fullRect, ColorStripedLight);
-                }
-            }
-            if (goConfig.hasColor)
-            {
-                // cover the alpha, to override Unity's default drawing
-                // EditorGUI.DrawRect(fullRect, bgDefaultColor);
-                // EditorGUI.DrawRect(fullRect, bgDefaultColor);
-                _colorStripTex ??= Util.LoadResource<Texture2D>("color-strip.psd");
-                // var tex = Tex.ApplyTextureColor(_colorStripTex, bgColor);
-                using(new GUIColorScoop(goConfig.color))
-                {
-                    GUI.DrawTexture(fullRect, _colorStripTex, ScaleMode.StretchToFill, true);
                 }
             }
 
@@ -404,7 +399,7 @@ namespace SaintsHierarchy.Editor
             #region Label
 
             const int labelXOffset = 3;
-            Rect labelRect = new Rect(selectionRect)
+            Rect rawRightRect = new Rect(selectionRect)
             {
                 x = iconRect.xMax + labelXOffset,
                 width = selectionRect.xMax - iconRect.xMax - labelXOffset,
@@ -428,9 +423,9 @@ namespace SaintsHierarchy.Editor
                     _ => Color.clear,
                 };
                 // Debug.Log(goIcon.name);
-                EditorGUI.DrawRect(new Rect(labelRect)
+                EditorGUI.DrawRect(new Rect(rawRightRect)
                 {
-                    y = labelRect.yMax - 1,
+                    y = rawRightRect.yMax - 1,
                     height = 1,
                     width = labelWidth,
                 }, labelColor);
@@ -454,8 +449,6 @@ namespace SaintsHierarchy.Editor
                 // }, GUIContent.none, style);
             }
 
-
-            EditorGUI.LabelField(labelRect, content, textColorStyle);
             #endregion
 
             #region disabled
@@ -477,7 +470,7 @@ namespace SaintsHierarchy.Editor
 
             Rect rightRect = new Rect(selectionRect)
             {
-                x = labelRect.x + labelWidth,
+                x = rawRightRect.x + labelWidth,
                 xMax = selectionRect.xMax,
             };
             // EditorGUI.DrawRect(rightRect, Color.blueViolet);
@@ -489,7 +482,7 @@ namespace SaintsHierarchy.Editor
                 ? SaintsHierarchyConfig.instance.componentIcons
                 : PersonalHierarchyConfig.instance.componentIcons;
 
-            DrawRect(gameObjectEnabledChecker, componentIcons, originGo, allComponents, new Rect(labelRect)
+            DrawRect(gameObjectEnabledChecker, componentIcons, originGo, allComponents, new Rect(rawRightRect)
             {
                 width = labelWidth,
             }, rightRect);
@@ -514,6 +507,32 @@ namespace SaintsHierarchy.Editor
             }
 
             #endregion
+
+            // late draw
+            Rect labelRect = new Rect(rawRightRect)
+            {
+                width = labelWidth,
+            };
+            EditorGUI.DrawRect(labelRect, bgDefaultColor);
+            if(personalDisabled
+                   ? SaintsHierarchyConfig.instance.backgroundStrip
+                   : PersonalHierarchyConfig.instance.backgroundStrip)
+            {
+                bool needLight = (rowIndex + 1) % 2 == 0;
+                if (needLight)
+                {
+                    EditorGUI.DrawRect(labelRect, ColorStripedLight);
+                }
+            }
+            if (goConfig.hasColor)
+            {
+                _colorStripTex ??= Util.LoadResource<Texture2D>("color-strip.psd");
+                using(new GUIColorScoop(goConfig.color))
+                {
+                    GUI.DrawTexture(fullRect, _colorStripTex, ScaleMode.StretchToFill, true);
+                }
+            }
+            EditorGUI.LabelField(rawRightRect, content, textColorStyle);
 
             if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && isHover && (Event.current.modifiers & EventModifiers.Alt) != 0)
             {
