@@ -763,7 +763,7 @@ namespace SaintsHierarchy.Editor
 
             foreach (Component component in allComponents)
             {
-                foreach (RenderTargetInfo renderTargetInfo in Util.GetRenderTargetInfos(component))
+                foreach (RenderTargetInfo renderTargetInfo in Util.GetRenderTargetInfos(component).OrderBy(each => !each.Attribute.IsLeft))
                 {
                     switch (renderTargetInfo.Attribute)
                     {
@@ -785,6 +785,21 @@ namespace SaintsHierarchy.Editor
                                 {
                                     xRight = Mathf.Min(xRight, preRightUsedRects.Min(each => each.x));
                                     preRightUsedRects.Clear();
+                                }
+                            }
+
+                            if (hierarchyButtonAttribute.IsLeft)
+                            {
+                                if (xLeft >= xRight)
+                                {
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                if (xRight <= xLeft)
+                                {
+                                    continue;
                                 }
                             }
 
@@ -859,6 +874,21 @@ namespace SaintsHierarchy.Editor
                                         xRight = Mathf.Min(xRight, preRightUsedRects.Min(each => each.x));
                                         preRightUsedRects.Clear();
                                     }
+                                }
+                            }
+
+                            if (hierarchyDrawAttribute.IsLeft)
+                            {
+                                if (xLeft >= xRight)
+                                {
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                if (xRight <= xLeft)
+                                {
+                                    continue;
                                 }
                             }
 
@@ -945,6 +975,21 @@ namespace SaintsHierarchy.Editor
                                         xRight = Mathf.Min(xRight, preRightUsedRects.Min(each => each.x));
                                         preRightUsedRects.Clear();
                                     }
+                                }
+                            }
+
+                            if (hierarchyLabelAttribute.IsLeft)
+                            {
+                                if (xLeft >= xRight)
+                                {
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                if (xRight <= xLeft)
+                                {
+                                    continue;
                                 }
                             }
 

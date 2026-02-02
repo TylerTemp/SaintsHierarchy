@@ -322,6 +322,15 @@ namespace SaintsHierarchy.Editor
 
                             EditorUtility.SetDirty(personalDisabled? SaintsHierarchyConfig.instance: PersonalHierarchyConfig.instance);
                             NeedCloseEvent.Invoke(true);
+
+                            if (personalDisabled)
+                            {
+                                SaintsHierarchyConfig.instance.SaveToDisk();
+                            }
+                            else
+                            {
+                                PersonalHierarchyConfig.instance.SaveToDisk();
+                            }
                             return;
                         }
 
