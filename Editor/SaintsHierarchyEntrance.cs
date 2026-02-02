@@ -367,33 +367,6 @@ namespace SaintsHierarchy.Editor
                 width = IndentOffset,
             };
 
-            if (iconTexture == null)
-            {
-                // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
-                if (prefabTexture is null)
-                {
-                    GUI.DrawTexture(iconRect, EditorGUIUtility.IconContent("d_GameObject Icon").image, ScaleMode.ScaleToFit, true);
-                }
-                else
-                {
-                    GUI.DrawTexture(iconRect, prefabTexture, ScaleMode.ScaleToFit, true);
-                }
-            }
-            else
-            {
-                GUI.DrawTexture(iconRect, iconTexture, ScaleMode.ScaleToFit, true);
-
-                if (prefabTexture is not null)
-                {
-                    const float scale = 0.7f;
-                    Rect footerIconRect = new Rect(iconRect.x + iconRect.width * (1 - scale) + 5, iconRect.y +
-                        iconRect.height *
-                        (1 - scale),
-                        iconRect.width * scale, iconRect.height * scale);
-                    GUI.DrawTexture(footerIconRect, prefabTexture, ScaleMode.ScaleToFit, true);
-                }
-            }
-
             #endregion
 
             #region Label
@@ -509,6 +482,45 @@ namespace SaintsHierarchy.Editor
             #endregion
 
             // late draw
+            // icon
+            EditorGUI.DrawRect(iconRect, bgDefaultColor);
+            if(personalDisabled
+                   ? SaintsHierarchyConfig.instance.backgroundStrip
+                   : PersonalHierarchyConfig.instance.backgroundStrip)
+            {
+                bool needLight = (rowIndex + 1) % 2 == 0;
+                if (needLight)
+                {
+                    EditorGUI.DrawRect(iconRect, ColorStripedLight);
+                }
+            }
+            if (iconTexture == null)
+            {
+                // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
+                if (prefabTexture is null)
+                {
+                    GUI.DrawTexture(iconRect, EditorGUIUtility.IconContent("d_GameObject Icon").image, ScaleMode.ScaleToFit, true);
+                }
+                else
+                {
+                    GUI.DrawTexture(iconRect, prefabTexture, ScaleMode.ScaleToFit, true);
+                }
+            }
+            else
+            {
+                GUI.DrawTexture(iconRect, iconTexture, ScaleMode.ScaleToFit, true);
+
+                if (prefabTexture is not null)
+                {
+                    const float scale = 0.7f;
+                    Rect footerIconRect = new Rect(iconRect.x + iconRect.width * (1 - scale) + 5, iconRect.y +
+                        iconRect.height *
+                        (1 - scale),
+                        iconRect.width * scale, iconRect.height * scale);
+                    GUI.DrawTexture(footerIconRect, prefabTexture, ScaleMode.ScaleToFit, true);
+                }
+            }
+            // label
             Rect labelRect = new Rect(rawRightRect)
             {
                 width = labelWidth,
