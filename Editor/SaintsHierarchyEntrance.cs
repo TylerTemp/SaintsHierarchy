@@ -366,7 +366,7 @@ namespace SaintsHierarchy.Editor
 
             Rect iconRect = new Rect(selectionRect)
             {
-                width = noDefaultIcon && iconTexture == null
+                width = noDefaultIcon && (iconTexture == null && prefabTexture == null)
                     ? 0
                     : IndentOffset,
             };

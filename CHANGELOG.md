@@ -1,4 +1,4 @@
-## 1.1.4 ##
+## 1.1.5 ##
 
 Add "No Default Icon" config to remove the default white box icon for gameObject.
 
