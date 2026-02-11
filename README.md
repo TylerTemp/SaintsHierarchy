@@ -48,6 +48,12 @@ Add a checkbox at the end for gameObject which has any disabled parent gameObjec
 
 ![](https://github.com/user-attachments/assets/22cb4180-4aa6-4dcc-8cfc-6df0ee822e90)
 
+### No Default Icon ###
+
+No longer draw the default white box icon if no icon for this gameObject.
+
+![](https://github.com/user-attachments/assets/d5ed0afc-a908-4f8a-8704-624c1c75efb4)
+
 ## Usage ##
 
 ### GameObject Icon ###

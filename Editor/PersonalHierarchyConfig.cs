@@ -13,6 +13,7 @@ namespace SaintsHierarchy.Editor
         public bool backgroundStrip;
         public bool gameObjectEnabledChecker;
         public bool componentIcons;
+        public bool noDefaultIcon;
 
         public List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList = new List<SceneGuidToGoConfigs>();
 

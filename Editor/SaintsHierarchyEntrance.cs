@@ -362,9 +362,13 @@ namespace SaintsHierarchy.Editor
                 textColorStyle = GetLabelStylePrefab();
             }
 
+            bool noDefaultIcon = personalDisabled? SaintsHierarchyConfig.instance.noDefaultIcon: PersonalHierarchyConfig.instance.noDefaultIcon;
+
             Rect iconRect = new Rect(selectionRect)
             {
-                width = IndentOffset,
+                width = noDefaultIcon && iconTexture == null
+                    ? 0
+                    : IndentOffset,
             };
 
             #endregion
@@ -465,7 +469,12 @@ namespace SaintsHierarchy.Editor
                 // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
                 if (prefabTexture is null)
                 {
-                    GUI.DrawTexture(iconRect, EditorGUIUtility.IconContent("d_GameObject Icon").image, ScaleMode.ScaleToFit, true);
+                    bool drawDefaultIcon = !noDefaultIcon;
+                    if(drawDefaultIcon)
+                    {
+                        GUI.DrawTexture(iconRect, EditorGUIUtility.IconContent("d_GameObject Icon").image,
+                            ScaleMode.ScaleToFit, true);
+                    }
                 }
                 else
                 {

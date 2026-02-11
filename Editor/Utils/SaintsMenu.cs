@@ -127,6 +127,28 @@ namespace SaintsHierarchy.Editor.Utils
             Refresh();
         }
 
+        private const string NoDefaultIconPath = MenuRoot + "No Default Icon";
+
+        [MenuItem(NoDefaultIconPath)]
+        public static void NoDefaultIcon()
+        {
+            bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
+            if (personalEnabled)
+            {
+                EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
+                PersonalHierarchyConfig.instance.noDefaultIcon = !PersonalHierarchyConfig.instance.noDefaultIcon;
+                PersonalHierarchyConfig.instance.SaveToDisk();
+            }
+            else
+            {
+                EditorUtility.SetDirty(SaintsHierarchyConfig.instance);
+                SaintsHierarchyConfig.instance.noDefaultIcon = !SaintsHierarchyConfig.instance.noDefaultIcon;
+                SaintsHierarchyConfig.instance.SaveToDisk();
+            }
+
+            Refresh();
+        }
+
         private static void Refresh()
         {
             EditorApplication.RepaintHierarchyWindow();
@@ -150,6 +172,9 @@ namespace SaintsHierarchy.Editor.Utils
 
             bool componentIcons = personalEnabled? PersonalHierarchyConfig.instance.componentIcons : SaintsHierarchyConfig.instance.componentIcons;
             Menu.SetChecked(ComponentIconsPath, componentIcons);
+
+            bool noDefaultIcon = personalEnabled? PersonalHierarchyConfig.instance.noDefaultIcon : SaintsHierarchyConfig.instance.noDefaultIcon;
+            Menu.SetChecked(NoDefaultIconPath, noDefaultIcon);
         }
     }
 }

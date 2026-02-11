@@ -1,3 +1,7 @@
+## 1.1.4 ##
+
+Add "No Default Icon" config to remove the default white box icon for gameObject.
+
 ## 1.1.2 ##
 
 Disabled item color fix
