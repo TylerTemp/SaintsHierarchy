@@ -51,6 +51,7 @@ namespace SaintsHierarchy.Editor
 
         private static readonly Color TreeColor = new Color(0.4f, 0.4f, 0.4f);
         private static Texture2D _colorStripTex;
+        private static Texture2D _transparentTex;
 
         private static void OnHierarchyGUI(int instanceID, Rect selectionRect)
         {
@@ -363,6 +364,12 @@ namespace SaintsHierarchy.Editor
             }
 
             bool noDefaultIcon = personalDisabled? SaintsHierarchyConfig.instance.noDefaultIcon: PersonalHierarchyConfig.instance.noDefaultIcon;
+            bool transparentDefaultIcon = personalDisabled? SaintsHierarchyConfig.instance.transparentDefaultIcon: PersonalHierarchyConfig.instance.transparentDefaultIcon;
+            bool noIconTextureAtAll = iconTexture == null;
+            if (noIconTextureAtAll && !noDefaultIcon && transparentDefaultIcon)
+            {
+                iconTexture = _transparentTex ??= Util.LoadResource<Texture2D>("transparent.png");
+            }
 
             // plus icon for added object inside prefab instance
             bool isAddedGameObjectOverride = PrefabUtility.IsAddedGameObjectOverride(go);
@@ -371,7 +378,7 @@ namespace SaintsHierarchy.Editor
             {
                 width = !isAddedGameObjectOverride
                         && noDefaultIcon
-                        && (iconTexture == null && prefabTexture == null)
+                        && (noIconTextureAtAll && prefabTexture == null)
                     ? 0
                     : IndentOffset,
             };
@@ -498,17 +505,25 @@ namespace SaintsHierarchy.Editor
 
                 if (prefabTexture is not null)
                 {
-                    const float scale = 0.7f;
-                    Rect footerIconRect = new Rect(iconRect.x + iconRect.width * (1 - scale) + 5, iconRect.y +
-                        iconRect.height *
-                        (1 - scale),
-                        iconRect.width * scale, iconRect.height * scale);
-                    if (isAddedGameObjectOverride)
+                    if (noIconTextureAtAll)
                     {
-                        footerIconRect.x = iconRect.x + 1;
-                        footerIconRect.y -= 1;
+                        GUI.DrawTexture(iconRect, prefabTexture, ScaleMode.ScaleToFit, true);
                     }
-                    GUI.DrawTexture(footerIconRect, prefabTexture, ScaleMode.ScaleToFit, true);
+                    else
+                    {
+                        const float scale = 0.7f;
+                        Rect footerIconRect = new Rect(iconRect.x + iconRect.width * (1 - scale) + 5, iconRect.y +
+                            iconRect.height *
+                            (1 - scale),
+                            iconRect.width * scale, iconRect.height * scale);
+                        if (isAddedGameObjectOverride)
+                        {
+                            footerIconRect.x = iconRect.x + 1;
+                            footerIconRect.y -= 1;
+                        }
+
+                        GUI.DrawTexture(footerIconRect, prefabTexture, ScaleMode.ScaleToFit, true);
+                    }
                 }
 
                 if (isAddedGameObjectOverride)

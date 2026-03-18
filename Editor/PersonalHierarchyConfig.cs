@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEngine;
 
 namespace SaintsHierarchy.Editor
 {
@@ -14,6 +13,7 @@ namespace SaintsHierarchy.Editor
         public bool gameObjectEnabledChecker;
         public bool componentIcons;
         public bool noDefaultIcon;
+        public bool transparentDefaultIcon;
 
         public List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList = new List<SceneGuidToGoConfigs>();
 

@@ -10,7 +10,7 @@ namespace SaintsHierarchy.Editor.Utils
 #if SAINTSHIERARCHY_DEBUG
                 "SaintsHierarchy/"
 #else
-                "Window/Saints/Hierarchy/"
+                "Tools/SaintsHierarchy/"
 #endif
             ;
 
@@ -149,6 +149,42 @@ namespace SaintsHierarchy.Editor.Utils
             Refresh();
         }
 
+        private const string TransparentDefaultIconPath = MenuRoot + "Transparent Default Icon";
+
+        [MenuItem(TransparentDefaultIconPath)]
+        public static void TransparentDefaultIcon()
+        {
+            bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
+            if (personalEnabled)
+            {
+                EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
+                PersonalHierarchyConfig.instance.transparentDefaultIcon = !PersonalHierarchyConfig.instance.transparentDefaultIcon;
+                PersonalHierarchyConfig.instance.SaveToDisk();
+            }
+            else
+            {
+                EditorUtility.SetDirty(SaintsHierarchyConfig.instance);
+                SaintsHierarchyConfig.instance.transparentDefaultIcon = !SaintsHierarchyConfig.instance.transparentDefaultIcon;
+                SaintsHierarchyConfig.instance.SaveToDisk();
+            }
+
+            Refresh();
+        }
+
+        [MenuItem(TransparentDefaultIconPath, true)]
+        private static bool ValidateTransparentDefaultIcon()
+        {
+            bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
+            if (personalEnabled)
+            {
+                return !PersonalHierarchyConfig.instance.noDefaultIcon;
+            }
+            else
+            {
+                return !SaintsHierarchyConfig.instance.noDefaultIcon;
+            }
+        }
+
         private static void Refresh()
         {
             EditorApplication.RepaintHierarchyWindow();
@@ -175,6 +211,9 @@ namespace SaintsHierarchy.Editor.Utils
 
             bool noDefaultIcon = personalEnabled? PersonalHierarchyConfig.instance.noDefaultIcon : SaintsHierarchyConfig.instance.noDefaultIcon;
             Menu.SetChecked(NoDefaultIconPath, noDefaultIcon);
+
+            bool transparentDefaultIcon = personalEnabled? PersonalHierarchyConfig.instance.transparentDefaultIcon : SaintsHierarchyConfig.instance.transparentDefaultIcon;
+            Menu.SetChecked(TransparentDefaultIconPath, transparentDefaultIcon);
         }
     }
 }
