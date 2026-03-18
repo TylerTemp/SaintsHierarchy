@@ -364,9 +364,14 @@ namespace SaintsHierarchy.Editor
 
             bool noDefaultIcon = personalDisabled? SaintsHierarchyConfig.instance.noDefaultIcon: PersonalHierarchyConfig.instance.noDefaultIcon;
 
+            // plus icon for added object inside prefab instance
+            bool isAddedGameObjectOverride = PrefabUtility.IsAddedGameObjectOverride(go);
+
             Rect iconRect = new Rect(selectionRect)
             {
-                width = noDefaultIcon && (iconTexture == null && prefabTexture == null)
+                width = !isAddedGameObjectOverride
+                        && noDefaultIcon
+                        && (iconTexture == null && prefabTexture == null)
                     ? 0
                     : IndentOffset,
             };
@@ -469,7 +474,7 @@ namespace SaintsHierarchy.Editor
                 // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
                 if (prefabTexture is null)
                 {
-                    bool drawDefaultIcon = !noDefaultIcon;
+                    bool drawDefaultIcon = !noDefaultIcon || isAddedGameObjectOverride;
                     if(drawDefaultIcon)
                     {
                         GUI.DrawTexture(iconRect, EditorGUIUtility.IconContent("d_GameObject Icon").image,
@@ -479,6 +484,12 @@ namespace SaintsHierarchy.Editor
                 else
                 {
                     GUI.DrawTexture(iconRect, prefabTexture, ScaleMode.ScaleToFit, true);
+                }
+
+                if (isAddedGameObjectOverride)
+                {
+                    GUI.DrawTexture(iconRect, EditorGUIUtility.IconContent("d_PrefabOverlayAdded Icon").image,
+                        ScaleMode.ScaleToFit, true);
                 }
             }
             else
@@ -492,7 +503,18 @@ namespace SaintsHierarchy.Editor
                         iconRect.height *
                         (1 - scale),
                         iconRect.width * scale, iconRect.height * scale);
+                    if (isAddedGameObjectOverride)
+                    {
+                        footerIconRect.x = iconRect.x + 1;
+                        footerIconRect.y -= 1;
+                    }
                     GUI.DrawTexture(footerIconRect, prefabTexture, ScaleMode.ScaleToFit, true);
+                }
+
+                if (isAddedGameObjectOverride)
+                {
+                    GUI.DrawTexture(iconRect, EditorGUIUtility.IconContent("d_PrefabOverlayAdded Icon").image,
+                        ScaleMode.ScaleToFit, true);
                 }
             }
             // label
