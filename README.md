@@ -16,19 +16,19 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 This will automaticlly add indent tree, and icon for camera, light, canvas, event system, wwise
 
-`Window` - `Saints` - `Hierarchy` - `Disable Saints Hierarchy` to disable this plugin
+`Tools` - `SaintsHierarchy` - `Disable Saints Hierarchy` to disable this plugin
 
 ![](https://github.com/user-attachments/assets/f9b3f079-0a7e-46c6-91b2-2ef83f9feff2)
 
 ### Background Strip ###
 
-`Window` - `Saints` - `Hierarchy` - `Background Strip`
+`Tools` - `SaintsHierarchy` - `Background Strip`
 
 ![](https://github.com/user-attachments/assets/a4c4cf02-7bc0-4161-9592-99a0f7d3bc44)
 
 ### Component Icons ###
 
-`Window` - `Saints` - `Hierarchy` - `Component Icons`
+`Tools` - `SaintsHierarchy` - `Component Icons`
 
 You can set the script icon and show the icons at the end of row
 
@@ -42,7 +42,7 @@ Result:
 
 ### GameObject Enabled Checker ###
 
-`Window` - `Saints` - `Hierarchy` - `GameObject Enabled Checker`
+`Tools` - `SaintsHierarchy` - `GameObject Enabled Checker`
 
 Add a checkbox at the end for gameObject which has any disabled parent gameObjects, to quickly toggle it back.
 
@@ -53,6 +53,12 @@ Add a checkbox at the end for gameObject which has any disabled parent gameObjec
 No longer draw the default white box icon if no icon for this gameObject.
 
 ![](https://github.com/user-attachments/assets/d5ed0afc-a908-4f8a-8704-624c1c75efb4)
+
+### Transparent Default Icon ###
+
+Draw a transparent box icon if no icon for this gameObject.
+
+![](https://github.com/user-attachments/assets/87de8b82-5769-44f2-a407-a007fc1e4e17)
 
 ## Usage ##
 

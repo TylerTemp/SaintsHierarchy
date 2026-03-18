@@ -1,3 +1,9 @@
+## 1.1.6 ##
+
+1.  Fix: new added gameObject under a prefab instance now shows a `+` icon like Unity's default behavoir
+2.  Add: `Transparent Default Icon` config so label can be aligned
+3.  Change: Move menu to `Tools/SaintsHierarchy`
+
 ## 1.1.5 ##
 
 Add "No Default Icon" config to remove the default white box icon for gameObject.
