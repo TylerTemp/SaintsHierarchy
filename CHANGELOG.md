@@ -1,3 +1,7 @@
+## 1.1.7 ##
+
+Add: Config for "GameObject Enabled Checker Every Row" [#1](https://github.com/TylerTemp/SaintsHierarchy/issues/1)
+
 ## 1.1.6 ##
 
 1.  Fix: new added gameObject under a prefab instance now shows a `+` icon like Unity's default behavoir

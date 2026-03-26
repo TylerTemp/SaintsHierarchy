@@ -29,6 +29,7 @@ namespace SaintsHierarchy.Editor.Utils
                     PersonalHierarchyConfig.instance.backgroundStrip = SaintsHierarchyConfig.instance.backgroundStrip;
                     PersonalHierarchyConfig.instance.componentIcons = SaintsHierarchyConfig.instance.componentIcons;
                     PersonalHierarchyConfig.instance.gameObjectEnabledChecker = SaintsHierarchyConfig.instance.gameObjectEnabledChecker;
+                    PersonalHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow = SaintsHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow;
                     PersonalHierarchyConfig.instance.sceneGuidToGoConfigsList = SaintsHierarchyConfig.instance.sceneGuidToGoConfigsList.ToList();
                     PersonalHierarchyConfig.instance.SaveToDisk();
                 }
@@ -105,6 +106,37 @@ namespace SaintsHierarchy.Editor.Utils
             Refresh();
         }
 
+        private const string GameObjectEnabledCheckerEveryRowPath = MenuRoot + "GameObject Enabled Checker Every Row";
+
+        [MenuItem(GameObjectEnabledCheckerEveryRowPath)]
+        public static void GameObjectEnabledCheckerEveryRow()
+        {
+            bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
+            if (personalEnabled)
+            {
+                EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
+                PersonalHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow = !PersonalHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow;
+                PersonalHierarchyConfig.instance.SaveToDisk();
+            }
+            else
+            {
+                EditorUtility.SetDirty(SaintsHierarchyConfig.instance);
+                SaintsHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow = !SaintsHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow;
+                SaintsHierarchyConfig.instance.SaveToDisk();
+            }
+
+            Refresh();
+        }
+
+        [MenuItem(GameObjectEnabledCheckerEveryRowPath, true)]
+        private static bool ValidateGameObjectEnabledCheckerEveryRowPath()
+        {
+            bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
+            return personalEnabled
+                ? PersonalHierarchyConfig.instance.gameObjectEnabledChecker
+                : SaintsHierarchyConfig.instance.gameObjectEnabledChecker;
+        }
+
         private const string ComponentIconsPath = MenuRoot + "Component Icons";
 
         [MenuItem(ComponentIconsPath)]
@@ -179,10 +211,8 @@ namespace SaintsHierarchy.Editor.Utils
             {
                 return !PersonalHierarchyConfig.instance.noDefaultIcon;
             }
-            else
-            {
-                return !SaintsHierarchyConfig.instance.noDefaultIcon;
-            }
+
+            return !SaintsHierarchyConfig.instance.noDefaultIcon;
         }
 
         private static void Refresh()
@@ -205,6 +235,9 @@ namespace SaintsHierarchy.Editor.Utils
 
             bool gameObjectEnabledChecker = personalEnabled? PersonalHierarchyConfig.instance.gameObjectEnabledChecker : SaintsHierarchyConfig.instance.gameObjectEnabledChecker;
             Menu.SetChecked(GameObjectEnabledCheckerPath, gameObjectEnabledChecker);
+
+            bool gameObjectEnabledCheckerEveryRow = personalEnabled? PersonalHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow : SaintsHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow;
+            Menu.SetChecked(GameObjectEnabledCheckerEveryRowPath, gameObjectEnabledCheckerEveryRow);
 
             bool componentIcons = personalEnabled? PersonalHierarchyConfig.instance.componentIcons : SaintsHierarchyConfig.instance.componentIcons;
             Menu.SetChecked(ComponentIconsPath, componentIcons);

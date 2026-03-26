@@ -48,6 +48,14 @@ Add a checkbox at the end for gameObject which has any disabled parent gameObjec
 
 ![](https://github.com/user-attachments/assets/22cb4180-4aa6-4dcc-8cfc-6df0ee822e90)
 
+## GameObject Enabled Checker On Every Row ##
+
+`Tools` - `SaintsHierarchy` - `GameObject Enabled Checker Every Row`
+
+This add checkbox for every row instead of undering disabled parent ones.
+
+![](https://github.com/user-attachments/assets/a17f71dd-ab5d-4ab2-a5e4-1c28390eecec)
+
 ### No Default Icon ###
 
 No longer draw the default white box icon if no icon for this gameObject.

@@ -451,12 +451,16 @@ namespace SaintsHierarchy.Editor
             bool gameObjectEnabledChecker = personalDisabled
                 ? SaintsHierarchyConfig.instance.gameObjectEnabledChecker
                 : PersonalHierarchyConfig.instance.gameObjectEnabledChecker;
+            bool gameObjectEnabledCheckerEveryRow = personalDisabled
+                ? SaintsHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow
+                : PersonalHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow;
+
 
             bool componentIcons = personalDisabled
                 ? SaintsHierarchyConfig.instance.componentIcons
                 : PersonalHierarchyConfig.instance.componentIcons;
 
-            DrawRect(gameObjectEnabledChecker, componentIcons, originGo, allComponents, new Rect(rawRightRect)
+            DrawRect(gameObjectEnabledChecker, gameObjectEnabledCheckerEveryRow, componentIcons, originGo, allComponents, new Rect(rawRightRect)
             {
                 width = labelWidth,
             }, rightRect);
@@ -644,14 +648,14 @@ namespace SaintsHierarchy.Editor
             return false;
         }
 
-        private static void DrawRect(bool gameObjectEnabledChecker, bool componentIcons, GameObject originGo, Component[] allComponents, Rect labelRect, Rect rightRect)
+        private static void DrawRect(bool gameObjectEnabledChecker, bool gameObjectEnabledCheckerEveryRow, bool componentIcons, GameObject originGo, Component[] allComponents, Rect labelRect, Rect rightRect)
         {
             HierarchyButtonDrawer.Update();
 
             float leftXLimit = rightRect.x;
 
             Rect useRect = new Rect(rightRect);
-            if (gameObjectEnabledChecker && AnyParentDisabled(originGo))
+            if (gameObjectEnabledChecker && (gameObjectEnabledCheckerEveryRow || AnyParentDisabled(originGo)))
             {
                 useRect.xMax -= 18;
                 Rect checkerRect = new Rect(useRect.xMax + 2,  useRect.y, 16, useRect.height);
