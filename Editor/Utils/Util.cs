@@ -1,11 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using SaintsHierarchy.Editor.Draw;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -68,78 +68,65 @@ namespace SaintsHierarchy.Editor.Utils
 
         private static SaintsHierarchyConfig _config;
 
-        // public static SaintsHierarchyConfig EnsureConfig()
-        // {
-        //     // ReSharper disable once InvertIf
-        //     if (_config == null)
-        //     {
-        //         if (!Directory.Exists("Assets/Editor Default Resources"))
-        //         {
-        //             Debug.Log("Create folder: Assets/Editor Default Resources");
-        //             AssetDatabase.CreateFolder("Assets", "Editor Default Resources");
-        //         }
-        //         if (!Directory.Exists("Assets/Editor Default Resources/SaintsHierarchy"))
-        //         {
-        //             Debug.Log("Create folder: Assets/Editor Default Resources/SaintsHierarchy");
-        //             AssetDatabase.CreateFolder("Assets/Editor Default Resources", "SaintsHierarchy");
-        //         }
-        //
-        //         const string assetPath =
-        //             "Assets/Editor Default Resources/SaintsHierarchy/SaintsHierarchyConfig.asset";
-        //         _config = AssetDatabase.LoadAssetAtPath<SaintsHierarchyConfig>(assetPath);
-        //         // ReSharper disable once InvertIf
-        //         if (_config == null && !File.Exists(assetPath))
-        //         {
-        //             _config = ScriptableObject.CreateInstance<SaintsHierarchyConfig>();
-        //             Debug.Log("Create SaintsHierarchyConfig");
-        //             AssetDatabase.CreateAsset(_config,
-        //                 assetPath);
-        //         }
-        //     }
-        //
-        //     return _config;
-        // }
-
         public static void PopupConfig(Rect worldBound, GameObject go, GameObjectConfig goConfig)
         {
             PopupWindow.Show(worldBound, new GameObjectConfigPopup(go, goConfig));
         }
 
-        // public static GlobalObjectId ScenePrefabGidToUnpackedGid(GlobalObjectId id, string prefabId)
-        // {
-        //     string[] sourceSplit = id.ToString().Split('-');
-        //     // string[] prefabSplit = prefabId.ToString().Split('-');
-        //     // string prefabFileId = prefabSplit[prefabSplit.Length - 2];
-        //     // sourceSplit[1] = "1";
-        //     sourceSplit[2] = prefabId;
-        //     sourceSplit[4] = "0";
-        //     ulong fileId = (id.targetObjectId ^ id.targetPrefabId) & 0x7fffffffffffffff;
-        //     // sourceSplit[3] = fileId.ToString();
-        //
-        //     var join = string.Join("-", sourceSplit);
-        //
-        //     // ReSharper disable once ConvertIfStatementToReturnStatement
-        //     if (GlobalObjectId.TryParse(
-        //             join,
-        //             out GlobalObjectId unpackedGid))
-        //     {
-        //         return unpackedGid;
-        //     }
-        //
-        //     return new GlobalObjectId();
-        //     // // ulong fileId = (id.targetObjectId ^ id.targetPrefabId) & 0x7fffffffffffffff;
-        //     // ulong fileId = (id.targetObjectId ^ prefabId) & 0x7fffffffffffffff;
-        //     //
-        //     // // ReSharper disable once ConvertIfStatementToReturnStatement
-        //     // if (GlobalObjectId.TryParse(
-        //     //         $"GlobalObjectId_V1-{id.identifierType}-{id.assetGUID}-{fileId}-0",
-        //     //         out GlobalObjectId unpackedGid))
-        //     // {
-        //     //     return unpackedGid;
-        //     // }
-        //     //
-        //     // return new GlobalObjectId();
-        // }
+        public static GameObject GetPrefabSubGameObject(string prefabPath, GameObject go)
+        {
+            string absPath = string.Join("/", GetAbsPath(go.transform).Skip(1));
+            // Debug.Log($"popup absPath: {absPath} for {go.name}");
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            GameObject newGo;
+            // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+            if (absPath == "")
+            {
+                newGo = prefab;
+            }
+            else
+            {
+                // Debug.Log(prefab.name);
+                // Debug.Log(prefab.transform);
+                Transform reTarget = prefab.transform.Find(absPath);
+                if (reTarget == null)
+                {
+                    return null;
+                }
+                newGo = reTarget.gameObject;
+            }
+            Debug.Assert(newGo != null, absPath);
+            return newGo;
+        }
+
+        private static IReadOnlyList<string> GetAbsPath(Transform trans)
+        {
+            List<string> names = new List<string>();
+
+            PrefabStage stage = PrefabStageUtility.GetCurrentPrefabStage();
+            GameObject prefabContentsRoot =
+                stage != null ? stage.prefabContentsRoot : null;
+
+
+            Transform current = trans;
+            while (current != null)
+            {
+                // Debug.Log($"add {current.name}");
+                names.Insert(0, current.name);
+
+                if (stage != null &&
+                    current.gameObject.scene == stage.scene &&
+                    current.gameObject == prefabContentsRoot)
+                {
+                    break;
+                }
+
+                current = current.parent;
+
+            }
+            // Debug.Log($"names={string.Join("/",  names)}");
+            return names;
+        }
 
         public static string GlobalObjectIdNormString(GlobalObjectId goId)
         {
@@ -149,15 +136,6 @@ namespace SaintsHierarchy.Editor.Utils
             // goIdSplit[4] = "0";
             return string.Join('-', goIdSplit);
         }
-
-        // public static string GlobalObjectIdNormStringNoPrefabLink(GlobalObjectId goId)
-        // {
-        //     string goIdStringRaw = goId.ToString();
-        //     string[] goIdSplit = goIdStringRaw.Split('-');
-        //     goIdSplit[1] = "1";
-        //     goIdSplit[4] = "0";
-        //     return string.Join('-', goIdSplit);
-        // }
 
         private static readonly Dictionary<Type, IReadOnlyList<RenderTargetInfo>> CacheRenderTargetInfos =
             new Dictionary<Type, IReadOnlyList<RenderTargetInfo>>();

@@ -114,29 +114,11 @@ namespace SaintsHierarchy.Editor
             GameObject go = originGo;
             if (curScenePath.EndsWith(".prefab"))
             {
-                string absPath = string.Join("/", GetAbsPath(go.transform).Skip(1));
-                // Debug.Log($"popup absPath: {absPath} for {go.name}");
-                GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(curScenePath);
-                GameObject newGo;
-                // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-                if (absPath == "")
+                go = Util.GetPrefabSubGameObject(curScenePath, originGo);
+                if (go == null)
                 {
-                    newGo = prefab;
+                    return;
                 }
-                else
-                {
-                    // Debug.Log(prefab.name);
-                    // Debug.Log(prefab.transform);
-                    Transform reTarget = prefab.transform.Find(absPath);
-                    if (reTarget == null)
-                    {
-                        return;
-                    }
-                    newGo = reTarget.gameObject;
-                }
-                Debug.Assert(newGo != null, absPath);
-                go = newGo;
-                // Debug.Log($"popup re-id: {GlobalObjectId.GetGlobalObjectIdSlow(targetGo)}");
             }
 
             GameObjectConfig goConfig;
@@ -1162,35 +1144,6 @@ namespace SaintsHierarchy.Editor
             result.Reverse();
 
             return result;
-        }
-
-        private static IReadOnlyList<string> GetAbsPath(Transform trans)
-        {
-            List<string> names = new List<string>();
-
-            PrefabStage stage = PrefabStageUtility.GetCurrentPrefabStage();
-            GameObject prefabContentsRoot =
-                stage != null ? stage.prefabContentsRoot : null;
-
-
-            Transform current = trans;
-            while (current != null)
-            {
-                // Debug.Log($"add {current.name}");
-                names.Insert(0, current.name);
-
-                if (stage != null &&
-                    current.gameObject.scene == stage.scene &&
-                    current.gameObject == prefabContentsRoot)
-                {
-                    break;
-                }
-
-                current = current.parent;
-
-            }
-            // Debug.Log($"names={string.Join("/",  names)}");
-            return names;
         }
 
         private static (bool found, GameObjectConfig config) GetGameObjectConfig(GameObject go)

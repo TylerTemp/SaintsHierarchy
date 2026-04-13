@@ -5,7 +5,8 @@
         "Unity.RenderPipelines.Core.Runtime",
         "AK.Wwise.Unity.MonoBehaviour",
         "SaintsHierarchy",
-        "SaintsField.Runtime"
+        "SaintsField.Runtime",
+        "SaintsField.Editor"
     ],
     "includePlatforms": [
         "Editor"
