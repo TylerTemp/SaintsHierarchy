@@ -14,7 +14,9 @@ namespace SaintsHierarchy.Editor
         public bool transparentDefaultIcon { get; }
 
         public List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList { get; }
-        public List<SceneGuidToGoFavorites> sceneGuidToGoFavoritesList { get; }
+
+        public bool disableFavorites { get; set; }
+        public List<GameObjectFavorite> favorites { get; }
         // ReSharper restore InconsistentNaming
 
         void SaveToDisk();

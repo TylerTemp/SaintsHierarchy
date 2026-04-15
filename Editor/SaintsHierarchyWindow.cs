@@ -1,9 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using SaintsHierarchy.Editor.Utils;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
+using Scene = UnityEngine.SceneManagement.Scene;
 
 namespace SaintsHierarchy.Editor
 {
@@ -12,11 +18,16 @@ namespace SaintsHierarchy.Editor
         private static Type _sceneHierarchyWindowType;
         private static FieldInfo _sLastInteractedHierarchy;
         private static FieldInfo _fieldMSceneHierarchy;
-        private static PropertyInfo _propertyTreeViewRect;
+        // private static PropertyInfo _propertyTreeViewRect;
 
         [InitializeOnLoadMethod]
-        private static void OnLoad()
+        public static void OnLoad()
         {
+            if (GetUsingConfig().disableFavorites)
+            {
+                return;
+            }
+
             _sceneHierarchyWindowType ??= typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.SceneHierarchyWindow");
             if (_sceneHierarchyWindowType == null)
             {
@@ -42,11 +53,11 @@ namespace SaintsHierarchy.Editor
                 return;
             }
 
-            _propertyTreeViewRect ??= _sceneHierarchyWindowType.GetProperty("treeViewRect", BindingFlags.NonPublic | BindingFlags.Instance);
-            if (_propertyTreeViewRect == null)
-            {
-                return;
-            }
+            // _propertyTreeViewRect ??= _sceneHierarchyWindowType.GetProperty("treeViewRect", BindingFlags.NonPublic | BindingFlags.Instance);
+            // if (_propertyTreeViewRect == null)
+            // {
+            //     return;
+            // }
 
             _fieldMPos ??= typeof(EditorWindow).GetField("m_Pos", BindingFlags.NonPublic | BindingFlags.Instance);
             if (_fieldMPos == null)
@@ -57,6 +68,148 @@ namespace SaintsHierarchy.Editor
             EditorApplication.delayCall += CheckWindowAll;
             EditorWindow.windowFocusChanged -= CheckWindowFocused;
             EditorWindow.windowFocusChanged += CheckWindowFocused;
+
+            EditorSceneManager.sceneOpened -= OnSceneOpened;
+            EditorSceneManager.sceneOpened += OnSceneOpened;
+            EditorSceneManager.sceneClosing -= OnSceneClosing;
+            EditorSceneManager.sceneClosing += OnSceneClosing;
+            EditorSceneManager.newSceneCreated -= OnNewSceneCreated;
+            EditorSceneManager.newSceneCreated += OnNewSceneCreated;
+            EditorApplication.hierarchyChanged -= ReloadAllScene;
+            EditorApplication.hierarchyChanged += ReloadAllScene;
+            OnSceneCheck();
+        }
+
+        private static void ReloadAllScene()
+        {
+            LoadedScenes.Clear();
+            OnSceneCheck();
+        }
+
+        private static readonly HashSet<Scene> LoadedScenes = new HashSet<Scene>();
+
+        private static void OnSceneCheck()
+        {
+            int count = SceneManager.sceneCount;
+            HashSet<Scene> leftOutScenes = new HashSet<Scene>(LoadedScenes);
+
+            for (int i = 0; i < count; i++)
+            {
+                Scene scene = SceneManager.GetSceneAt(i);
+
+                if (LoadedScenes.Add(scene))
+                {
+                    leftOutScenes.Remove(scene);
+                    ReloadSceneFav(scene);
+                }
+                // Debug.Log(
+                //     $"[{i}] " +
+                //     $"name={scene.name}, " +
+                //     $"path={scene.path}, " +
+                //     $"loaded={scene.isLoaded}, " +
+                //     $"dirty={scene.isDirty}"
+                // );
+            }
+
+            foreach (Scene leftOutScene in leftOutScenes)
+            {
+                RemoveSceneFav(leftOutScene);
+            }
+        }
+
+        private static IConfig GetUsingConfig()
+        {
+            // return SaintsHierarchyConfig.instance.en;
+            return PersonalHierarchyConfig.instance.personalEnabled? PersonalHierarchyConfig.instance: SaintsHierarchyConfig.instance;
+        }
+
+        private readonly struct RuntimeFavoriteGameObject
+        {
+            public readonly GameObjectFavorite FavoriteConfig;
+
+            // public string SceneGuid;
+            public readonly GameObject LoadedGameObject;
+            // public readonly RuntimeFavoriteStatus Status;
+
+            public RuntimeFavoriteGameObject(GameObject runtimeGo, GameObjectFavorite config)
+            {
+                LoadedGameObject = runtimeGo;
+                FavoriteConfig = config;
+                // Status = RuntimeFavoriteStatus.Default;
+            }
+        }
+
+        private static readonly List<RuntimeFavoriteGameObject> CurrentFavoriteGameObjects = new List<RuntimeFavoriteGameObject>();
+
+        private static void ReloadSceneFav(Scene scene) => ReloadSceneFav(scene.path);
+        private static void ReloadSceneFav(string scenePath)
+        {
+            GUID guid = AssetDatabase.GUIDFromAssetPath(scenePath);
+            string guidStr = guid.ToString();
+            CurrentFavoriteGameObjects.RemoveAll(each => each.FavoriteConfig.sceneGuid == guidStr);
+
+            IConfig config = Util.GetFavoriteConfig();
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+            Debug.Log($"scene fav count {config.favorites.Count}");
+#endif
+            foreach (GameObjectFavorite sceneGuidToGoFavorites in config.favorites)
+            {
+                // Debug.Log($"checking {sceneGuidToGoFavorites.sceneGuid}->{guidStr}");
+                if (sceneGuidToGoFavorites.sceneGuid == guidStr)
+                {
+                    // List<RuntimeFavoriteGameObject> fav = new List<RuntimeFavoriteGameObject>();
+                    string gameIdStr = sceneGuidToGoFavorites.globalObjectIdString;
+                    // Debug.Log($"parsing {gameIdStr}");
+                    if (GlobalObjectId.TryParse(gameIdStr, out GlobalObjectId id))
+                    {
+                        GameObject go = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as GameObject;
+                        // Debug.Log($"get {go}");
+                        if (go != null)
+                        {
+                            // Debug.Log($"add {go}");
+                            CurrentFavoriteGameObjects.Add(new RuntimeFavoriteGameObject(go, sceneGuidToGoFavorites));
+                        }
+                    }
+                    // else
+                    // {
+                    //     Debug.Log($"parsing failed");
+                    // }
+
+                    // return;
+                    // CurrentFavoriteGameObjects.RemoveAll(static each => each.SceneGuid == sceneGuidToGoFavorites.sceneGuid);
+                }
+            }
+        }
+
+        private static void RemoveSceneFav(Scene scene)
+        {
+            string scenePath = scene.path;
+            GUID guid = AssetDatabase.GUIDFromAssetPath(scenePath);
+            string guidStr = guid.ToString();
+            CurrentFavoriteGameObjects.RemoveAll(each => each.FavoriteConfig.sceneGuid == guidStr);
+        }
+
+        private static void OnNewSceneCreated(Scene scene, NewSceneSetup setup, NewSceneMode mode)
+        {
+            ReloadSceneFav(scene);
+            // Debug.Log($"created {scene.name}");
+        }
+
+        // private static void OnSceneClosed(Scene scene)
+        // {
+        //     Debug.Log($"closed {scene.name}");
+        // }
+
+        private static void OnSceneClosing(Scene scene, bool removingScene)
+        {
+            RemoveSceneFav(scene);
+            // Debug.Log($"closing {scene.name}");
+        }
+
+        private static void OnSceneOpened(Scene scene, OpenSceneMode mode)
+        {
+            ReloadSceneFav(scene);
+            // Debug.Log($"opened {scene.name}");
         }
 
         private static bool IsDisabled()
@@ -123,9 +276,10 @@ namespace SaintsHierarchy.Editor
                 int
 #endif
                 , bool, bool> SetExpand;
-            public readonly object TreeViewData;
-            public readonly PropertyInfo PropertyRowCount;
-            private readonly PropertyInfo PropertyTreeViewRect;
+
+            private readonly object _treeViewData;
+            private readonly PropertyInfo _propRowCount;
+            // private readonly PropertyInfo _propTreeViewRect;
 
             public readonly Func<
 #if UNITY_6000_3_OR_NEWER
@@ -150,7 +304,7 @@ namespace SaintsHierarchy.Editor
 #endif
                 , bool, bool> setExpand,
                 object treeViewData,
-                PropertyInfo propertyRowCount,
+                PropertyInfo propRowCount,
                 Func<
 #if UNITY_6000_3_OR_NEWER
                     EntityId
@@ -159,7 +313,6 @@ namespace SaintsHierarchy.Editor
 #endif
                     , int
                 > getRow,
-                PropertyInfo propertyTreeViewRect,
                 TreeViewState
 #if UNITY_6000_3_OR_NEWER
                     <EntityId>
@@ -170,15 +323,15 @@ namespace SaintsHierarchy.Editor
                 OriginalOnGUI = originalOnGUI;
                 SetExpand = setExpand;
 
-                TreeViewData = treeViewData;
-                PropertyRowCount = propertyRowCount;
+                _treeViewData = treeViewData;
+                _propRowCount = propRowCount;
                 GetRow = getRow;
-                PropertyTreeViewRect = propertyTreeViewRect;
+                // _propTreeViewRect = propTreeViewRect;
                 TreeViewState = treeViewState;
             }
 
-            public int GetRowCount() => (int)PropertyRowCount.GetValue(TreeViewData);
-            public Rect GetTreeViewRect(EditorWindow window) => (Rect)PropertyTreeViewRect.GetValue(window);
+            public int GetRowCount() => (int)_propRowCount.GetValue(_treeViewData);
+            // public Rect GetTreeViewRect(EditorWindow window) => (Rect)_propTreeViewRect.GetValue(window);
         }
 
         private static void SetupWrap(EditorWindow window)
@@ -241,9 +394,8 @@ namespace SaintsHierarchy.Editor
 #endif
                 )_fieldMTreeViewState.GetValue(sceneHierarchy);
 
-
-                    // UnityEditor.SceneHierarchyWindow.m_SceneHierarchy.m_TreeView;
-                    _fieldMTreeView ??= sceneHierarchy.GetType().GetField("m_TreeView", BindingFlags.NonPublic | BindingFlags.Instance);
+            // UnityEditor.SceneHierarchyWindow.m_SceneHierarchy.m_TreeView;
+            _fieldMTreeView ??= sceneHierarchy.GetType().GetField("m_TreeView", BindingFlags.NonPublic | BindingFlags.Instance);
             if (_fieldMTreeView == null)
             {
                 return default;
@@ -402,26 +554,102 @@ namespace SaintsHierarchy.Editor
             // OriginDelegate[window] = wrappedDelegate;
             // window.Repaint();
 
-            return new WrapInfo(onGuiDelegate, setExpand, treeViewData, _propertyRowCount, getRow, _propertyTreeViewRect, treeViewState);
+            return new WrapInfo(onGuiDelegate, setExpand, treeViewData, _propertyRowCount, getRow, treeViewState);
         }
 
         private static FieldInfo _fieldMPos;
 
+        private enum RuntimeFavoriteStatus
+        {
+            Default,
+            DragExisted,
+            DragNew,
+        }
+
+        private class FavoriteDrawingInfo
+        {
+            public readonly RuntimeFavoriteGameObject RuntimeConfig;
+            public readonly RuntimeFavoriteStatus Status;
+
+            public float OriginalX;
+            public float OriginalY;
+            public readonly float Width;
+            // public readonly float Height;
+
+            public readonly string Text;
+            public readonly Texture2D Icon;
+
+            public static string HelperGetDisplayText(RuntimeFavoriteGameObject config) => config.LoadedGameObject.name;
+            // public string GetDisplayText() => RuntimeConfig.LoadedGameObject.name;
+            private static Texture2D _defaultIcon;
+
+            public static Texture2D HelperGetDisplayIcon(RuntimeFavoriteGameObject config) =>
+                HelperGetDisplayIcon(config.LoadedGameObject);
+            public static Texture2D HelperGetDisplayIcon(GameObject go)
+            {
+                return EditorGUIUtility.GetIconForObject(go) ?? EditorGUIUtility.IconContent("d_GameObject Icon").image as Texture2D;
+            }
+            // public Texture2D GetDisplayIcon() => EditorGUIUtility.GetIconForObject(RuntimeConfig.LoadedGameObject);
+
+            public FavoriteDrawingInfo(RuntimeFavoriteGameObject runtimeConfig,
+                RuntimeFavoriteStatus status,
+                string text,
+                Texture2D icon,
+                float width
+            )
+            {
+                RuntimeConfig = runtimeConfig;
+                Status = status;
+                Width = width;
+
+                Text = text;
+                Icon = icon;
+            }
+        }
+
+        // private static bool _inDrag;
+
+        private class EditorWindowStatus
+        {
+            // public bool InDrag;
+            public readonly List<GameObject> Dragging = new List<GameObject>();
+
+            // public bool selfDragging = false;
+            // public Vector2 selfDraggingStart;
+
+            public GameObject PrepareDragGo;
+            public bool IsDraggingGo;
+        }
+
+        private static readonly Dictionary<EditorWindow,EditorWindowStatus> EditorWindowStatuses = new Dictionary<EditorWindow,EditorWindowStatus>();
+
         private static void OnGUIWrapper(EditorWindow window)
         {
-
             // Debug.Log("called");
             if (!Wrapped.TryGetValue(window, out WrapInfo wrapInfo))
             {
                 throw new Exception("This version of Unity is not supported");
             }
 
+            if (!EditorWindowStatuses.TryGetValue(window, out EditorWindowStatus windowStatus))
+            {
+                EditorWindowStatuses[window] = windowStatus = new EditorWindowStatus();
+            }
+
+            Event eventCurrent = Event.current;
+            EventType eventType = eventCurrent.type;
+
+            // if (eventType is EventType.DragExited or EventType.DragPerform)
+            // {
+            //     windowStatus.InDrag = false;
+            //     windowStatus.Dragging.Clear();
+            // }
+
             Delegate originalOnGUI = wrapInfo.OriginalOnGUI;
 
-            bool personalDisabled = !PersonalHierarchyConfig.instance.personalEnabled;
-            if (personalDisabled
-                    ? SaintsHierarchyConfig.instance.disabled
-                    : PersonalHierarchyConfig.instance.disabled)
+            IConfig config = Util.GetUsingConfig();
+            // bool personalDisabled = !PersonalHierarchyConfig.instance.personalEnabled;
+            if (config.disabled || config.disableFavorites)
             {
                 originalOnGUI.DynamicInvoke();
                 return;
@@ -435,7 +663,239 @@ namespace SaintsHierarchy.Editor
             // GUILayout.Button("OK", GUILayout.Height(80));
 
             float windowWidth = window.position.width;
-            const float toolHeight = 40;
+            // const float gap = 2;
+            float rowHeight = EditorGUIUtility.singleLineHeight + 2;
+
+            // List<FavoriteDrawingInfo> favoriteDrawingInfos = new List<FavoriteDrawingInfo>();
+            List<FavoriteDrawingInfo> existsDrawingInfos = new List<FavoriteDrawingInfo>();
+            HashSet<GameObject> existedDragging = new HashSet<GameObject>();
+            foreach (RuntimeFavoriteGameObject runtimeFavoriteGameObject in CurrentFavoriteGameObjects)
+            {
+                string text = FavoriteDrawingInfo.HelperGetDisplayText(runtimeFavoriteGameObject);
+                Texture2D icon = FavoriteDrawingInfo.HelperGetDisplayIcon(runtimeFavoriteGameObject);
+
+                // float textWidth = EditorStyles.label.CalcSize(new GUIContent(text)).x;
+                // float textWidth = GUI.skin.button.CalcSize(new GUIContent(text, icon)).x;
+                float textWidth = GUI.skin.button.CalcSize(new GUIContent(text)).x;
+                float iconWidth = EditorGUIUtility.singleLineHeight;
+                float totalWidth = textWidth + iconWidth + 6;
+                // float totalWidth = new GUIStyle("Button").CalcSize(new GUIContent(text, )) + iconWidth + gap * 2;
+
+                FavoriteDrawingInfo info = new FavoriteDrawingInfo(runtimeFavoriteGameObject, RuntimeFavoriteStatus.Default, text,
+                    icon, totalWidth);
+
+                if (windowStatus.Dragging.Contains(runtimeFavoriteGameObject.LoadedGameObject))
+                {
+                    // info.Status = RuntimeFavoriteStatus.DragExisted;
+                    existedDragging.Add(runtimeFavoriteGameObject.LoadedGameObject);
+                    continue;
+                }
+                existsDrawingInfos.Add(info);
+            }
+
+            // add dragging to display it properly
+            List<FavoriteDrawingInfo> draggingDrawingInfos = new List<FavoriteDrawingInfo>();
+            foreach (GameObject dragging in windowStatus.Dragging)
+            {
+                string text = dragging.name;
+                Texture2D icon = FavoriteDrawingInfo.HelperGetDisplayIcon(dragging);
+
+                float textWidth = GUI.skin.button.CalcSize(new GUIContent(text)).x;
+                float iconWidth = EditorGUIUtility.singleLineHeight;
+                float totalWidth = textWidth + iconWidth + 6;
+                // float totalWidth = new GUIStyle("Button").CalcSize(new GUIContent(text, )) + iconWidth + gap * 2;
+
+                string scenePath = dragging.scene.path;
+                string sceneGuid = AssetDatabase.AssetPathToGUID(scenePath);
+
+                FavoriteDrawingInfo info = new FavoriteDrawingInfo(
+                    new RuntimeFavoriteGameObject(
+                    dragging,
+                    new GameObjectFavorite
+                    {
+                        globalObjectIdString = GlobalObjectId.GetGlobalObjectIdSlow(dragging).ToString(),
+                        sceneGuid = sceneGuid,
+                    }),
+                    existedDragging.Contains(dragging)? RuntimeFavoriteStatus.DragExisted: RuntimeFavoriteStatus.DragNew,
+                    text,
+                    icon, totalWidth);
+                draggingDrawingInfos.Add(info);
+            }
+
+            // Calc
+            float toolHeight = CalcRelativePos(existsDrawingInfos.Concat(draggingDrawingInfos), rowHeight, windowWidth);
+            Rect toolbarRect = new Rect(0, 0, windowWidth, toolHeight);
+
+            // re-sort
+            List<FavoriteDrawingInfo> favoriteDrawingInfos;
+            if (windowStatus.Dragging.Count > 0)
+            {
+                Vector2 mousePos = eventCurrent.mousePosition;
+                favoriteDrawingInfos = new List<FavoriteDrawingInfo>(existsDrawingInfos.Count + draggingDrawingInfos.Count);
+                bool inserted = false;
+                foreach (FavoriteDrawingInfo favoriteDrawingInfo in existsDrawingInfos)
+                {
+                    Rect useRect = new Rect(favoriteDrawingInfo.OriginalX + toolbarRect.x,
+                        favoriteDrawingInfo.OriginalY + toolbarRect.y, favoriteDrawingInfo.Width, rowHeight);
+                    if (!inserted && useRect.Contains(mousePos))
+                    {
+                        bool isPre = Mathf.InverseLerp(useRect.x, useRect.xMax, mousePos.x) < 0.4f;
+                        if (isPre)
+                        {
+                            favoriteDrawingInfos.AddRange(draggingDrawingInfos);
+                            favoriteDrawingInfos.Add(favoriteDrawingInfo);
+                        }
+                        else
+                        {
+                            favoriteDrawingInfos.Add(favoriteDrawingInfo);
+                            favoriteDrawingInfos.AddRange(draggingDrawingInfos);
+                        }
+                        inserted = true;
+                    }
+                    else
+                    {
+                        favoriteDrawingInfos.Add(favoriteDrawingInfo);
+                    }
+                }
+
+                if (inserted)
+                {
+                    CalcRelativePos(favoriteDrawingInfos, rowHeight, windowWidth);
+                }
+                else
+                {
+                    favoriteDrawingInfos.AddRange(draggingDrawingInfos);
+                }
+            }
+            else
+            {
+                favoriteDrawingInfos = existsDrawingInfos;
+            }
+
+            // Event evt = Event.current;
+            if (!toolbarRect.Contains(eventCurrent.mousePosition))
+            {
+                // windowStatus.InDrag = false;
+                windowStatus.Dragging.Clear();
+            }
+
+            CanDropGos(eventCurrent, eventType, toolbarRect, windowStatus);
+            // Debug.Log(hasDrop);
+            if (eventType == EventType.DragPerform && windowStatus.Dragging.Count > 0)
+            {
+                ApplyListToConfig(favoriteDrawingInfos);
+                // foreach (GameObject favGo in windowStatus.Dragging)
+                // {
+                //     // Debug.Log(favGo);
+                //     AddToConfig(favGo);
+                // }
+                DragAndDrop.AcceptDrag();
+            }
+
+            // bool repaint = false;
+            // Rect repaintRect = default;
+
+            foreach (FavoriteDrawingInfo favoriteDrawingInfo in favoriteDrawingInfos)
+            {
+                Rect useRect = new Rect(favoriteDrawingInfo.OriginalX + toolbarRect.x,
+                    favoriteDrawingInfo.OriginalY + toolbarRect.y, favoriteDrawingInfo.Width, rowHeight);
+
+                Rect drawRect = new Rect(useRect.x + 1, useRect.y + 1, useRect.width - 2, useRect.height - 2);
+                GUIContent content = new GUIContent(favoriteDrawingInfo.Text, favoriteDrawingInfo.Icon);
+                using (new GUIBackgroundColorScoopWithStatus(favoriteDrawingInfo.Status))
+                {
+                    GUI.Box(drawRect, content, GUI.skin.button);
+                }
+                bool btnClicked = false;
+
+                switch (eventType)
+                {
+                    case EventType.MouseDown:
+                        windowStatus.IsDraggingGo = false;
+                        if (eventCurrent.button == 0
+                            && useRect.Contains(eventCurrent.mousePosition))
+                        {
+                            windowStatus.PrepareDragGo = favoriteDrawingInfo.RuntimeConfig.LoadedGameObject;
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_DRAG
+                            Debug.Log($"PrepareDragGo: {favoriteDrawingInfo.RuntimeConfig.LoadedGameObject}");
+#endif
+
+                            // windowStatus.selfDraggingStart = evt.mousePosition;
+
+                            // Start drag operation
+                            DragAndDrop.PrepareStartDrag();
+                            // DragAndDrop.SetGenericData("MyDragData", "Drag");
+
+                            // Debug.Log("prepare");
+                            // EditorGUI.DrawRect(useRect, Color.red);
+                            eventCurrent.Use();
+                        }
+                        break;
+
+                    case EventType.MouseDrag:
+                        if (useRect.Contains(eventCurrent.mousePosition)
+                            && !windowStatus.IsDraggingGo
+                            && windowStatus.PrepareDragGo == favoriteDrawingInfo.RuntimeConfig.LoadedGameObject)
+                        {
+                            DragAndDrop.objectReferences = new[] { (Object)favoriteDrawingInfo.RuntimeConfig.LoadedGameObject };
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_DRAG
+                            Debug.Log($"DragGo: {favoriteDrawingInfo.RuntimeConfig.LoadedGameObject}");
+#endif
+                            DragAndDrop.StartDrag("Dragging Button");
+                            windowStatus.IsDraggingGo = true;
+                            // Debug.Log("start to drag");
+                            // EditorGUI.DrawRect(useRect, Color.red);
+                            eventCurrent.Use();
+                        }
+                        break;
+
+                    case EventType.MouseUp:
+                    {
+                        // Debug.Log($"{windowStatus.IsDraggingGo}/{windowStatus.PrepareDragGo}=={favoriteDrawingInfo.RuntimeConfig.LoadedGameObject}/{useRect.Contains(eventCurrent.mousePosition)}/{eventCurrent.button}==0");
+                        if (eventCurrent.button == 0
+                            && useRect.Contains(eventCurrent.mousePosition)
+                            && windowStatus.PrepareDragGo == favoriteDrawingInfo.RuntimeConfig.LoadedGameObject)
+                        {
+                            if (!windowStatus.IsDraggingGo)
+                            {
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_DRAG
+                                Debug.Log($"DragGoClick: {favoriteDrawingInfo.RuntimeConfig.LoadedGameObject}");
+#endif
+                                btnClicked = true;
+                                eventCurrent.Use();
+                            }
+                            else
+                            {
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_DRAG
+                                Debug.Log($"DragGoEnd: {favoriteDrawingInfo.RuntimeConfig.LoadedGameObject}");
+#endif
+                            }
+
+                            windowStatus.IsDraggingGo = false;
+                            windowStatus.PrepareDragGo = null;
+                            DragAndDrop.objectReferences = Array.Empty<Object>();
+                        }
+
+                        break;
+                    }
+                }
+
+                if (btnClicked)
+                {
+                    if (eventCurrent.alt)
+                    {
+                        PopConfigWindow(
+                            new Rect(eventCurrent.mousePosition.x, eventCurrent.mousePosition.y, 0, 0),
+                            favoriteDrawingInfo.RuntimeConfig.FavoriteConfig,
+                            window);
+                    }
+                    else
+                    {
+                        ExpandInTree(favoriteDrawingInfo.RuntimeConfig.LoadedGameObject, wrapInfo, window, 20);
+                    }
+                }
+            }
+
 
             Rect originMPos = (Rect)_fieldMPos.GetValue(window);
             Rect offsetMPos = new Rect(originMPos)
@@ -457,48 +917,246 @@ namespace SaintsHierarchy.Editor
                 _fieldMPos.SetValue(window, originMPos);
             }
 
-            Rect toolbarRect = new Rect(0, 0, windowWidth, toolHeight);
-
-            Event evt = Event.current;
-            (bool hasAny, IEnumerable<GameObject> allGo) = ContainAnyAndFull(CanDropGos(evt, toolbarRect));
-            if (hasAny)
+            if (windowStatus.Dragging.Count > 0)
             {
-                if (evt.type == EventType.DragPerform)
+                Vector2 mousePos = eventCurrent.mousePosition;
+                GUIContent content = new GUIContent(string.Join("\n", windowStatus.Dragging.Select(each => each.name)));
+                Vector2 size = GUI.skin.label.CalcSize(content);
+                Rect rect = new Rect(
+                    mousePos.x + 10,
+                    mousePos.y + 10,
+                    size.x,
+                    size.y
+                );
+
+                GUI.Label(rect, content);
+                if (eventType is EventType.MouseMove or EventType.DragUpdated)
                 {
-                    foreach (GameObject favGo in allGo)
-                    {
-                        // Debug.Log(favGo);
-                        AddToConfig(favGo);
-                    }
-                    DragAndDrop.AcceptDrag();
+                    window.Repaint();
                 }
-                evt.Use();
             }
 
 
-            IConfig config = SaintsHierarchyConfig.instance;
-            if (config.sceneGuidToGoFavoritesList.Count > 0)
+            if (eventType is EventType.DragExited or EventType.DragPerform)
             {
-                List<GameObjectFavorite> favorites = config.sceneGuidToGoFavoritesList[0].favorites;
-                if (favorites.Count > 0)
+                // windowStatus.InDrag = false;
+                windowStatus.Dragging.Clear();
+            }
+        }
+
+        private static void PopConfigWindow(Rect worldBound, GameObjectFavorite favoriteConfig, EditorWindow window)
+        {
+            FavoriteConfigPopup pop = new FavoriteConfigPopup(favoriteConfig);
+            pop.DeletedEvent.AddListener(target =>
+            {
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+                Debug.Log($"fav deleted {target.globalObjectIdString}");
+#endif
+                ReloadAllScene();
+                window.Repaint();
+            });
+            PopupWindow.Show(worldBound, pop);
+        }
+
+        private static void ApplyListToConfig(IReadOnlyList<FavoriteDrawingInfo> favoriteDrawingInfos)
+        {
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_APPLY_FAV
+            foreach (FavoriteDrawingInfo favoriteDrawingInfo in favoriteDrawingInfos)
+            {
+                Debug.Log($"{favoriteDrawingInfo.Status}/{favoriteDrawingInfo.RuntimeConfig.LoadedGameObject.name}");
+            }
+#endif
+
+            IConfig config = Util.GetFavoriteConfig();
+            bool reload = false;
+
+            // deal move
+            {
+                List<GameObjectFavorite> beforeDragSavedConfigsReversed = new List<GameObjectFavorite>();
+                List<GameObjectFavorite> dragSavedConfigs = new List<GameObjectFavorite>();
+                foreach (FavoriteDrawingInfo favoriteDrawingInfo in favoriteDrawingInfos)
                 {
-                    if (GUI.Button(toolbarRect, favorites[0].globalObjectIdString))
+                    GameObjectFavorite savedConf = favoriteDrawingInfo.RuntimeConfig.FavoriteConfig;
+                    if (favoriteDrawingInfo.Status == RuntimeFavoriteStatus.DragExisted)
                     {
-                        GlobalObjectId.TryParse(favorites[0].globalObjectIdString, out GlobalObjectId r);
-                        GameObject g = (GameObject)GlobalObjectId.GlobalObjectIdentifierToObjectSlow(r);
-                        if(g != null)
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_APPLY_FAV
+                        Debug.Log($"found now drag item {savedConf.globalObjectIdString}");
+#endif
+                        dragSavedConfigs.Add(savedConf);
+                    }
+                    else
+                    {
+                        if (dragSavedConfigs.Count == 0)
                         {
-                            ExpandInTree(g, wrapInfo, window, 20);
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_APPLY_FAV
+                            Debug.Log($"found before drag item {savedConf.globalObjectIdString}");
+#endif
+                            beforeDragSavedConfigsReversed.Insert(0, savedConf);
                         }
                     }
                 }
 
+                if (dragSavedConfigs.Count > 0)
+                {
+                    HashSet<string> dragSavedConfigIds =
+                        dragSavedConfigs.Select(each => each.globalObjectIdString).ToHashSet();
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_APPLY_FAV
+                    Debug.Log($"dragSavedConfigIds: {string.Join(",", dragSavedConfigIds)}");
+#endif
+                    config.favorites.RemoveAll(each => dragSavedConfigIds.Contains(each.globalObjectIdString));
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_APPLY_FAV
+                    Debug.Log($"removed now: {string.Join(",", config.favorites.Select(each => each.globalObjectIdString))}");
+#endif
+
+                    bool hasBeforeItems = beforeDragSavedConfigsReversed.Count > 0;
+
+                    int dragToIndex;
+                    if (hasBeforeItems)
+                    {
+                        dragToIndex = beforeDragSavedConfigsReversed.Count;
+                        foreach (GameObjectFavorite savedConfig in beforeDragSavedConfigsReversed)
+                        {
+                            int foundIndex = config.favorites.IndexOf(savedConfig);
+                            if (foundIndex >= 0)
+                            {
+                                dragToIndex = foundIndex + 1;
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_APPLY_FAV
+                                Debug.Log($"shift index to {dragToIndex}");
+#endif
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        dragToIndex = 0;
+                    }
+
+                    dragSavedConfigs.Reverse();
+                    foreach (GameObjectFavorite drag in dragSavedConfigs)
+                    {
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_APPLY_FAV
+                        Debug.Log($"insert index to {dragToIndex}: {drag.globalObjectIdString}");
+#endif
+                        config.favorites.Insert(dragToIndex, drag);
+                    }
+
+                    reload = true;
+                }
             }
 
+            // deal insert
+            List<GameObjectFavorite> beforeDragNewConfigsReversed = new List<GameObjectFavorite>();
+            List<GameObjectFavorite> dragNewConfigs = new List<GameObjectFavorite>();
+            foreach (FavoriteDrawingInfo favoriteDrawingInfo in favoriteDrawingInfos)
+            {
+                GameObjectFavorite savedConf = favoriteDrawingInfo.RuntimeConfig.FavoriteConfig;
+                if (favoriteDrawingInfo.Status == RuntimeFavoriteStatus.DragNew)
+                {
+                    dragNewConfigs.Add(savedConf);
+                }
+                else
+                {
+                    if(dragNewConfigs.Count == 0)
+                    {
+                        beforeDragNewConfigsReversed.Insert(0, savedConf);
+                    }
+                }
+            }
+            if (dragNewConfigs.Count > 0)
+            {
+                int dragToIndex = beforeDragNewConfigsReversed.Count == 0? 0: config.favorites.Count;
+                // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+                foreach (GameObjectFavorite savedConfig in beforeDragNewConfigsReversed)
+                {
+                    int foundIndex = config.favorites.IndexOf(savedConfig);
+                    // ReSharper disable once InvertIf
+                    if (foundIndex >= 0)
+                    {
+                        dragToIndex = foundIndex + 1;
+                        break;
+                    }
+                }
+
+                foreach (GameObjectFavorite drag in dragNewConfigs)
+                {
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_APPLY_FAV
+                    Debug.Log($"insert @{dragToIndex}: {drag.globalObjectIdString}");
+#endif
+                    config.favorites.Insert(dragToIndex, drag);
+                }
+
+                reload = true;
+            }
+
+            // ReSharper disable once InvertIf
+            if (reload)
+            {
+                EditorUtility.SetDirty((Object) config);
+                config.SaveToDisk();
+                ReloadAllScene();
+            }
+        }
+
+        private static float CalcRelativePos(IEnumerable<FavoriteDrawingInfo> infos, float rowHeight, float windowWidth)
+        {
+            float toolHeight = rowHeight;
+            float x = 0;
+            float y = 0;
+            foreach (FavoriteDrawingInfo info in infos)
+            {
+                // Need wrap?
+                if (x + info.Width > windowWidth)
+                {
+                    x = 0;
+                    y += rowHeight;
+                }
+
+                info.OriginalX = x;
+                info.OriginalY = y;
+                toolHeight = y + rowHeight;
+
+                x += info.Width;
+            }
+
+            return toolHeight;
+        }
+
+        private class GUIBackgroundColorScoopWithStatus : IDisposable
+        {
+            private readonly bool _changed;
+            private readonly Color _originalColor;
+            public GUIBackgroundColorScoopWithStatus(RuntimeFavoriteStatus favStatus)
+            {
+                if (favStatus == RuntimeFavoriteStatus.Default)
+                {
+                    return;
+                }
+
+                _changed = true;
+                _originalColor = GUI.backgroundColor;
+                // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
+                GUI.backgroundColor = favStatus switch
+                {
+                    RuntimeFavoriteStatus.DragExisted => Color.cyan,
+                    RuntimeFavoriteStatus.DragNew => Color.green,
+                    _ => throw new ArgumentOutOfRangeException(nameof(favStatus), favStatus, null),
+                };
+                // Debug.Log($"color to {GUI.backgroundColor}");
+            }
+
+            public void Dispose()
+            {
+                if (_changed)
+                {
+                    GUI.backgroundColor = _originalColor;
+                }
+            }
         }
 
         private static void ExpandInTree(GameObject gameObject, WrapInfo wrapInfo, EditorWindow window, float margin)
         {
+            // Debug.Log($"expand {gameObject.name}");
             Transform parent = gameObject.transform.parent;
             while (parent != null)
             {
@@ -541,142 +1199,133 @@ namespace SaintsHierarchy.Editor
             // window.GetMemberValue("m_SceneHierarchy").GetMemberValue<TreeViewState>("m_TreeViewState").scrollPos = Vector2.up * targetScrollPos;
         }
 
-        private static IEnumerable<T> AsEnumerablePrepend<T>(T first, IEnumerator<T> enumerator)
-        {
-            yield return first;
-            while (enumerator.MoveNext()) {
-                yield return enumerator.Current;
-            }
-        }
-
-        private static (bool, IEnumerable<T>) ContainAnyAndFull<T>(IEnumerable<T> iter)
-        {
-            IEnumerator<T> enumerator = iter.GetEnumerator();
-            if (!enumerator.MoveNext())
-            {
-                return (false, Array.Empty<T>());
-            }
-            T first = enumerator.Current;
-            // ReSharper disable once ConvertIfStatementToReturnStatement
-            // if (first == null)
-            // {
-            //     return (false, Array.Empty<T>());
-            // }
-
-            return (true, AsEnumerablePrepend(first, enumerator));
-        }
-
-        private static IEnumerable<GameObject> CanDropGos(Event evt, Rect toolbarRect)
+        private static void CanDropGos(Event evt, EventType evtType, Rect toolbarRect, EditorWindowStatus windowStatus)
         {
             // Event evt = Event.current;
 
-            if (evt.type is not (EventType.DragUpdated or EventType.DragPerform))
+            if (evtType is not (EventType.DragUpdated or EventType.DragPerform))
             {
-                yield break;
+                // Don't clean this!
+                // windowStatus.InDrag = false;
+                return;
             }
 
             if (!toolbarRect.Contains(evt.mousePosition))
             {
-                yield break;
+                // windowStatus.InDrag = false;
+                windowStatus.Dragging.Clear();
+// #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_DRAG
+//                 Debug.Log($"No longer drag as out of rect");
+// #endif
+                return;
             }
 
-            bool any = false;
+            // if (evtType == EventType.DragUpdated)
+            // {
+            //     windowStatus.InDrag = true;
+            // }
 
-            foreach (UnityEngine.Object draggedObject in DragAndDrop.objectReferences)
+            Object[] dragging = DragAndDrop.objectReferences;
+            windowStatus.Dragging.Clear();
+
+            foreach (Object draggedObject in dragging)
             {
                 // ReSharper disable once InvertIf
                 if (draggedObject is GameObject go && string.IsNullOrEmpty(AssetDatabase.GetAssetPath(go)))
                 {
-                    any = true;
-                    // evt.Use();
-                    DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-                    yield return go;
-                    // Debug.Log("Dropped: " + go.name);
+                    windowStatus.Dragging.Add(go);
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_DRAG
+                    Debug.Log($"Add draging {go}");
+#endif
+                    // yield return go;
+                    // Debug.Log("Dragging: " + go.name);
                     // Debug.Log(AssetDatabase.GetAssetPath(go));
                 }
             }
 
-            if (!any)
+            if (windowStatus.Dragging.Count > 0)
+            {
+                DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+                evt.Use();
+            }
+            else
             {
                 DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
             }
 
-            // if (evt.type == EventType.DragPerform)
+            // if (!any)
             // {
-            //     // Necessary to officially "accept" the data
-            //     DragAndDrop.AcceptDrag();
-            //
-            //     // Access the dropped objects
-            //
+            //     DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
             // }
         }
 
 
-        private static void AddToConfig(GameObject go)
-        {
-            // GameObject targetGo = go;
-            // string curScenePath = go.scene.path;
-            // Debug.Log(curScenePath);
-            // if (!string.IsNullOrEmpty(curScenePath) && curScenePath.EndsWith(".prefab"))
-            // {
-            //     targetGo = Util.GetPrefabSubGameObject(curScenePath, go);
-            //     if (targetGo == null)
-            //     {
-            //         return;
-            //     }
-            // }
-            string scenePath = go.scene.path;
-            string sceneGuid = AssetDatabase.AssetPathToGUID(scenePath);
-
-            GlobalObjectId targetId = GlobalObjectId.GetGlobalObjectIdSlow(go);
-            // string targetGoIdStr = Util.GlobalObjectIdNormString(targetId);
-            string targetGoIdStr = targetId.ToString();
-            IConfig config = SaintsHierarchyConfig.instance;
-            List<GameObjectFavorite> favorites = null;
-            foreach (SceneGuidToGoFavorites sceneGuidToGoFavorites in config.sceneGuidToGoFavoritesList)
-            {
-                if (sceneGuidToGoFavorites.sceneGuid == sceneGuid)
-                {
-                    favorites = sceneGuidToGoFavorites.favorites;
-                    foreach (GameObjectFavorite gameObjectFavorite in favorites)
-                    {
-                        if (gameObjectFavorite.globalObjectIdString == targetGoIdStr)
-                        {
-                            Debug.Log($"exists, skip {targetGoIdStr}");
-                            return;
-                        }
-                    }
-                }
-            }
-
-            GameObjectFavorite item = new GameObjectFavorite
-            {
-                globalObjectIdString = targetGoIdStr,
-                alias = string.Empty,
-                color = default,
-                hasColor = false,
-                icon = string.Empty,
-            };
-            if (favorites != null)
-            {
-                Debug.Log($"add {targetGoIdStr} in {sceneGuid}");
-                favorites.Add(item);
-            }
-            else
-            {
-                Debug.Log($"add {targetGoIdStr} created {sceneGuid}");
-                config.sceneGuidToGoFavoritesList.Add(new SceneGuidToGoFavorites
-                {
-                    sceneGuid = sceneGuid,
-                    favorites = new List<GameObjectFavorite>
-                    {
-                        item,
-                    },
-                });
-            }
-
-            config.SaveToDisk();
-        }
+        // private static void AddToConfig(GameObject go)
+        // {
+        //     // GameObject targetGo = go;
+        //     // string curScenePath = go.scene.path;
+        //     // Debug.Log(curScenePath);
+        //     // if (!string.IsNullOrEmpty(curScenePath) && curScenePath.EndsWith(".prefab"))
+        //     // {
+        //     //     targetGo = Util.GetPrefabSubGameObject(curScenePath, go);
+        //     //     if (targetGo == null)
+        //     //     {
+        //     //         return;
+        //     //     }
+        //     // }
+        //     string scenePath = go.scene.path;
+        //     string sceneGuid = AssetDatabase.AssetPathToGUID(scenePath);
+        //
+        //     GlobalObjectId targetId = GlobalObjectId.GetGlobalObjectIdSlow(go);
+        //     // string targetGoIdStr = Util.GlobalObjectIdNormString(targetId);
+        //     string targetGoIdStr = targetId.ToString();
+        //     IConfig config = SaintsHierarchyConfig.instance;
+        //     List<GameObjectFavorite> favorites = null;
+        //     foreach (SceneGuidToGoFavorites sceneGuidToGoFavorites in config.sceneGuidToGoFavoritesList)
+        //     {
+        //         if (sceneGuidToGoFavorites.sceneGuid == sceneGuid)
+        //         {
+        //             favorites = sceneGuidToGoFavorites.favorites;
+        //             foreach (GameObjectFavorite gameObjectFavorite in favorites)
+        //             {
+        //                 if (gameObjectFavorite.globalObjectIdString == targetGoIdStr)
+        //                 {
+        //                     Debug.Log($"exists, skip {targetGoIdStr}");
+        //                     return;
+        //                 }
+        //             }
+        //         }
+        //     }
+        //
+        //     GameObjectFavorite item = new GameObjectFavorite
+        //     {
+        //         globalObjectIdString = targetGoIdStr,
+        //         alias = string.Empty,
+        //         color = default,
+        //         hasColor = false,
+        //         icon = string.Empty,
+        //     };
+        //     if (favorites != null)
+        //     {
+        //         Debug.Log($"add {targetGoIdStr} in {sceneGuid}");
+        //         favorites.Add(item);
+        //     }
+        //     else
+        //     {
+        //         Debug.Log($"add {targetGoIdStr} created {sceneGuid}");
+        //         config.sceneGuidToGoFavoritesList.Add(new SceneGuidToGoFavorites
+        //         {
+        //             sceneGuid = sceneGuid,
+        //             favorites = new List<GameObjectFavorite>
+        //             {
+        //                 item,
+        //             },
+        //         });
+        //     }
+        //
+        //     ReloadSceneFav(scenePath);
+        //     config.SaveToDisk();
+        // }
 
         private static (Type foundType, MethodInfo methodInfo) RecGetMethodInfo(Type type, string name, BindingFlags flags, Type[] types)
         {
@@ -694,7 +1343,6 @@ namespace SaintsHierarchy.Editor
                 if (method != null)
                 {
                     return (type, method);
-                    break;
                 }
 
                 type = type.BaseType;
@@ -702,4 +1350,6 @@ namespace SaintsHierarchy.Editor
             return (null, null);
         }
     }
+
+
 }

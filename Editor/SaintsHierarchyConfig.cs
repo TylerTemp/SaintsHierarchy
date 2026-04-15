@@ -27,8 +27,11 @@ namespace SaintsHierarchy.Editor
         [field: SerializeField, FormerlySerializedAs("noDefaultIcon")] public bool noDefaultIcon { get; set; }
         [field: SerializeField, FormerlySerializedAs("transparentDefaultIcon")] public bool transparentDefaultIcon { get; set; }
 
-        [field: SerializeField, FormerlySerializedAs("sceneGuidToGoConfigsList")] public List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList { get; set; } = new List<SceneGuidToGoConfigs>();
-        [field: SerializeField] public List<SceneGuidToGoFavorites> sceneGuidToGoFavoritesList { get; set; } = new List<SceneGuidToGoFavorites>();
+        [field: SerializeField, FormerlySerializedAs("sceneGuidToGoConfigsList")] public List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList { get; private set; } = new List<SceneGuidToGoConfigs>();
+        // [field: SerializeField] public List<SceneGuidToGoFavorites> sceneGuidToGoFavoritesList { get; set; } = new List<SceneGuidToGoFavorites>();
+
+        [field: SerializeField] public bool disableFavorites { get; set; }
+        [field: SerializeField] public List<GameObjectFavorite> favorites { get; private set; }  = new List<GameObjectFavorite>();
         // ReSharper restore InconsistentNaming
 
         public void SaveToDisk() => Save(true);

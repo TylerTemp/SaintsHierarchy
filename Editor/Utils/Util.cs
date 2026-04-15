@@ -846,5 +846,16 @@ namespace SaintsHierarchy.Editor.Utils
                 ? binaryString
                 : binaryString.PadLeft(bitLength, '0');
         }
+
+        public static IConfig GetUsingConfig()
+        {
+            bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
+            return personalEnabled ? PersonalHierarchyConfig.instance : SaintsHierarchyConfig.instance;
+        }
+
+        public static IConfig GetFavoriteConfig()
+        {
+            return PersonalHierarchyConfig.instance;
+        }
     }
 }

@@ -14,32 +14,6 @@ namespace SaintsHierarchy.Editor.Utils
 #endif
             ;
 
-        private const string PersonalEnabledPath = MenuRoot + "Enable Personal Config";
-
-        [MenuItem(PersonalEnabledPath)]
-        public static void PersonalEnabled()
-        {
-            if (!PersonalHierarchyConfig.instance.personalEnabled)
-            {
-                if (EditorUtility.DisplayDialog("Personal Config", "Copy project config to personal config?", "Yes",
-                        "No"))
-                {
-                    EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
-                    PersonalHierarchyConfig.instance.disabled = SaintsHierarchyConfig.instance.disabled;
-                    PersonalHierarchyConfig.instance.backgroundStrip = SaintsHierarchyConfig.instance.backgroundStrip;
-                    PersonalHierarchyConfig.instance.componentIcons = SaintsHierarchyConfig.instance.componentIcons;
-                    PersonalHierarchyConfig.instance.gameObjectEnabledChecker = SaintsHierarchyConfig.instance.gameObjectEnabledChecker;
-                    PersonalHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow = SaintsHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow;
-                    PersonalHierarchyConfig.instance.sceneGuidToGoConfigsList = SaintsHierarchyConfig.instance.sceneGuidToGoConfigsList.ToList();
-                    PersonalHierarchyConfig.instance.SaveToDisk();
-                }
-            }
-            EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
-            PersonalHierarchyConfig.instance.personalEnabled = !PersonalHierarchyConfig.instance.personalEnabled;
-            PersonalHierarchyConfig.instance.SaveToDisk();
-            Refresh();
-        }
-
         private const string DisablePath = MenuRoot + "Disable Saints Hierarchy";
 
         [MenuItem(DisablePath)]
@@ -57,6 +31,52 @@ namespace SaintsHierarchy.Editor.Utils
                 EditorUtility.SetDirty(SaintsHierarchyConfig.instance);
                 SaintsHierarchyConfig.instance.disabled = !SaintsHierarchyConfig.instance.disabled;
                 SaintsHierarchyConfig.instance.SaveToDisk();
+            }
+
+            Refresh();
+        }
+
+        private const string PersonalEnabledPath = MenuRoot + "Enable Personal Config";
+
+        [MenuItem(PersonalEnabledPath)]
+        public static void PersonalEnabled()
+        {
+            if (!PersonalHierarchyConfig.instance.personalEnabled)
+            {
+                if (EditorUtility.DisplayDialog("Personal Config", "Copy project config to personal config?", "Yes",
+                        "No"))
+                {
+                    EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
+                    PersonalHierarchyConfig.instance.disabled = SaintsHierarchyConfig.instance.disabled;
+                    PersonalHierarchyConfig.instance.backgroundStrip = SaintsHierarchyConfig.instance.backgroundStrip;
+                    PersonalHierarchyConfig.instance.componentIcons = SaintsHierarchyConfig.instance.componentIcons;
+                    PersonalHierarchyConfig.instance.gameObjectEnabledChecker = SaintsHierarchyConfig.instance.gameObjectEnabledChecker;
+                    PersonalHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow = SaintsHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow;
+                    PersonalHierarchyConfig.instance.sceneGuidToGoConfigsList = SaintsHierarchyConfig.instance.sceneGuidToGoConfigsList.ToList();
+                    PersonalHierarchyConfig.instance.disableFavorites = SaintsHierarchyConfig.instance.disableFavorites;
+                    PersonalHierarchyConfig.instance.favorites = SaintsHierarchyConfig.instance.favorites.ToList();
+                    PersonalHierarchyConfig.instance.SaveToDisk();
+                }
+            }
+            EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
+            PersonalHierarchyConfig.instance.personalEnabled = !PersonalHierarchyConfig.instance.personalEnabled;
+            PersonalHierarchyConfig.instance.SaveToDisk();
+            Refresh();
+        }
+
+        private const string DisableFavoritesPath = MenuRoot + "Disable Favorites";
+
+        [MenuItem(DisableFavoritesPath)]
+        public static void DisableFavorites()
+        {
+            IConfig config = Util.GetUsingConfig();
+            EditorUtility.SetDirty((Object)config);
+            config.disableFavorites = !config.disableFavorites;
+            config.SaveToDisk();
+
+            if (!config.disableFavorites)
+            {
+                SaintsHierarchyWindow.OnLoad();
             }
 
             Refresh();
@@ -247,6 +267,9 @@ namespace SaintsHierarchy.Editor.Utils
 
             bool transparentDefaultIcon = personalEnabled? PersonalHierarchyConfig.instance.transparentDefaultIcon : SaintsHierarchyConfig.instance.transparentDefaultIcon;
             Menu.SetChecked(TransparentDefaultIconPath, transparentDefaultIcon);
+
+            bool disableFavorites = Util.GetUsingConfig().disableFavorites;
+            Menu.SetChecked(DisableFavoritesPath, disableFavorites);
         }
     }
 }
