@@ -1,3 +1,11 @@
+## 1.2.0 ##
+
+Add: You can now drag & drop GameObjects to Favorite area at the top of the hierarchy.
+
+Note: 
+1.  ATM the config is saved under personal config (so won't be saved by git), and can not be saved to team-shared config
+2.  ATM it can not show custom icons etc
+
 ## 1.1.7 ##
 
 Add: Config for "GameObject Enabled Checker Every Row" [#1](https://github.com/TylerTemp/SaintsHierarchy/issues/1)

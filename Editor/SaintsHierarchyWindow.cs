@@ -880,19 +880,28 @@ namespace SaintsHierarchy.Editor
                     }
                 }
 
+                bool contextClicked = eventType == EventType.MouseUp
+                                    && eventCurrent.button == 1
+                                    && useRect.Contains(eventCurrent.mousePosition);
+
                 if (btnClicked)
                 {
                     if (eventCurrent.alt)
                     {
-                        PopConfigWindow(
-                            new Rect(eventCurrent.mousePosition.x, eventCurrent.mousePosition.y, 0, 0),
-                            favoriteDrawingInfo.RuntimeConfig.FavoriteConfig,
-                            window);
+                        contextClicked = true;
                     }
                     else
                     {
                         ExpandInTree(favoriteDrawingInfo.RuntimeConfig.LoadedGameObject, wrapInfo, window, 20);
                     }
+                }
+
+                if (contextClicked)
+                {
+                    PopConfigWindow(
+                        new Rect(eventCurrent.mousePosition.x, eventCurrent.mousePosition.y, 0, 0),
+                        favoriteDrawingInfo.RuntimeConfig.FavoriteConfig,
+                        window);
                 }
             }
 

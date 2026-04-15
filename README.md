@@ -20,6 +20,22 @@ This will automaticlly add indent tree, and icon for camera, light, canvas, even
 
 ![](https://github.com/user-attachments/assets/f9b3f079-0a7e-46c6-91b2-2ef83f9feff2)
 
+### Favorite GameObjects ###
+
+You can disable this feature in `Tools` - `SaintsHierarchy` - `Disable Favorites`
+
+Drag & Drop GameObject from hierarchy to the top space to add it to favorite.
+
+*   Clicking the favorited button to quickly arrive the object in hierarchy 
+*   Draging it to adjust the favorite items' order
+*   Right click (or `alt` + click) the favorite button to remove it from favorite
+
+> [!NOTE]
+> 1.  ATM the config is saved under personal config (so won't be saved by git), and can not be saved to team-shared config
+> 2.  ATM it can not show custom icons etc
+
+[![video](https://github.com/user-attachments/assets/06fa2daf-1ad4-4ad3-a61c-5bef0d30ebdf)](https://github.com/user-attachments/assets/6176d57b-4b84-46a4-8384-f231b339ebca)
+
 ### Background Strip ###
 
 `Tools` - `SaintsHierarchy` - `Background Strip`
