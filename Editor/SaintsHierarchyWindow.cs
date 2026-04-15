@@ -66,8 +66,10 @@ namespace SaintsHierarchy.Editor
             }
 
             EditorApplication.delayCall += CheckWindowAll;
+#if UNITY_6000_3_OR_NEWER
             EditorWindow.windowFocusChanged -= CheckWindowFocused;
             EditorWindow.windowFocusChanged += CheckWindowFocused;
+#endif
 
             EditorSceneManager.sceneOpened -= OnSceneOpened;
             EditorSceneManager.sceneOpened += OnSceneOpened;
@@ -237,6 +239,7 @@ namespace SaintsHierarchy.Editor
             }
         }
 
+#if UNITY_6000_3_OR_NEWER
         private static void CheckWindowFocused()
         {
             if (IsDisabled())
@@ -255,6 +258,7 @@ namespace SaintsHierarchy.Editor
                 SetupWrap(fWindow);
             }
         }
+#endif
 
         private static readonly Dictionary<EditorWindow, WrapInfo> Wrapped = new Dictionary<EditorWindow, WrapInfo>();
         // public static readonly Dictionary<EditorWindow, Delegate> OriginDelegate = new Dictionary<EditorWindow, Delegate>();
@@ -956,6 +960,7 @@ namespace SaintsHierarchy.Editor
         private static void PopConfigWindow(Rect worldBound, GameObjectFavorite favoriteConfig, EditorWindow window)
         {
             FavoriteConfigPopup pop = new FavoriteConfigPopup(favoriteConfig);
+            // ReSharper disable once UnusedParameter.Local
             pop.DeletedEvent.AddListener(target =>
             {
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
