@@ -1,4 +1,4 @@
-## 1.2.1 ##
+## 1.2.2 ##
 
 1.  Add: You can now change alias and icon for a favorite gameObject
 2.  Improve: Better dragging detection for favorite gameObject

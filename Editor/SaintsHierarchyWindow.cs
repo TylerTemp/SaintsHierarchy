@@ -157,7 +157,18 @@ namespace SaintsHierarchy.Editor
                     // Debug.Log($"parsing {gameIdStr}");
                     if (GlobalObjectId.TryParse(gameIdStr, out GlobalObjectId id))
                     {
-                        GameObject go = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as GameObject;
+                        GameObject go;
+                        try
+                        {
+                            go = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as GameObject;
+                        }
+                        catch (Exception e)
+                        {
+#if SAINTSHIERARCHY_DEBUG
+                            Debug.LogException(e);
+#endif
+                            return;
+                        }
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
                         Debug.Log($"get {go}");
 #endif
@@ -496,6 +507,10 @@ namespace SaintsHierarchy.Editor
                 return default;
             }
             object treeViewController = _fieldMTreeView.GetValue(sceneHierarchy);
+            if (treeViewController == null)
+            {
+                return default;
+            }
 
             // UnityEditor.SceneHierarchyWindow.m_SceneHierarchy.m_TreeView.data;
             // Debug.Log(treeViewController.GetType());
