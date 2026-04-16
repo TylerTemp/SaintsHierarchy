@@ -10,8 +10,13 @@ namespace SaintsHierarchy.Editor
 #if UNITY_6000_0_OR_NEWER
     [UxmlElement]
 #endif
+    // ReSharper disable once PartialTypeWithSinglePart
     public partial class IconPickerElement: BindableElement, INotifyValueChanged<string>
     {
+#if !UNITY_6000_0_OR_NEWER
+        public new class UxmlFactory : UxmlFactory<IconPickerElement, UxmlTraits> { }
+#endif
+
         private static Texture2D _closeIcon;
         private static VisualTreeAsset _iconPickerTemplate;
         public readonly ToolbarSearchField Search;

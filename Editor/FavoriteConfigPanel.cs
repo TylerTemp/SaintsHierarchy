@@ -21,6 +21,7 @@ namespace SaintsHierarchy.Editor
         public const float DefaultHeight = 600f;
         public float Height { get; private set; } = DefaultHeight;
         public readonly UnityEvent OnHeightChanged = new UnityEvent();
+        private readonly VisualElement _root;
 
         public FavoriteConfigPanel(GameObjectFavorite favoriteConfig)
         {
@@ -29,7 +30,6 @@ namespace SaintsHierarchy.Editor
             _gameObjectConfigTemplate ??= Util.LoadResource<VisualTreeAsset>("UIToolkit/FavoriteConfig.uxml");
             TemplateContainer root = _gameObjectConfigTemplate.CloneTree();
             // root.style.height = Length.Percent(100);
-            Add(root);
 
             _aliasField = root.Q<TextField>("aliasInput");
             _aliasField.value = _favorite.alias ?? string.Empty;
@@ -41,13 +41,25 @@ namespace SaintsHierarchy.Editor
             _iconTypeField.RegisterValueChangedCallback(evt =>
                 GameObjectFavoriteIconTypeChanged((GameObjectFavoriteIconType)evt.newValue));
             _iconTypeField.value = _favorite.iconType;
-            GameObjectFavoriteIconTypeChanged(_favorite.iconType);
 
             root.Q<Button>(name: "saveButton").clicked += Save;
             root.Q<Button>(name: "deleteButton").clicked += OnDeleteButton;
 
+#if UNITY_6000_0_OR_NEWER
+            Add(root);
+
+#else
+            ScrollView scrollView = new ScrollView();
+            scrollView.Add(root);
+            Add(scrollView);
+#endif
+
+            _root = root;
+
             RegisterCallback<AttachToPanelEvent>(AttachToPanel);
             RegisterCallback<GeometryChangedEvent>(GeometryChanged);
+
+            GameObjectFavoriteIconTypeChanged(_favorite.iconType);
         }
 
         private void GeometryChanged(GeometryChangedEvent evt)
@@ -63,7 +75,7 @@ namespace SaintsHierarchy.Editor
 
         private void RefreshHeight()
         {
-            float curHeight = resolvedStyle.height;
+            float curHeight = _root.resolvedStyle.height;
             if (double.IsNaN(curHeight))
             {
                 return;
@@ -75,7 +87,18 @@ namespace SaintsHierarchy.Editor
         private void GameObjectFavoriteIconTypeChanged(GameObjectFavoriteIconType iconType)
         {
             bool display = iconType == GameObjectFavoriteIconType.Custom;
+            // What... the... actual... fuck
+            // For Unity < 6000, the resolved style height is incorrect
+            //  as it will always fit the PopupWindow's size
             _iconPickerElement.style.display = display ? DisplayStyle.Flex : DisplayStyle.None;
+#if !UNITY_6000_0_OR_NEWER
+            schedule.Execute(RefreshHeight).StartingIn(150);
+#endif
+// #if UNITY_6000_0_OR_NEWER
+//             _iconPickerElement.style.display = display ? DisplayStyle.Flex : DisplayStyle.None;
+// #else
+//             _iconPickerElement.SetEnabled(display);
+// #endif
         }
 
         private void OnDeleteButton()

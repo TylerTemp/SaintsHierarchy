@@ -88,6 +88,11 @@ namespace SaintsHierarchy.Editor
         private void OnHeightChanged()
         {
             _height = _favoriteConfigPanel.Height;
+            // Debug.Log($"set height to {_height}");
+
+#if !UNITY_6000_0_OR_NEWER
+            editorWindow.Repaint();
+#endif
         }
     }
 }

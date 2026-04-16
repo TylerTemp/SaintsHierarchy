@@ -6,7 +6,7 @@
     </ui:VisualElement>
     <ui:VisualElement name="content" class="content">
         <ui:TextField label="Alias" name="aliasInput" class="InputWithLabel"/>
-        <ui:EnumField label="Icon Type" value="Center" type="SaintsHierarchy.Editor.GameObjectFavoriteIconType, SaintsHierarchy.Editor" name="iconType" class="InputWithLabel"/>
+        <ui:EnumField label="Icon Type" type="SaintsHierarchy.Editor.GameObjectFavoriteIconType, SaintsHierarchy.Editor" name="iconType" class="InputWithLabel"/>
         <SaintsHierarchy.Editor.IconPickerElement/>
     </ui:VisualElement>
 </ui:UXML>
