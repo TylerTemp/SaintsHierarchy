@@ -66,8 +66,6 @@ namespace SaintsHierarchy.Editor
             }
 
             EditorApplication.delayCall += CheckWindowAll;
-            // EditorApplication.update -= CheckWindowAll;
-            // EditorApplication.update += CheckWindowAll;
 #if UNITY_6000_3_OR_NEWER
             EditorWindow.windowFocusChanged -= CheckWindowFocused;
             EditorWindow.windowFocusChanged += CheckWindowFocused;
@@ -86,26 +84,54 @@ namespace SaintsHierarchy.Editor
 
         private static void ReloadAllScene()
         {
-            LoadedScenes.Clear();
+            // LoadedScenes.Clear();
+            CurrentFavoriteGameObjects.Clear();
             OnSceneCheck();
         }
 
-        private static readonly HashSet<Scene> LoadedScenes = new HashSet<Scene>();
+        // private static readonly HashSet<Scene> LoadedScenes = new HashSet<Scene>();
 
         private static void OnSceneCheck()
         {
+            // int count = SceneManager.sceneCount;
+            // HashSet<Scene> leftOutScenes = new HashSet<Scene>(LoadedScenes);
+
+            // for (int i = 0; i < count; i++)
+            // {
+            //     Scene scene = SceneManager.GetSceneAt(i);
+            //
+            //     if (LoadedScenes.Add(scene))
+            //     {
+            //         leftOutScenes.Remove(scene);
+            //         ReloadSceneFav(scene);
+            //     }
+            //     // Debug.Log(
+            //     //     $"[{i}] " +
+            //     //     $"name={scene.name}, " +
+            //     //     $"path={scene.path}, " +
+            //     //     $"loaded={scene.isLoaded}, " +
+            //     //     $"dirty={scene.isDirty}"
+            //     // );
+            // }
+            //
+            // foreach (Scene leftOutScene in leftOutScenes)
+            // {
+            //     RemoveSceneFav(leftOutScene);
+            // }
+
             int count = SceneManager.sceneCount;
-            HashSet<Scene> leftOutScenes = new HashSet<Scene>(LoadedScenes);
+            HashSet<string> openSceneGuids = new HashSet<string>();
 
             for (int i = 0; i < count; i++)
             {
                 Scene scene = SceneManager.GetSceneAt(i);
 
-                if (LoadedScenes.Add(scene))
-                {
-                    leftOutScenes.Remove(scene);
-                    ReloadSceneFav(scene);
-                }
+                openSceneGuids.Add(AssetDatabase.GUIDFromAssetPath(scene.path).ToString());
+                // if (LoadedScenes.Add(scene))
+                // {
+                //     leftOutScenes.Remove(scene);
+                //     ReloadSceneFav(scene);
+                // }
                 // Debug.Log(
                 //     $"[{i}] " +
                 //     $"name={scene.name}, " +
@@ -115,17 +141,44 @@ namespace SaintsHierarchy.Editor
                 // );
             }
 
-            foreach (Scene leftOutScene in leftOutScenes)
+            IConfig config = Util.GetFavoriteConfig();
+// #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+//             Debug.Log($"scene fav count {config.favorites.Count}");
+// #endif
+            foreach (GameObjectFavorite sceneGuidToGoFavorites in config.favorites)
             {
-                RemoveSceneFav(leftOutScene);
+// #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+//                 Debug.Log($"checking {sceneGuidToGoFavorites.DebugGetObject()} {sceneGuidToGoFavorites.sceneGuid}->{guidStr}");
+// #endif
+                if (openSceneGuids.Contains(sceneGuidToGoFavorites.sceneGuid))
+                {
+                    // List<RuntimeFavoriteGameObject> fav = new List<RuntimeFavoriteGameObject>();
+                    string gameIdStr = sceneGuidToGoFavorites.globalObjectIdString;
+                    // Debug.Log($"parsing {gameIdStr}");
+                    if (GlobalObjectId.TryParse(gameIdStr, out GlobalObjectId id))
+                    {
+                        GameObject go = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as GameObject;
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+                        Debug.Log($"get {go}");
+#endif
+                        if (go != null)
+                        {
+                            // Debug.Log($"add {go}");
+                            CurrentFavoriteGameObjects.Add(new RuntimeFavoriteGameObject(go, sceneGuidToGoFavorites));
+                        }
+                    }
+                    // else
+                    // {
+                    //     Debug.Log($"parsing failed");
+                    // }
+
+                    // return;
+                    // CurrentFavoriteGameObjects.RemoveAll(static each => each.SceneGuid == sceneGuidToGoFavorites.sceneGuid);
+                }
             }
         }
 
-        private static IConfig GetUsingConfig()
-        {
-            // return SaintsHierarchyConfig.instance.en;
-            return PersonalHierarchyConfig.instance.personalEnabled? PersonalHierarchyConfig.instance: SaintsHierarchyConfig.instance;
-        }
+
 
         private readonly struct RuntimeFavoriteGameObject
         {
@@ -145,75 +198,88 @@ namespace SaintsHierarchy.Editor
 
         private static readonly List<RuntimeFavoriteGameObject> CurrentFavoriteGameObjects = new List<RuntimeFavoriteGameObject>();
 
-        private static void ReloadSceneFav(Scene scene) => ReloadSceneFav(scene.path);
-        private static void ReloadSceneFav(string scenePath)
+//         private static void ReloadSceneFav(Scene scene) => ReloadSceneFav(scene.path);
+//         private static void ReloadSceneFav(string scenePath)
+//         {
+//             GUID guid = AssetDatabase.GUIDFromAssetPath(scenePath);
+//             string guidStr = guid.ToString();
+//             CurrentFavoriteGameObjects.RemoveAll(each => each.FavoriteConfig.sceneGuid == guidStr);
+//
+//             IConfig config = Util.GetFavoriteConfig();
+// // #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+// //             Debug.Log($"scene fav count {config.favorites.Count}");
+// // #endif
+//             foreach (GameObjectFavorite sceneGuidToGoFavorites in config.favorites)
+//             {
+// #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+//                 Debug.Log($"checking {sceneGuidToGoFavorites.DebugGetObject()} {sceneGuidToGoFavorites.sceneGuid}->{guidStr}");
+// #endif
+//                 if (sceneGuidToGoFavorites.sceneGuid == guidStr)
+//                 {
+//                     // List<RuntimeFavoriteGameObject> fav = new List<RuntimeFavoriteGameObject>();
+//                     string gameIdStr = sceneGuidToGoFavorites.globalObjectIdString;
+//                     // Debug.Log($"parsing {gameIdStr}");
+//                     if (GlobalObjectId.TryParse(gameIdStr, out GlobalObjectId id))
+//                     {
+//                         GameObject go = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as GameObject;
+// #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+//                         Debug.Log($"get {go}");
+// #endif
+//                         if (go != null)
+//                         {
+//                             // Debug.Log($"add {go}");
+//                             CurrentFavoriteGameObjects.Add(new RuntimeFavoriteGameObject(go, sceneGuidToGoFavorites));
+//                         }
+//                     }
+//                     // else
+//                     // {
+//                     //     Debug.Log($"parsing failed");
+//                     // }
+//
+//                     // return;
+//                     // CurrentFavoriteGameObjects.RemoveAll(static each => each.SceneGuid == sceneGuidToGoFavorites.sceneGuid);
+//                 }
+//             }
+//         }
+//
+//         private static void RemoveSceneFav(Scene scene)
+//         {
+//             string scenePath = scene.path;
+//             GUID guid = AssetDatabase.GUIDFromAssetPath(scenePath);
+//             string guidStr = guid.ToString();
+//             CurrentFavoriteGameObjects.RemoveAll(each => each.FavoriteConfig.sceneGuid == guidStr);
+//         }
+//
+         private static void OnNewSceneCreated(Scene scene, NewSceneSetup setup, NewSceneMode mode)
+         {
+             ReloadAllScene();
+             // ReloadSceneFav(scene);
+             // Debug.Log($"created {scene.name}");
+         }
+//
+//         // private static void OnSceneClosed(Scene scene)
+//         // {
+//         //     Debug.Log($"closed {scene.name}");
+//         // }
+//
+         private static void OnSceneClosing(Scene scene, bool removingScene)
+         {
+             ReloadAllScene();
+             // RemoveSceneFav(scene);
+             // Debug.Log($"closing {scene.name}");
+         }
+
+         private static void OnSceneOpened(Scene scene, OpenSceneMode mode)
+         {
+             ReloadAllScene();
+             // ReloadSceneFav(scene);
+             // Debug.Log($"opened {scene.name}");
+         }
+
+        private static IConfig GetUsingConfig()
         {
-            GUID guid = AssetDatabase.GUIDFromAssetPath(scenePath);
-            string guidStr = guid.ToString();
-            CurrentFavoriteGameObjects.RemoveAll(each => each.FavoriteConfig.sceneGuid == guidStr);
-
-            IConfig config = Util.GetFavoriteConfig();
-#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
-            Debug.Log($"scene fav count {config.favorites.Count}");
-#endif
-            foreach (GameObjectFavorite sceneGuidToGoFavorites in config.favorites)
-            {
-                // Debug.Log($"checking {sceneGuidToGoFavorites.sceneGuid}->{guidStr}");
-                if (sceneGuidToGoFavorites.sceneGuid == guidStr)
-                {
-                    // List<RuntimeFavoriteGameObject> fav = new List<RuntimeFavoriteGameObject>();
-                    string gameIdStr = sceneGuidToGoFavorites.globalObjectIdString;
-                    // Debug.Log($"parsing {gameIdStr}");
-                    if (GlobalObjectId.TryParse(gameIdStr, out GlobalObjectId id))
-                    {
-                        GameObject go = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as GameObject;
-                        // Debug.Log($"get {go}");
-                        if (go != null)
-                        {
-                            // Debug.Log($"add {go}");
-                            CurrentFavoriteGameObjects.Add(new RuntimeFavoriteGameObject(go, sceneGuidToGoFavorites));
-                        }
-                    }
-                    // else
-                    // {
-                    //     Debug.Log($"parsing failed");
-                    // }
-
-                    // return;
-                    // CurrentFavoriteGameObjects.RemoveAll(static each => each.SceneGuid == sceneGuidToGoFavorites.sceneGuid);
-                }
-            }
-        }
-
-        private static void RemoveSceneFav(Scene scene)
-        {
-            string scenePath = scene.path;
-            GUID guid = AssetDatabase.GUIDFromAssetPath(scenePath);
-            string guidStr = guid.ToString();
-            CurrentFavoriteGameObjects.RemoveAll(each => each.FavoriteConfig.sceneGuid == guidStr);
-        }
-
-        private static void OnNewSceneCreated(Scene scene, NewSceneSetup setup, NewSceneMode mode)
-        {
-            ReloadSceneFav(scene);
-            // Debug.Log($"created {scene.name}");
-        }
-
-        // private static void OnSceneClosed(Scene scene)
-        // {
-        //     Debug.Log($"closed {scene.name}");
-        // }
-
-        private static void OnSceneClosing(Scene scene, bool removingScene)
-        {
-            RemoveSceneFav(scene);
-            // Debug.Log($"closing {scene.name}");
-        }
-
-        private static void OnSceneOpened(Scene scene, OpenSceneMode mode)
-        {
-            ReloadSceneFav(scene);
-            // Debug.Log($"opened {scene.name}");
+            // return SaintsHierarchyConfig.instance.en;
+            return PersonalHierarchyConfig.instance.personalEnabled? PersonalHierarchyConfig.instance: SaintsHierarchyConfig.instance;
         }
 
         private static bool IsDisabled()
@@ -1061,7 +1127,7 @@ namespace SaintsHierarchy.Editor
                     if (favoriteDrawingInfo.Status == RuntimeFavoriteStatus.DragExisted)
                     {
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_APPLY_FAV
-                        Debug.Log($"found now drag item {savedConf.globalObjectIdString}");
+                        Debug.Log($"found now drag item {savedConf.DebugGetObject()}");
 #endif
                         dragSavedConfigs.Add(savedConf);
                     }
@@ -1070,7 +1136,7 @@ namespace SaintsHierarchy.Editor
                         if (dragSavedConfigs.Count == 0)
                         {
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_APPLY_FAV
-                            Debug.Log($"found before drag item {savedConf.globalObjectIdString}");
+                            Debug.Log($"found before drag item {savedConf.DebugGetObject()}");
 #endif
                             beforeDragSavedConfigsReversed.Insert(0, savedConf);
                         }
@@ -1082,11 +1148,11 @@ namespace SaintsHierarchy.Editor
                     HashSet<string> dragSavedConfigIds =
                         dragSavedConfigs.Select(each => each.globalObjectIdString).ToHashSet();
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_APPLY_FAV
-                    Debug.Log($"dragSavedConfigIds: {string.Join(",", dragSavedConfigIds)}");
+                    Debug.Log($"dragSavedConfigIds: {string.Join(",", dragSavedConfigs.Select(each => each.DebugGetObject()))}");
 #endif
                     config.favorites.RemoveAll(each => dragSavedConfigIds.Contains(each.globalObjectIdString));
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_APPLY_FAV
-                    Debug.Log($"removed now: {string.Join(",", config.favorites.Select(each => each.globalObjectIdString))}");
+                    Debug.Log($"removed now: {string.Join(",", config.favorites.Select(each => each.DebugGetObject()))}");
 #endif
 
                     bool hasBeforeItems = beforeDragSavedConfigsReversed.Count > 0;
@@ -1117,9 +1183,12 @@ namespace SaintsHierarchy.Editor
                     foreach (GameObjectFavorite drag in dragSavedConfigs)
                     {
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_APPLY_FAV
-                        Debug.Log($"insert index to {dragToIndex}: {drag.globalObjectIdString}");
+                        Debug.Log($"insert index to {dragToIndex}: {drag.DebugGetObject()}");
 #endif
                         config.favorites.Insert(dragToIndex, drag);
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_APPLY_FAV
+                        Debug.Log($"insert result: {string.Join(",", config.favorites.Select(each => each.DebugGetObject()))}");
+#endif
                     }
 
                     reload = true;

@@ -1,4 +1,5 @@
 using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace SaintsHierarchy.Editor
@@ -41,6 +42,15 @@ namespace SaintsHierarchy.Editor
                 // ReSharper disable once NonReadonlyMemberInGetHashCode
                 ? globalObjectIdString.GetHashCode()
                 : 0;
+        }
+
+        public UnityEngine.Object DebugGetObject()
+        {
+            if (GlobalObjectId.TryParse(globalObjectIdString, out GlobalObjectId id))
+            {
+                return GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as UnityEngine.Object;
+            }
+            return null;
         }
     }
 }
