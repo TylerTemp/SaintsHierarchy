@@ -727,14 +727,12 @@ namespace SaintsHierarchy.Editor
 
             // List<FavoriteDrawingInfo> favoriteDrawingInfos = new List<FavoriteDrawingInfo>();
             List<FavoriteDrawingInfo> existsDrawingInfos = new List<FavoriteDrawingInfo>();
-            HashSet<GameObject> existedDragging = new HashSet<GameObject>();
+            Dictionary<GameObject, RuntimeFavoriteGameObject> existedDragging = new Dictionary<GameObject, RuntimeFavoriteGameObject>();
             foreach (RuntimeFavoriteGameObject runtimeFavoriteGameObject in CurrentFavoriteGameObjects)
             {
                 string text = FavoriteDrawingInfo.HelperGetDisplayText(runtimeFavoriteGameObject);
                 Texture2D icon = FavoriteDrawingInfo.HelperGetDisplayIcon(runtimeFavoriteGameObject);
 
-                // float textWidth = EditorStyles.label.CalcSize(new GUIContent(text)).x;
-                // float textWidth = GUI.skin.button.CalcSize(new GUIContent(text, icon)).x;
                 float textWidth = GUI.skin.button.CalcSize(new GUIContent(text)).x;
                 float iconWidth = icon is null? 0: EditorGUIUtility.singleLineHeight;
                 float totalWidth = textWidth + iconWidth + 6;
@@ -746,7 +744,7 @@ namespace SaintsHierarchy.Editor
                 if (windowStatus.Dragging.Contains(runtimeFavoriteGameObject.LoadedGameObject))
                 {
                     // info.Status = RuntimeFavoriteStatus.DragExisted;
-                    existedDragging.Add(runtimeFavoriteGameObject.LoadedGameObject);
+                    existedDragging[runtimeFavoriteGameObject.LoadedGameObject] = runtimeFavoriteGameObject;
                     continue;
                 }
                 existsDrawingInfos.Add(info);
@@ -756,11 +754,16 @@ namespace SaintsHierarchy.Editor
             List<FavoriteDrawingInfo> draggingDrawingInfos = new List<FavoriteDrawingInfo>();
             foreach (GameObject dragging in windowStatus.Dragging)
             {
-                string text = dragging.name;
-                Texture2D icon = FavoriteDrawingInfo.HelperGetDisplayIcon(dragging);
+                bool exists = existedDragging.TryGetValue(dragging,  out RuntimeFavoriteGameObject runtimeFavoriteGameObject);
+                string text = exists
+                    ? FavoriteDrawingInfo.HelperGetDisplayText(runtimeFavoriteGameObject)
+                    : dragging.name;
+                Texture2D icon = exists
+                    ? FavoriteDrawingInfo.HelperGetDisplayIcon(runtimeFavoriteGameObject)
+                    : FavoriteDrawingInfo.HelperGetDisplayIcon(dragging);
 
                 float textWidth = GUI.skin.button.CalcSize(new GUIContent(text)).x;
-                float iconWidth = EditorGUIUtility.singleLineHeight;
+                float iconWidth = icon is null? 0: EditorGUIUtility.singleLineHeight;
                 float totalWidth = textWidth + iconWidth + 6;
                 // float totalWidth = new GUIStyle("Button").CalcSize(new GUIContent(text, )) + iconWidth + gap * 2;
 
@@ -775,7 +778,7 @@ namespace SaintsHierarchy.Editor
                         globalObjectIdString = GlobalObjectId.GetGlobalObjectIdSlow(dragging).ToString(),
                         sceneGuid = sceneGuid,
                     }),
-                    existedDragging.Contains(dragging)? RuntimeFavoriteStatus.DragExisted: RuntimeFavoriteStatus.DragNew,
+                    exists? RuntimeFavoriteStatus.DragExisted: RuntimeFavoriteStatus.DragNew,
                     text,
                     icon, totalWidth);
                 draggingDrawingInfos.Add(info);
