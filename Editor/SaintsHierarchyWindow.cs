@@ -66,6 +66,8 @@ namespace SaintsHierarchy.Editor
             }
 
             EditorApplication.delayCall += CheckWindowAll;
+            EditorApplication.update -= CheckWindowAll;
+            EditorApplication.update += CheckWindowAll;
 #if UNITY_6000_3_OR_NEWER
             EditorWindow.windowFocusChanged -= CheckWindowFocused;
             EditorWindow.windowFocusChanged += CheckWindowFocused;
@@ -271,7 +273,9 @@ namespace SaintsHierarchy.Editor
 
         private readonly struct WrapInfo
         {
+            public readonly object HostViewParent;
             public readonly Delegate OriginalOnGUI;
+            public readonly Delegate WrappedOnGUI;
 
             public readonly Func<
 #if UNITY_6000_3_OR_NEWER
@@ -300,7 +304,7 @@ namespace SaintsHierarchy.Editor
 #endif
                 TreeViewState;
 
-            public WrapInfo(Delegate originalOnGUI, Func<
+            public WrapInfo(object hostViewParent, Delegate originalOnGUI, Delegate wrappedOnGUI, Func<
 #if UNITY_6000_3_OR_NEWER
                 EntityId
 #else
@@ -324,7 +328,9 @@ namespace SaintsHierarchy.Editor
                 treeViewState
                 )
             {
+                HostViewParent = hostViewParent;
                 OriginalOnGUI = originalOnGUI;
+                WrappedOnGUI = wrappedOnGUI;
                 SetExpand = setExpand;
 
                 _treeViewData = treeViewData;
@@ -340,10 +346,12 @@ namespace SaintsHierarchy.Editor
 
         private static void SetupWrap(EditorWindow window)
         {
-            if (Wrapped.ContainsKey(window))
+            if (Wrapped.TryGetValue(window, out WrapInfo wrappedInfo) && IsWrapCurrent(window, wrappedInfo))
             {
                 return;
             }
+
+            Wrapped.Remove(window);
 
             // Debug.Log($"start wrap {window}");
             WrapInfo result = CreateNewWrap(window);
@@ -356,6 +364,23 @@ namespace SaintsHierarchy.Editor
             // Debug.Log($"done wrap {window}");
             Wrapped[window] = result;
             window.Repaint();
+        }
+
+        private static bool IsWrapCurrent(EditorWindow window, WrapInfo wrapInfo)
+        {
+            if (_fieldMOnGUI == null)
+            {
+                return false;
+            }
+
+            object hostViewParent = _fieldMParent.GetValue(window);
+            if (hostViewParent == null || !ReferenceEquals(hostViewParent, wrapInfo.HostViewParent))
+            {
+                return false;
+            }
+
+            Delegate currentOnGui = _fieldMOnGUI.GetValue(hostViewParent) as Delegate;
+            return currentOnGui == wrapInfo.WrappedOnGUI;
         }
 
         private static FieldInfo _fieldMTreeView;
@@ -558,7 +583,7 @@ namespace SaintsHierarchy.Editor
             // OriginDelegate[window] = wrappedDelegate;
             // window.Repaint();
 
-            return new WrapInfo(onGuiDelegate, setExpand, treeViewData, _propertyRowCount, getRow, treeViewState);
+            return new WrapInfo(hostViewParent, onGuiDelegate, wrappedDelegate, setExpand, treeViewData, _propertyRowCount, getRow, treeViewState);
         }
 
         private static FieldInfo _fieldMPos;
@@ -583,7 +608,12 @@ namespace SaintsHierarchy.Editor
             public readonly string Text;
             public readonly Texture2D Icon;
 
-            public static string HelperGetDisplayText(RuntimeFavoriteGameObject config) => config.LoadedGameObject.name;
+            public static string HelperGetDisplayText(RuntimeFavoriteGameObject config)
+            {
+                string alias = config.FavoriteConfig.alias;
+                return string.IsNullOrEmpty(alias)? config.LoadedGameObject.name: alias;
+            }
+
             // public string GetDisplayText() => RuntimeConfig.LoadedGameObject.name;
             private static Texture2D _defaultIcon;
 
@@ -622,6 +652,7 @@ namespace SaintsHierarchy.Editor
             // public Vector2 selfDraggingStart;
 
             public GameObject PrepareDragGo;
+            public Vector2 PrepareDragPos;
             public bool IsDraggingGo;
         }
 
@@ -820,6 +851,7 @@ namespace SaintsHierarchy.Editor
                             && useRect.Contains(eventCurrent.mousePosition))
                         {
                             windowStatus.PrepareDragGo = favoriteDrawingInfo.RuntimeConfig.LoadedGameObject;
+                            windowStatus.PrepareDragPos = eventCurrent.mousePosition;
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_DRAG
                             Debug.Log($"PrepareDragGo: {favoriteDrawingInfo.RuntimeConfig.LoadedGameObject}");
 #endif
@@ -839,8 +871,10 @@ namespace SaintsHierarchy.Editor
                     case EventType.MouseDrag:
                         if (useRect.Contains(eventCurrent.mousePosition)
                             && !windowStatus.IsDraggingGo
-                            && windowStatus.PrepareDragGo == favoriteDrawingInfo.RuntimeConfig.LoadedGameObject)
+                            && windowStatus.PrepareDragGo == favoriteDrawingInfo.RuntimeConfig.LoadedGameObject
+                            && (windowStatus.PrepareDragPos - eventCurrent.mousePosition).sqrMagnitude > 5*5)
                         {
+                            // Debug.Log((windowStatus.PrepareDragPos -  eventCurrent.mousePosition).sqrMagnitude);
                             DragAndDrop.objectReferences = new[] { (Object)favoriteDrawingInfo.RuntimeConfig.LoadedGameObject };
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_DRAG
                             Debug.Log($"DragGo: {favoriteDrawingInfo.RuntimeConfig.LoadedGameObject}");
@@ -903,7 +937,8 @@ namespace SaintsHierarchy.Editor
                 if (contextClicked)
                 {
                     PopConfigWindow(
-                        new Rect(eventCurrent.mousePosition.x, eventCurrent.mousePosition.y, 0, 0),
+                        // new Rect(eventCurrent.mousePosition.x, eventCurrent.mousePosition.y, 0, 0),
+                        new Rect(eventCurrent.mousePosition.x, drawRect.yMax, 0, 0),
                         favoriteDrawingInfo.RuntimeConfig.FavoriteConfig,
                         window);
                 }
@@ -966,6 +1001,11 @@ namespace SaintsHierarchy.Editor
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
                 Debug.Log($"fav deleted {target.globalObjectIdString}");
 #endif
+                ReloadAllScene();
+                window.Repaint();
+            });
+            pop.UpdatedEvent.AddListener(_ =>
+            {
                 ReloadAllScene();
                 window.Repaint();
             });

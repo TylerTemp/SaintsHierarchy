@@ -1,11 +1,24 @@
 :root {
 }
 
-.deleteButton {
-    background-color: rgb(255, 162, 162);
-    background-image: resource("d_TreeEditor.Trash");
-    height: 100%;
+#aliasInput > Label {
+    width: 50px;
+    min-width: unset;
+}
+
+.button {
     flex-shrink: 1;
     flex-grow: 1;
-    -unity-background-scale-mode: scale-to-fit;
+}
+
+.deleteButton {
+    background-color: rgb(237, 64, 64);
+}
+
+.saveButton {
+}
+
+.content {
+    flex-grow: 1;
+    margin: 4px;
 }
