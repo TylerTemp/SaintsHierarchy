@@ -66,8 +66,8 @@ namespace SaintsHierarchy.Editor
             }
 
             EditorApplication.delayCall += CheckWindowAll;
-            EditorApplication.update -= CheckWindowAll;
-            EditorApplication.update += CheckWindowAll;
+            // EditorApplication.update -= CheckWindowAll;
+            // EditorApplication.update += CheckWindowAll;
 #if UNITY_6000_3_OR_NEWER
             EditorWindow.windowFocusChanged -= CheckWindowFocused;
             EditorWindow.windowFocusChanged += CheckWindowFocused;
@@ -617,8 +617,32 @@ namespace SaintsHierarchy.Editor
             // public string GetDisplayText() => RuntimeConfig.LoadedGameObject.name;
             private static Texture2D _defaultIcon;
 
-            public static Texture2D HelperGetDisplayIcon(RuntimeFavoriteGameObject config) =>
-                HelperGetDisplayIcon(config.LoadedGameObject);
+            public static Texture2D HelperGetDisplayIcon(RuntimeFavoriteGameObject config)
+            {
+                switch (config.FavoriteConfig.iconType)
+                {
+                    case GameObjectFavoriteIconType.None:
+                        return null;
+                    case GameObjectFavoriteIconType.Default:
+                    case GameObjectFavoriteIconType.UnityDefault:
+                        return HelperGetDisplayIcon(config.LoadedGameObject);
+                    case GameObjectFavoriteIconType.Custom:
+                    {
+                        if (string.IsNullOrEmpty(config.FavoriteConfig.icon))
+                        {
+                            return null;
+                        }
+                        Texture2D icon = Util.LoadResource<Texture2D>(config.FavoriteConfig.icon);
+                        return icon == null
+                            ? null
+                            : icon;
+                    }
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(config.FavoriteConfig.iconType),  config.FavoriteConfig.iconType, null);
+                }
+
+            }
+
             public static Texture2D HelperGetDisplayIcon(GameObject go)
             {
                 return EditorGUIUtility.GetIconForObject(go) ?? EditorGUIUtility.IconContent("d_GameObject Icon").image as Texture2D;
@@ -712,7 +736,7 @@ namespace SaintsHierarchy.Editor
                 // float textWidth = EditorStyles.label.CalcSize(new GUIContent(text)).x;
                 // float textWidth = GUI.skin.button.CalcSize(new GUIContent(text, icon)).x;
                 float textWidth = GUI.skin.button.CalcSize(new GUIContent(text)).x;
-                float iconWidth = EditorGUIUtility.singleLineHeight;
+                float iconWidth = icon is null? 0: EditorGUIUtility.singleLineHeight;
                 float totalWidth = textWidth + iconWidth + 6;
                 // float totalWidth = new GUIStyle("Button").CalcSize(new GUIContent(text, )) + iconWidth + gap * 2;
 

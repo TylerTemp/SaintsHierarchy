@@ -28,7 +28,7 @@ Drag & Drop GameObject from hierarchy to the top space to add it to favorite.
 
 *   Clicking the favorited button to quickly arrive the object in hierarchy 
 *   Draging it to adjust the favorite items' order
-*   Right click (or `alt` + click) the favorite button to remove it from favorite
+*   Right click (or `alt` + click) the favorite button to change alias, icon, or remove it from favorite
 
 > [!NOTE]
 > 1.  ATM the config is saved under personal config (so won't be saved by git), and can not be saved to team-shared config

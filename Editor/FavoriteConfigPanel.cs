@@ -15,6 +15,12 @@ namespace SaintsHierarchy.Editor
 
         private readonly GameObjectFavorite _favorite;
         private readonly TextField _aliasField;
+        private readonly EnumField _iconTypeField;
+        private readonly IconPickerElement _iconPickerElement;
+
+        public const float DefaultHeight = 600f;
+        public float Height { get; private set; } = DefaultHeight;
+        public readonly UnityEvent OnHeightChanged = new UnityEvent();
 
         public FavoriteConfigPanel(GameObjectFavorite favoriteConfig)
         {
@@ -29,10 +35,47 @@ namespace SaintsHierarchy.Editor
             _aliasField.value = _favorite.alias ?? string.Empty;
             _aliasField.RegisterCallback<KeyDownEvent>(OnAliasKeyDown, TrickleDown.TrickleDown);
 
+            _iconPickerElement = root.Q<IconPickerElement>();
+            _iconTypeField = root.Q<EnumField>("iconType");
+            // _iconTypeField.Init(_favorite.iconType);
+            _iconTypeField.RegisterValueChangedCallback(evt =>
+                GameObjectFavoriteIconTypeChanged((GameObjectFavoriteIconType)evt.newValue));
+            _iconTypeField.value = _favorite.iconType;
+            GameObjectFavoriteIconTypeChanged(_favorite.iconType);
+
             root.Q<Button>(name: "saveButton").clicked += Save;
             root.Q<Button>(name: "deleteButton").clicked += OnDeleteButton;
 
-            RegisterCallback<AttachToPanelEvent>(_ => _aliasField.Focus());
+            RegisterCallback<AttachToPanelEvent>(AttachToPanel);
+            RegisterCallback<GeometryChangedEvent>(GeometryChanged);
+        }
+
+        private void GeometryChanged(GeometryChangedEvent evt)
+        {
+            RefreshHeight();
+        }
+
+        private void AttachToPanel(AttachToPanelEvent evt)
+        {
+            _aliasField.Focus();
+            RefreshHeight();
+        }
+
+        private void RefreshHeight()
+        {
+            float curHeight = resolvedStyle.height;
+            if (double.IsNaN(curHeight))
+            {
+                return;
+            }
+            Height = curHeight;
+            OnHeightChanged.Invoke();
+        }
+
+        private void GameObjectFavoriteIconTypeChanged(GameObjectFavoriteIconType iconType)
+        {
+            bool display = iconType == GameObjectFavoriteIconType.Custom;
+            _iconPickerElement.style.display = display ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         private void OnDeleteButton()
@@ -74,10 +117,14 @@ namespace SaintsHierarchy.Editor
 
             GameObjectFavorite updatedFavorite = config.favorites[foundIndex];
             updatedFavorite.alias = _aliasField.value ?? string.Empty;
+            updatedFavorite.iconType = _iconTypeField.value is GameObjectFavoriteIconType iconType
+                ? iconType
+                : updatedFavorite.iconType;
+            updatedFavorite.icon = _iconPickerElement.value;
             config.favorites[foundIndex] = updatedFavorite;
 
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_CONFIG_FAV
-            Debug.Log($"updatedFavorite.alias={updatedFavorite.alias}");
+            Debug.Log($"updatedFavorite.alias={updatedFavorite.alias}; iconType={updatedFavorite.iconType}; icon={updatedFavorite.icon}");
 #endif
 
             EditorUtility.SetDirty((Object) config);

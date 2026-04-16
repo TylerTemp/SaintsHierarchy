@@ -6,6 +6,5 @@
             <ui:VisualElement name="CustomColorIcon" picking-mode="Ignore" style="flex-grow: 1;"/>
         </ui:VisualElement>
     </ui:VisualElement>
-    <uie:ToolbarSearchField name="ToolbarSearchField" placeholder-text="Path or Search for Icon" class="Search"/>
-    <ui:ScrollView name="IconContainer"/>
+    <SaintsHierarchy.Editor.IconPickerElement/>
 </ui:UXML>

@@ -1,10 +1,12 @@
-<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
     <Style src="project://database/Packages/today.comes.saintshierarchy/Editor/Editor%20Default%20Resources/SaintsHierarchy/UIToolkit/FavoriteConfigPanelStyle.uss?fileID=7433441132597879392&amp;guid=7fe1c17795ee8074685999e53cf49e4b&amp;type=3#FavoriteConfigPanelStyle"/>
-    <ui:VisualElement name="content" class="content">
-        <ui:TextField label="Alias" name="aliasInput"/>
-    </ui:VisualElement>
     <ui:VisualElement name="buttons" style="flex-grow: 1; flex-direction: row;">
         <ui:Button name="deleteButton" tooltip="Delete This Favorite" text="Delete" class="deleteButton button"/>
         <ui:Button text="Save" name="saveButton" class="saveButton button"/>
+    </ui:VisualElement>
+    <ui:VisualElement name="content" class="content">
+        <ui:TextField label="Alias" name="aliasInput" class="InputWithLabel"/>
+        <ui:EnumField label="Icon Type" value="Center" type="SaintsHierarchy.Editor.GameObjectFavoriteIconType, SaintsHierarchy.Editor" name="iconType" class="InputWithLabel"/>
+        <SaintsHierarchy.Editor.IconPickerElement/>
     </ui:VisualElement>
 </ui:UXML>

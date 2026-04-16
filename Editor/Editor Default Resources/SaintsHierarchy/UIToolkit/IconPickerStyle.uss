@@ -1,0 +1,10 @@
+#IconContainer #unity-content-container {
+    flex-wrap: wrap;
+    flex-direction: row;
+}
+
+.Search {
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: auto;
+}

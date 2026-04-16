@@ -9,7 +9,7 @@ namespace SaintsHierarchy.Editor
     public class FavoriteConfigPopup: PopupWindowContent
     {
         private const float Width = 200f;
-        private float _height = 100f;
+        private float _height = FavoriteConfigPanel.DefaultHeight;
 
         public override Vector2 GetWindowSize() => new Vector2(Width, _height);
 
@@ -33,26 +33,31 @@ namespace SaintsHierarchy.Editor
         public readonly UnityEvent<GameObjectFavorite> DeletedEvent = new UnityEvent<GameObjectFavorite>();
         public readonly UnityEvent<GameObjectFavorite> UpdatedEvent = new UnityEvent<GameObjectFavorite>();
 
+        private FavoriteConfigPanel _favoriteConfigPanel;
+
+        // private IVisualElementScheduledItem _task;
+
         public override void OnOpen()
         {
-            FavoriteConfigPanel element = new FavoriteConfigPanel(_favoriteConfig)
+            _favoriteConfigPanel = new FavoriteConfigPanel(_favoriteConfig)
             {
                 // style =
                 // {
                 //     height = Length.Percent(100),
                 // }
             };
-            element.DeletedEvent.AddListener(r =>
+            _favoriteConfigPanel.DeletedEvent.AddListener(r =>
             {
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
                 Debug.Log($"delete button up pass {r.globalObjectIdString}");
 #endif
                 DeletedEvent.Invoke(r);
             });
-            element.UpdatedEvent.AddListener(UpdatedEvent.Invoke);
+            _favoriteConfigPanel.UpdatedEvent.AddListener(UpdatedEvent.Invoke);
+            _favoriteConfigPanel.OnHeightChanged.AddListener(OnHeightChanged);
 
-            editorWindow.rootVisualElement.Add(element);
-            element.NeedCloseEvent.AddListener(hasChange =>
+            editorWindow.rootVisualElement.Add(_favoriteConfigPanel);
+            _favoriteConfigPanel.NeedCloseEvent.AddListener(hasChange =>
             {
                 if(hasChange)
                 {
@@ -61,12 +66,28 @@ namespace SaintsHierarchy.Editor
                 editorWindow.Close();
             });
 
-            element.RegisterCallback<GeometryChangedEvent>(_ =>
-            {
-                _height = element.resolvedStyle.height;
-                editorWindow.Repaint();
-            });
+            // _task = _favoriteConfigPanel.schedule.Execute(CheckFirstHeight).Every(150);
+
+            // element.RegisterCallback<GeometryChangedEvent>(_ =>
+            // {
+            //     _height = element.resolvedStyle.height;
+            //     editorWindow.Repaint();
+            // });
         }
 
+        // private void CheckFirstHeight()
+        // {
+        //     if (double.IsNaN(_favoriteConfigPanel.resolvedStyle.height))
+        //     {
+        //         return;
+        //     }
+        //     OnHeightChanged();
+        //     _task.Pause();
+        // }
+
+        private void OnHeightChanged()
+        {
+            _height = _favoriteConfigPanel.Height;
+        }
     }
 }

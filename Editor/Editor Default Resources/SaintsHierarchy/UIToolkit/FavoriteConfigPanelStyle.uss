@@ -1,8 +1,8 @@
 :root {
 }
 
-#aliasInput > Label {
-    width: 50px;
+.InputWithLabel > Label {
+    width: 60px;
     min-width: unset;
 }
 

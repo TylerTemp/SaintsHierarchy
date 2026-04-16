@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Packages/today.comes.saintshierarchy/Editor/Editor%20Default%20Resources/SaintsHierarchy/UIToolkit/IconPickerStyle.uss?fileID=7433441132597879392&amp;guid=8bf572710270ca042ac1d6506c297f12&amp;type=3#IconPickerStyle"/>
+    <uie:ToolbarSearchField name="ToolbarSearchField" placeholder-text="Path or Search for Icon" class="Search"/>
+    <ui:ScrollView name="IconContainer"/>
+</ui:UXML>

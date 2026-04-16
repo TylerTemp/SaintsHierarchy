@@ -9,6 +9,7 @@ namespace SaintsHierarchy.Editor
         public string globalObjectIdString;
         public string sceneGuid;
         public string alias;
+        public GameObjectFavoriteIconType iconType;
         public string icon;
         public bool hasColor;
         public Color color;
