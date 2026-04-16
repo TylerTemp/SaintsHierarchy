@@ -45,14 +45,9 @@ namespace SaintsHierarchy.Editor
             root.Q<Button>(name: "saveButton").clicked += Save;
             root.Q<Button>(name: "deleteButton").clicked += OnDeleteButton;
 
-#if UNITY_6000_0_OR_NEWER
-            Add(root);
-
-#else
             ScrollView scrollView = new ScrollView();
             scrollView.Add(root);
             Add(scrollView);
-#endif
 
             _root = root;
 
@@ -87,18 +82,8 @@ namespace SaintsHierarchy.Editor
         private void GameObjectFavoriteIconTypeChanged(GameObjectFavoriteIconType iconType)
         {
             bool display = iconType == GameObjectFavoriteIconType.Custom;
-            // What... the... actual... fuck
-            // For Unity < 6000, the resolved style height is incorrect
-            //  as it will always fit the PopupWindow's size
             _iconPickerElement.style.display = display ? DisplayStyle.Flex : DisplayStyle.None;
-#if !UNITY_6000_0_OR_NEWER
             schedule.Execute(RefreshHeight).StartingIn(150);
-#endif
-// #if UNITY_6000_0_OR_NEWER
-//             _iconPickerElement.style.display = display ? DisplayStyle.Flex : DisplayStyle.None;
-// #else
-//             _iconPickerElement.SetEnabled(display);
-// #endif
         }
 
         private void OnDeleteButton()
