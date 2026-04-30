@@ -777,7 +777,6 @@ namespace SaintsHierarchy.Editor
 
         private static MergedConfig GetMergedConfig(GameObject go, RuntimeFavoriteGameObject favoriteConfig)
         {
-            bool goConfigFound = false;
             GameObjectConfig goConfig = default;
 
             if (EditorApplication.isPlayingOrWillChangePlaymode)
@@ -788,13 +787,11 @@ namespace SaintsHierarchy.Editor
                 if (runtimeFound)
                 {
                     goConfig = runtimeConfig;
-                    goConfigFound = true;
                 }
                 else
                 {
                     (bool found, GameObjectConfig config) c = Util.GetGameObjectConfig(go);
                     goConfig = c.config;
-                    goConfigFound = c.found;
                 }
             }
             else
@@ -803,21 +800,12 @@ namespace SaintsHierarchy.Editor
                 if (found)
                 {
                     RuntimeCacheConfig.instance.Upsert(go.GetInstanceID(), goConfigResult);
-                    goConfigFound = true;
                     goConfig = goConfigResult;
                 }
             }
 
             Texture2D icon = GetMergedIcon(go, favoriteConfig, goConfig);
-            bool hasColor = false;
-            Color color = default;
-
-            if (goConfigFound)
-            {
-                hasColor = goConfig.hasColor;
-                color = goConfig.color;
-            }
-
+            (bool hasColor, Color color) = GetMergedColor(favoriteConfig, goConfig);
             return new MergedConfig(hasColor, color, icon);
         }
 
@@ -860,6 +848,28 @@ namespace SaintsHierarchy.Editor
                 }
                 default:
                     throw new ArgumentOutOfRangeException(nameof(favoriteConfig.FavoriteConfig.iconType), favoriteConfig.FavoriteConfig.iconType, null);
+            }
+        }
+
+        private static (bool hasColor, Color color) GetMergedColor(RuntimeFavoriteGameObject favoriteConfig, GameObjectConfig goConfig)
+        {
+            // ReSharper disable once ConvertSwitchStatementToSwitchExpression
+            switch (favoriteConfig.FavoriteConfig.colorType)
+            {
+                case GameObjectFavoriteColorType.Default:
+                {
+                    return (goConfig.hasColor, goConfig.color);
+                }
+                case GameObjectFavoriteColorType.NoColor:
+                {
+                    return (false, default);
+                }
+                case GameObjectFavoriteColorType.CustomColor:
+                {
+                    return (true, favoriteConfig.FavoriteConfig.color);
+                }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(favoriteConfig.FavoriteConfig.colorType), favoriteConfig.FavoriteConfig.colorType, null);
             }
         }
 
@@ -1132,6 +1142,10 @@ namespace SaintsHierarchy.Editor
                         using(new GUIColorScoop(favoriteDrawingInfo.Color))
                         {
                             GUI.DrawTexture(drawRect, _colorStripTex, ScaleMode.StretchToFill, true);
+                            EditorGUI.DrawRect(new Rect(drawRect)
+                            {
+                                width = drawRect.height,
+                            }, favoriteDrawingInfo.Color);
                         }
                         GUI.Box(drawRect, content, GUI.skin.label);
                     }

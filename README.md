@@ -16,35 +16,33 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 This will automaticlly add indent tree, and icon for camera, light, canvas, event system, wwise
 
-`Tools` - `SaintsHierarchy` - `Disable Saints Hierarchy` to disable this plugin
+`Tools` - `Saints Hierarchy` - `Disable Saints Hierarchy` to disable this plugin
 
 ![](https://github.com/user-attachments/assets/f9b3f079-0a7e-46c6-91b2-2ef83f9feff2)
 
 ### Favorite GameObjects ###
 
-You can disable this feature in `Tools` - `SaintsHierarchy` - `Disable Favorites`
+You can disable this feature in `Tools` - `Saints Hierarchy` - `Disable Favorites`
+
+It by default save favorite configs to personal config. If you're a one-person-army, you can use `Tools` - `Saints Hierarchy` - `Save Favorites To Project Config` so this config can be tracked by your version control like git. 
 
 Drag & Drop GameObject from hierarchy to the top space to add it to favorite.
 
 *   Clicking the favorited button to quickly arrive the object in hierarchy 
 *   Draging it to adjust the favorite items' order
-*   Right click (or `alt` + click) the favorite button to change alias, icon, or remove it from favorite
-
-> [!NOTE]
-> 1.  ATM the config is saved under personal config (so won't be saved by git), and can not be saved to team-shared config
-> 2.  ATM it can not show custom icons etc
+*   Right click (or `alt` + click) the favorite button to change alias, icon, color, or remove it from favorite
 
 [![video](https://github.com/user-attachments/assets/06fa2daf-1ad4-4ad3-a61c-5bef0d30ebdf)](https://github.com/user-attachments/assets/6176d57b-4b84-46a4-8384-f231b339ebca)
 
 ### Background Strip ###
 
-`Tools` - `SaintsHierarchy` - `Background Strip`
+`Tools` - `Saints Hierarchy` - `Background Strip`
 
 ![](https://github.com/user-attachments/assets/a4c4cf02-7bc0-4161-9592-99a0f7d3bc44)
 
 ### Component Icons ###
 
-`Tools` - `SaintsHierarchy` - `Component Icons`
+`Tools` - `Saints Hierarchy` - `Component Icons`
 
 You can set the script icon and show the icons at the end of row
 
@@ -58,7 +56,7 @@ Result:
 
 ### GameObject Enabled Checker ###
 
-`Tools` - `SaintsHierarchy` - `GameObject Enabled Checker`
+`Tools` - `Saints Hierarchy` - `GameObject Enabled Checker`
 
 Add a checkbox at the end for gameObject which has any disabled parent gameObjects, to quickly toggle it back.
 
@@ -66,7 +64,7 @@ Add a checkbox at the end for gameObject which has any disabled parent gameObjec
 
 ## GameObject Enabled Checker On Every Row ##
 
-`Tools` - `SaintsHierarchy` - `GameObject Enabled Checker Every Row`
+`Tools` - `Saints Hierarchy` - `GameObject Enabled Checker Every Row`
 
 This add checkbox for every row instead of undering disabled parent ones.
 

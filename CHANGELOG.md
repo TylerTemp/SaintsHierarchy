@@ -1,3 +1,9 @@
+## 1.2.3 ##
+
+1.  Add: Favorite GameObjects can not read hierarchy config and async the appearance (icon, color) 
+2.  Add: You can now override icon and color for Favorite GameObjects
+3.  Add: Favorite GameObjects now can read the default icon config and hide the icon
+
 ## 1.2.2 ##
 
 1.  Add: You can now change alias and icon for a favorite gameObject

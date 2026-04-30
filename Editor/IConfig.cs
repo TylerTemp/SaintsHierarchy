@@ -6,6 +6,7 @@ namespace SaintsHierarchy.Editor
     {
         // ReSharper disable InconsistentNaming
         public bool disabled { get; }
+
         public bool backgroundStrip { get; }
         public bool gameObjectEnabledChecker { get; }
         public bool gameObjectEnabledCheckerEveryRow { get; }
@@ -16,6 +17,7 @@ namespace SaintsHierarchy.Editor
         public List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList { get; }
 
         public bool disableFavorites { get; set; }
+        public bool saveFavoritesToProjectConfig { get; set; }
         public List<GameObjectFavorite> favorites { get; }
         // ReSharper restore InconsistentNaming
 
