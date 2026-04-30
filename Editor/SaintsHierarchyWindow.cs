@@ -83,7 +83,7 @@ namespace SaintsHierarchy.Editor
             OnSceneCheck();
         }
 
-        private static void ReloadAllScene()
+        public static void ReloadAllScene()
         {
             // LoadedScenes.Clear();
             CurrentFavoriteGameObjects.Clear();

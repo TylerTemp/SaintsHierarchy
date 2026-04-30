@@ -33,6 +33,7 @@ namespace SaintsHierarchy.Editor
             {
                 if(hasChange)
                 {
+                    SaintsHierarchyWindow.ReloadAllScene();
                     EditorApplication.RepaintHierarchyWindow();
                 }
                 editorWindow.Close();
