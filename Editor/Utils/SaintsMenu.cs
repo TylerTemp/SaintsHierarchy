@@ -55,6 +55,7 @@ namespace SaintsHierarchy.Editor.Utils
                     PersonalHierarchyConfig.instance.sceneGuidToGoConfigsList = SaintsHierarchyConfig.instance.sceneGuidToGoConfigsList.ToList();
                     PersonalHierarchyConfig.instance.disableFavorites = SaintsHierarchyConfig.instance.disableFavorites;
                     PersonalHierarchyConfig.instance.favorites = SaintsHierarchyConfig.instance.favorites.ToList();
+                    PersonalHierarchyConfig.instance.disableSceneSelector = SaintsHierarchyConfig.instance.disableSceneSelector;
                     PersonalHierarchyConfig.instance.SaveToDisk();
                 }
             }
@@ -216,7 +217,7 @@ namespace SaintsHierarchy.Editor.Utils
 
         private const string DisableFavoritesPath = MenuRoot + "Disable Favorites";
 
-        [MenuItem(DisableFavoritesPath)]
+        [MenuItem(DisableFavoritesPath, priority = 7)]
         public static void DisableFavorites()
         {
             IConfig config = Util.GetUsingConfig();
@@ -234,7 +235,7 @@ namespace SaintsHierarchy.Editor.Utils
 
         private const string SaveFavoritesToProjectConfigPath = MenuRoot + "Save Favorites To Project Config";
 
-        [MenuItem(SaveFavoritesToProjectConfigPath)]
+        [MenuItem(SaveFavoritesToProjectConfigPath, priority = 8)]
         public static void SaveFavoritesToProjectConfig()
         {
             IConfig config = Util.GetUsingConfig();
@@ -261,6 +262,30 @@ namespace SaintsHierarchy.Editor.Utils
             IConfig config = Util.GetUsingConfig();
             return !config.disableFavorites;
         }
+
+        #region Scene Selector
+
+        private const string DisableSceneSelectorPath = MenuRoot + "Disable Scene Selector";
+
+        [MenuItem(DisableSceneSelectorPath, priority = 9)]
+        public static void DisableSceneSelector()
+        {
+            IConfig config = Util.GetUsingConfig();
+            EditorUtility.SetDirty((Object)config);
+            config.disableSceneSelector = !config.disableSceneSelector;
+            config.SaveToDisk();
+
+            Refresh();
+        }
+
+        [MenuItem(DisableSceneSelectorPath, true)]
+        public static bool DisableSceneSelectorValidate()
+        {
+            IConfig config = Util.GetUsingConfig();
+            return !config.disableFavorites;
+        }
+
+        #endregion
 
 
         private static void Refresh()
@@ -306,6 +331,9 @@ namespace SaintsHierarchy.Editor.Utils
 
             bool saveFavoritesToProjectConfig = Util.GetUsingConfig().saveFavoritesToProjectConfig;
             Menu.SetChecked(SaveFavoritesToProjectConfigPath, saveFavoritesToProjectConfig);
+
+            bool disableSceneSelector = Util.GetUsingConfig().disableSceneSelector;
+            Menu.SetChecked(DisableSceneSelectorPath, disableSceneSelector);
         }
     }
 }

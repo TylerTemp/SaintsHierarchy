@@ -1,12 +1,19 @@
 #if (WWISE_2024_OR_LATER || WWISE_2023_OR_LATER || WWISE_2022_OR_LATER || WWISE_2021_OR_LATER || WWISE_2020_OR_LATER || WWISE_2019_OR_LATER || WWISE_2018_OR_LATER || WWISE_2017_OR_LATER || WWISE_2016_OR_LATER || SAINTSFIELD_WWISE) && !SAINTSFIELD_WWISE_DISABLE
 #define SAINTSHIERARCHY_WWISE
 #endif
+
+#if SAINTSHIERARCHY_ADDRESSABLE && !SAINTSHIERARCHY_ADDRESSABLE_DISABLE
+#define USE_ADDRESSABLE
+#endif
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using SaintsHierarchy.Editor.Draw;
+using SaintsHierarchy.Editor.UIElement.TreeDropdown;
 using SaintsHierarchy.Editor.Utils;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
@@ -14,6 +21,10 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+#if USE_ADDRESSABLE
+using UnityEditor.AddressableAssets;
+using UnityEditor.AddressableAssets.Settings;
+#endif
 using Object = UnityEngine.Object;
 
 namespace SaintsHierarchy.Editor
@@ -77,13 +88,11 @@ namespace SaintsHierarchy.Editor
 
             if (obj == null)
             {
-                for (int i = 0; i < SceneManager.sceneCount; i++)
+                if (!Util.GetUsingConfig().disableSceneSelector)
                 {
-                    Scene scene = SceneManager.GetSceneAt(i);
-                    SceneHandle handle = scene.handle;
-
-
+                    RenderSceneSelector(instanceID, selectionRect);
                 }
+
                 return;
             }
 
@@ -594,6 +603,265 @@ namespace SaintsHierarchy.Editor
                 Util.PopupConfig(new Rect(mousePosition.x, mousePosition.y, 0, 0), go, goConfig);
             }
         }
+
+        private static string _mouseDownSceneSelectorStringId;
+        private static Vector2 _mouseDownSceneSelectorMousePosition = Vector2.zero;
+
+        private static void RenderSceneSelector(int instanceID, Rect selectionRect)
+        {
+            Scene activeScene = SceneManager.GetActiveScene();
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+            {
+                Scene scene = SceneManager.GetSceneAt(i);
+                if (!scene.isLoaded)
+                {
+                    continue;
+                }
+
+                SceneHandle handle = scene.handle;
+                string sceneStringId = $"{handle}";
+
+                // ReSharper disable once InvertIf
+                if (sceneStringId == $"{instanceID}")
+                {
+                    bool active = activeScene == scene;
+                    string sceneName = scene.name == "" ? "Untitled" : scene.name;
+                    // Debug.Log($"{sceneName}/{active}");
+
+                    float nameWidth;
+                    using(new BoldLabelScoop(active))
+                    {
+                        nameWidth = GUI.skin.label.CalcSize(new GUIContent(sceneName)).x;
+                    }
+                    int dirtyWidth = scene.isDirty ? 5 : 0;
+
+                    float totalWidth = nameWidth + dirtyWidth + 5;
+
+                    const float labelStart = LeftStartX + IndentOffset * 2;
+                    float dropdownWidth = selectionRect.height;
+
+                    Rect detectRect = new Rect(selectionRect)
+                    {
+                        x = labelStart,
+                        width = totalWidth + dropdownWidth,
+                    };
+
+                    // EditorGUI.DrawRect(detectRect, Color.blue * new Color(1, 1, 1, 0.3f));
+
+                    Rect dropdownIconRect = new Rect(selectionRect)
+                    {
+                        x = detectRect.xMax - dropdownWidth,
+                        width = dropdownWidth,
+                    };
+
+                    // EditorGUI.DrawRect(dropdownIconRect, Color.red * new Color(1, 1, 1, 0.5f));
+                    GUIContent content = EditorGUIUtility.IconContent("d_icon dropdown");
+                    EditorGUI.LabelField(dropdownIconRect, content);
+
+                    // mouse
+                    if (Event.current.button == 0 && Event.current.type == EventType.MouseDown && detectRect.Contains(Event.current.mousePosition))
+                    {
+                        _mouseDownSceneSelectorStringId = sceneStringId;
+                        _mouseDownSceneSelectorMousePosition = Event.current.mousePosition;
+                    }
+                    else if (Event.current.type == EventType.MouseDrag)
+                    {
+                        if (_mouseDownSceneSelectorStringId == sceneStringId)
+                        {
+                            if (Vector2.SqrMagnitude(_mouseDownSceneSelectorMousePosition -
+                                                     Event.current.mousePosition) > 3 * 3)
+                            {
+                                _mouseDownSceneSelectorStringId = null;
+                            }
+                        }
+                    }
+                    else if (Event.current.type == EventType.MouseUp)
+                    {
+                        if (_mouseDownSceneSelectorStringId == sceneStringId && detectRect.Contains(Event.current.mousePosition))
+                        {
+                            // Debug.Log($"Clicked {sceneStringId}");
+
+                            AdvancedDropdownList<string> scenePaths = new AdvancedDropdownList<string>();
+
+                            EditorBuildSettingsScene[] inBuildScenes = EditorBuildSettings.scenes;
+                            bool hasInBuildScenes = inBuildScenes.Length > 0;
+                            HashSet<string> addedScenePaths = new HashSet<string>();
+                            if(hasInBuildScenes)
+                            {
+                                // AdvancedDropdownList<string> buildScenes = new AdvancedDropdownList<string>("Builds");
+                                foreach (EditorBuildSettingsScene editorBuildSettingsScene in inBuildScenes)
+                                {
+                                    string assetPath = editorBuildSettingsScene.path;
+                                    if (!File.Exists(assetPath))  // invalid
+                                    {
+                                        continue;
+                                    }
+                                    addedScenePaths.Add(assetPath);
+                                    string dropPath = assetPath[..^".unity".Length];
+                                    // Debug.Log($"build {editorBuildSettingsScene.path}");
+                                    scenePaths.Add($"[Build]/{dropPath}", assetPath);
+                                }
+                                // scenePaths.Add(buildScenes);
+                            }
+
+                            bool hasAddressableScenes = false;
+                            foreach (SceneAsset addressableScene in GetAddressableScenes())
+                            {
+
+                                string assetPath = AssetDatabase.GetAssetPath(addressableScene);
+
+                                if (!addedScenePaths.Add(assetPath))
+                                {
+                                    continue;
+                                }
+
+                                if (!hasAddressableScenes)
+                                {
+                                    hasAddressableScenes = true;
+                                    if (hasInBuildScenes)
+                                    {
+                                        scenePaths.AddSeparator();
+                                    }
+                                }
+
+                                // Debug.Log($"address: {addressableScene.name}");
+                                string dropPath = assetPath[..^".unity".Length];
+                                scenePaths.Add($"[Addressable]/{dropPath}", assetPath);
+                            }
+
+                            bool hasAssetScene = false;
+                            foreach (string sceneGuid in AssetDatabase.FindAssets("t:scene"))
+                            {
+                                if(GUID.TryParse(sceneGuid, out GUID guid))
+                                {
+                                    string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                                    if (!assetPath.EndsWith(".unity"))
+                                    {
+                                        continue;
+                                    }
+                                    if (!addedScenePaths.Add(assetPath))
+                                    {
+                                        continue;
+                                    }
+
+                                    SceneAsset assetScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(assetPath);
+                                    if (assetScene != null)
+                                    {
+                                        bool editable = AssetDatabase.IsOpenForEdit(
+                                            assetPath,
+                                            out string _,
+                                            StatusQueryOptions.ForceUpdate
+                                        );
+                                        if (!editable)
+                                        {
+                                            continue;
+                                        }
+
+                                        if (!hasAssetScene)
+                                        {
+                                            hasAssetScene = true;
+                                            if ((hasInBuildScenes && !hasAddressableScenes) || hasAddressableScenes)
+                                            {
+                                                scenePaths.AddSeparator();
+                                            }
+                                        }
+                                        string dropPath = assetPath[..^".unity".Length];
+                                        scenePaths.Add(dropPath, assetPath);
+                                    }
+                                }
+                            }
+
+                            scenePaths.SelfCompact();
+
+                            AdvancedDropdownMetaInfo meta = new AdvancedDropdownMetaInfo
+                            {
+                                CurValues = new[] { scene.path },
+                                DropdownListValue = scenePaths,
+                            };
+
+                            Rect useBound = new Rect(selectionRect)
+                            {
+                                x = detectRect.x,
+                                width = selectionRect.width - detectRect.x,
+                            };
+
+                            (Rect worldBound, float maxHeight) = SaintsTreeDropdownUIToolkit.GetProperPos(useBound);
+
+                            PopupWindow.Show(worldBound, new SaintsTreeDropdownUIToolkit(
+                                meta,
+                                worldBound.width,
+                                maxHeight,
+                                false,
+                                (curItem, _) =>
+                                {
+                                    // Debug.Log(curItem);
+                                    OpenAScene(scene, (string)curItem);
+                                    return null;
+                                }
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void OpenAScene(Scene toReplaceScene, string toOpenScene)
+        {
+            if (!Application.isPlaying && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                return;
+            }
+
+            if (SceneManager.sceneCount == 1)
+            {
+                if (!EditorApplication.isPlaying)
+                {
+                    EditorSceneManager.OpenScene(toOpenScene, OpenSceneMode.Single);
+                }
+                else
+                {
+                    SceneManager.LoadScene(toOpenScene, LoadSceneMode.Single);
+                }
+            }
+            else
+            {
+                Scene openedScene = EditorSceneManager.OpenScene(toOpenScene, OpenSceneMode.Additive);
+                EditorSceneManager.MoveSceneAfter(openedScene, toReplaceScene);
+                if (SceneManager.GetActiveScene() == toReplaceScene)
+                {
+                    SceneManager.SetActiveScene(openedScene);
+                }
+
+                EditorSceneManager.CloseScene(toReplaceScene, true);
+            }
+        }
+
+
+        private static IEnumerable<SceneAsset> GetAddressableScenes()
+        {
+#if USE_ADDRESSABLE
+            AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.GetSettings(false);
+            if (!settings)
+            {
+                yield break;
+            }
+
+            // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+            foreach (AddressableAssetGroup addressableAssetGroup in settings.groups)
+            {
+                foreach (AddressableAssetEntry addressableAssetEntry in addressableAssetGroup.entries)
+                {
+                    if (addressableAssetEntry.MainAsset is SceneAsset sceneAsset)
+                    {
+                        yield return sceneAsset;
+                    }
+                }
+            }
+#else
+            yield break;
+#endif
+        }
+
 
         private static bool ActiveInAnyHierarchy(GameObject go)
         {

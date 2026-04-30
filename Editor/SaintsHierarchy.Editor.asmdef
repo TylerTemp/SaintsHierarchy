@@ -6,7 +6,9 @@
         "AK.Wwise.Unity.MonoBehaviour",
         "SaintsHierarchy",
         "SaintsField.Runtime",
-        "SaintsField.Editor"
+        "SaintsField.Editor",
+        "Unity.Addressables",
+        "Unity.Addressables.Editor"
     ],
     "includePlatforms": [
         "Editor"
@@ -27,6 +29,11 @@
             "name": "today.comes.saintsfield",
             "expression": "",
             "define": "SAINTSHIERARCHY_SAINTSFIELD"
+        },
+        {
+            "name": "com.unity.addressables",
+            "expression": "",
+            "define": "SAINTSHIERARCHY_ADDRESSABLE"
         }
     ],
     "noEngineReferences": false

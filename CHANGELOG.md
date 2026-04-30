@@ -1,3 +1,7 @@
+## 1.3.0 ##
+
+Add: Now you can click the scene name to switch scene in your project
+
 ## 1.2.3 ##
 
 1.  Add: Favorite GameObjects can now read hierarchy config and async the appearance (icon, color) 

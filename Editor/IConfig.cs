@@ -19,6 +19,8 @@ namespace SaintsHierarchy.Editor
         public bool disableFavorites { get; set; }
         public bool saveFavoritesToProjectConfig { get; set; }
         public List<GameObjectFavorite> favorites { get; }
+
+        public bool disableSceneSelector { get; set; }
         // ReSharper restore InconsistentNaming
 
         void SaveToDisk();

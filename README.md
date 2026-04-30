@@ -11,10 +11,11 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 ## Features ##
 
 1.  Favorate GameObjects for quick access
-2.  Draw indent guild
-3.  Allow set icons (pre-set & custom)
-4.  Auto set icons for camera, cavans, light, eventSystem & Wwise Initializer
-5.  Prefab footer icon if you have custom icon set
+2.  Scene quick switcher
+3.  Draw indent guild
+4.  Allow set icons (pre-set & custom)
+5.  Auto set icons for camera, cavans, light, eventSystem & Wwise Initializer
+6.  Prefab footer icon if you have custom icon set
 
 ## Install ##
 
@@ -68,17 +69,29 @@ This will automaticlly add indent tree, and icon for camera, light, canvas, even
 
 ### Favorite GameObjects ###
 
+Drag & Drop GameObject from hierarchy to the top space to add it to favorite.
+
+*   Clicking the favorited button to quickly arrive the object in hierarchy
+*   Draging it to adjust the favorite items' order
+*   Right click (or `alt` + click) the favorite button to change alias, icon, color, or remove it from favorite
+
 You can disable this feature in `Tools` - `Saints Hierarchy` - `Disable Favorites`
 
 It by default save favorite configs to personal config. If you're a one-person-army, you can use `Tools` - `Saints Hierarchy` - `Save Favorites To Project Config` so this config can be tracked by your version control like git. 
 
-Drag & Drop GameObject from hierarchy to the top space to add it to favorite.
-
-*   Clicking the favorited button to quickly arrive the object in hierarchy 
-*   Draging it to adjust the favorite items' order
-*   Right click (or `alt` + click) the favorite button to change alias, icon, color, or remove it from favorite
-
 [![video](https://github.com/user-attachments/assets/06fa2daf-1ad4-4ad3-a61c-5bef0d30ebdf)](https://github.com/user-attachments/assets/6176d57b-4b84-46a4-8384-f231b339ebca)
+
+### Quick Scene Selector ###
+
+Clicking on a scene's name to quickly switch to another scene in this project. It lists scenes with order:
+
+1.  Scene in build settings
+2.  Scene in Addressable
+3.  Scene in project
+
+(You can disable this function in `Tools` - `Saints Hierarchy` - `Disable Scene Selector`)
+
+[![video](https://github.com/user-attachments/assets/c0fad660-0b57-4ce1-8997-0e956446573e)](https://github.com/user-attachments/assets/be2d2704-fe91-4322-8dfb-c16688f9184d)
 
 ### Background Strip ###
 
@@ -107,26 +120,6 @@ Result:
 Add a checkbox at the end for gameObject which has any disabled parent gameObjects, to quickly toggle it back.
 
 ![](https://github.com/user-attachments/assets/22cb4180-4aa6-4dcc-8cfc-6df0ee822e90)
-
-## GameObject Enabled Checker On Every Row ##
-
-`Tools` - `Saints Hierarchy` - `GameObject Enabled Checker Every Row`
-
-This add checkbox for every row instead of undering disabled parent ones.
-
-![](https://github.com/user-attachments/assets/a17f71dd-ab5d-4ab2-a5e4-1c28390eecec)
-
-### No Default Icon ###
-
-No longer draw the default white box icon if no icon for this gameObject.
-
-![](https://github.com/user-attachments/assets/d5ed0afc-a908-4f8a-8704-624c1c75efb4)
-
-### Transparent Default Icon ###
-
-Draw a transparent box icon if no icon for this gameObject.
-
-![](https://github.com/user-attachments/assets/87de8b82-5769-44f2-a407-a007fc1e4e17)
 
 ## Usage ##
 

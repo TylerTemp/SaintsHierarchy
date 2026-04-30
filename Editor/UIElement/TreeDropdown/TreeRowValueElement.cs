@@ -1,0 +1,213 @@
+using System.Collections.Generic;
+using System.Linq;
+using SaintsHierarchy.Editor.Utils;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UIElements;
+
+namespace SaintsHierarchy.Editor.UIElement.TreeDropdown
+{
+#if UNITY_6000_0_OR_NEWER
+    [UxmlElement]
+#endif
+    // ReSharper disable once ClassNeverInstantiated.Global
+    public partial class TreeRowValueElement: TreeRowAbsElement
+    {
+        // new status on or off; is row click or not (row click need to close the dropdown)
+        public readonly UnityEvent<bool, bool> OnClickedEvent = new UnityEvent<bool, bool>();
+
+        public bool IsOn { get; private set; }
+        private static VisualTreeAsset _treeRowTemplate;
+        // private static VisualTreeAsset _treeRowIndentIconTemplate;
+
+        // public VisualElement MainButton;
+        private readonly VisualElement _toggleButton;
+
+        // private readonly string _labelLow;
+        private readonly HashSet<string> _searches = new HashSet<string>();
+        private readonly bool _isToggle;
+        public readonly object Value;
+
+        // ReSharper disable once MemberCanBePrivate.Global
+        public TreeRowValueElement(): this(null, null, 0, false)
+        {
+        }
+
+        private bool _innerButton;
+        private static Texture2D _checkedIcon;
+        private static Texture2D _boxCheckedIcon;
+        private static Texture2D _boxUncheckedIcon;
+
+
+        public TreeRowValueElement(object value, string label, int indent, bool toggle)
+        {
+            Value = value;
+            _treeRowTemplate ??= Util.LoadResource<VisualTreeAsset>("UIToolkit/TreeDropdown/TreeRow.uxml");
+            VisualElement treeRow = _treeRowTemplate.CloneTree();
+
+            treeRow.Q<VisualElement>("saintsfield-tree-row-foldout").RemoveFromHierarchy();
+
+            VisualElement mainButton = treeRow.Q<VisualElement>("saintsfield-tree-row");
+
+            // MainButton.clicked += () =>
+            // {
+            //     SetValueOn(!_isOn);
+            //     OnClickedEvent.Invoke(_isOn, true);
+            // };
+            mainButton.AddManipulator(new Clickable(_ => {
+                SetValueOn(!IsOn);
+                OnClickedEvent.Invoke(IsOn, true);
+            }));
+
+            VisualElement toggleButton = treeRow.Q<VisualElement>("saintsfield-tree-row-toggle");
+
+            if (!_checkedIcon)
+            {
+                _checkedIcon = Util.LoadResource<Texture2D>("check.png");
+                _boxUncheckedIcon = Util.LoadResource<Texture2D>("dot.png");
+                _boxCheckedIcon = Util.LoadResource<Texture2D>("check.png");
+            }
+
+            _isToggle = toggle;
+            _toggleButton = toggleButton;
+
+            if (toggle)
+            {
+                toggleButton.AddManipulator(new Clickable(_ =>
+                {
+                    SetValueOn(!IsOn);
+                    OnClickedEvent.Invoke(IsOn, false);
+                }));
+            }
+            else
+            {
+                toggleButton.style.backgroundImage = _checkedIcon;
+            }
+
+            // VisualElement root = treeRow.Q<VisualElement>("saintsfield-tree-row");
+            if (indent > 0)
+            {
+                // _treeRowIndentIconTemplate ??= Util.LoadResource<VisualTreeAsset>("UIToolkit/TreeDropdown/TreeRowIndentIcon.uxml");
+                VisualElement indentContainer = treeRow.Q<VisualElement>("saintsfield-tree-row-indent");
+                for (int indentIndex = 0; indentIndex < indent; indentIndex++)
+                {
+                    TemplateContainer clone = TreeIndentUtil.MakeIndentElement(indentIndex);
+                    indentContainer.Add(clone);
+                }
+            }
+
+            Label labelElement = treeRow.Q<Label>("saintsfield-tree-row-label");
+            if (!string.IsNullOrEmpty(label))
+            {
+                // _labelLow = label.ToLower();
+                _searches.Add(label.ToLower());
+                labelElement.text = label;
+                foreach (Label subLabel in labelElement.Query<Label>().ToList())
+                {
+                    subLabel.style.whiteSpace = WhiteSpace.NoWrap;
+                }
+                // labelElement.text = label;
+            }
+            RefreshIcon();
+
+            Add(treeRow);
+        }
+
+        public override int HasValueCount => IsOn? 1: 0;
+
+        public void SetValueOn(bool isOn)
+        {
+            if (IsOn == isOn)
+            {
+                return;
+            }
+
+            IsOn = isOn;
+            OnHasValueCountChanged.Invoke(HasValueCount);
+            SetHighlight(IsOn);
+
+            RefreshIcon();
+        }
+
+        private void RefreshIcon()
+        {
+            // if (_toggleButton is null)
+            // {
+            //     return;
+            // }
+
+            if(_isToggle)
+            {
+                Texture2D background = IsOn ? _boxCheckedIcon : _boxUncheckedIcon;
+                if (_toggleButton.style.backgroundImage != background)
+                {
+                    _toggleButton.style.backgroundImage = background;
+                }
+            }
+            else
+            {
+                // DisplayStyle display = IsOn ? DisplayStyle.Flex : DisplayStyle.None;
+                // if (_toggleButton.style.display != display)
+                // {
+                //     _toggleButton.style.display = display;
+                // }
+                Visibility display = IsOn ? Visibility.Visible : Visibility.Hidden;
+                if (_toggleButton.style.visibility != display)
+                {
+                    _toggleButton.style.visibility = display;
+                }
+            }
+        }
+
+        private bool _shown = true;
+        private bool _shownAsChild = true;
+
+        public void AddSearches(ICollection<string> searches)
+        {
+            _searches.UnionWith(searches);
+        }
+
+        public override bool OnSearch(IReadOnlyList<string> searchTokens)
+        {
+            if (searchTokens.Count == 0)
+            {
+                SetDisplay(DisplayStyle.Flex);
+                _shown = true;
+                return true;
+            }
+
+            if (_searches.Count == 0)
+            {
+                SetDisplay(DisplayStyle.None);
+                _shown = false;
+                return false;
+            }
+
+            foreach (string toSearchLower in searchTokens)
+            {
+                bool anyMatched = _searches.Any(each => each.Contains(toSearchLower));
+                if (!anyMatched)
+                {
+                    SetDisplay(DisplayStyle.None);
+                    _shown = false;
+                    return false;
+                }
+            }
+
+            SetDisplay(DisplayStyle.Flex);
+            _shown = true;
+            return true;
+        }
+
+        public override bool Navigateable
+        {
+            get => _shown && _shownAsChild && enabledSelf;
+            set => _shownAsChild = value;
+        }
+
+        public override string ToString()
+        {
+            return $"<TreeRowValue search={string.Join("/", _searches)} nav={Navigateable}/>";
+        }
+    }
+}
