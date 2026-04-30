@@ -618,8 +618,7 @@ namespace SaintsHierarchy.Editor
                     continue;
                 }
 
-                SceneHandle handle = scene.handle;
-                string sceneStringId = $"{handle}";
+                string sceneStringId = $"{scene.handle}";
 
                 // ReSharper disable once InvertIf
                 if (sceneStringId == $"{instanceID}")
@@ -1535,6 +1534,7 @@ namespace SaintsHierarchy.Editor
             // Debug.Log(treeViewControllerState);
             // Debug.Log(treeViewControllerState.expandedIDs);
 
+            // ReSharper disable once RedundantCast
             int[] expandedIds = treeViewControllerState.expandedIDs.Select(each => (int)each).ToArray();
             // Debug.Log($"expanded: {string.Join(", ", treeViewControllerState.expandedIDs)}");
             return ("", expandedIds);
@@ -1581,6 +1581,7 @@ namespace SaintsHierarchy.Editor
             // Debug.Log(treeViewControllerState);
             // Debug.Log(treeViewControllerState.expandedIDs);
 
+            // ReSharper disable once RedundantCast
             int[] selectedIDs = treeViewControllerState.selectedIDs.Select(each => (int)each).ToArray();
             // Debug.Log($"expanded: {string.Join(", ", treeViewControllerState.expandedIDs)}");
             return ("", selectedIDs);
