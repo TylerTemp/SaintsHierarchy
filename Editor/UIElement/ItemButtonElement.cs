@@ -16,15 +16,12 @@ namespace SaintsHierarchy.Editor.UIElement
         private static VisualTreeAsset _template;
         public readonly Button Button;
 
-        [UxmlAttribute] public Texture2D Icon;
-
         public ItemButtonElement()
         {
             _template ??= Util.LoadResource<VisualTreeAsset>("UIToolkit/ItemButton.uxml");
             TemplateContainer root = _template.CloneTree();
             Add(root);
             Button = root.Q<Button>();
-            Button.style.backgroundImage = Icon;
         }
 
         public void SetSelected(bool selected)

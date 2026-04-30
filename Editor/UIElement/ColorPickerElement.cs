@@ -147,7 +147,7 @@ namespace SaintsHierarchy.Editor.UIElement
             });
 
 #if !UNITY_6000_3_OR_NEWER
-            colorField.style.width = 46;
+            _colorField.style.width = 46;
             colorRow.Q<VisualElement>(name: "CustomColorIcon").style.display = DisplayStyle.None;
 #endif
         }

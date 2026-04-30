@@ -14,11 +14,30 @@ namespace SaintsHierarchy.Editor.UIElement
     public partial class IconPickerElement: BindableElement, INotifyValueChanged<string>
     {
 #if !UNITY_6000_0_OR_NEWER
-        public new class UxmlFactory : UxmlFactory<IconPickerElement, UxmlTraits> { }
+        public new class UxmlTraits : BindableElement.UxmlTraits
+        {
+            private readonly UxmlBoolAttributeDescription _noDeleteButton = new UxmlBoolAttributeDescription
+            {
+                name = "no-delete-button",
+                defaultValue = false,
+            };
+
+            public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc)
+            {
+                base.Init(ve, bag, cc);
+                ((IconPickerElement)ve).NoDeleteButton = _noDeleteButton.GetValueFromBag(bag, cc);
+            }
+        }
+
+        public new class UxmlFactory : UxmlFactory<IconPickerElement, UxmlTraits>
+        {
+        }
 #endif
-        [UxmlAttribute]
         // ReSharper disable once UnassignedField.Global
         // ReSharper disable once MemberCanBePrivate.Global
+#if UNITY_6000_0_OR_NEWER
+        [UxmlAttribute]
+#endif
         public bool NoDeleteButton;
 
         private static Texture2D _closeIcon;
