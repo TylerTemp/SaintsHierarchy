@@ -270,6 +270,11 @@ namespace SaintsHierarchy.Editor.Utils
         }
 
         [InitializeOnLoadMethod]
+        private static void OnLoad()
+        {
+            EditorApplication.delayCall += Checkmark;
+        }
+
         private static void Checkmark()
         {
             bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;

@@ -13,6 +13,7 @@ using UnityEditor.IMGUI.Controls;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace SaintsHierarchy.Editor
@@ -76,6 +77,13 @@ namespace SaintsHierarchy.Editor
 
             if (obj == null)
             {
+                for (int i = 0; i < SceneManager.sceneCount; i++)
+                {
+                    Scene scene = SceneManager.GetSceneAt(i);
+                    SceneHandle handle = scene.handle;
+
+
+                }
                 return;
             }
 
