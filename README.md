@@ -1,16 +1,62 @@
 # Saints Hierarchy #
 
+[![unity_version](https://github.com/user-attachments/assets/dffbf530-6212-481b-bfdb-1e9d9ce3712d)](https://unity.com/download)
+[![openupm](https://img.shields.io/npm/v/today.comes.saintshierarchy?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/today.comes.saintshierarchy/)
+[![openupm](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=downloads&query=%24.downloads&suffix=%2Fmonth&url=https%3A%2F%2Fpackage.openupm.com%2Fdownloads%2Fpoint%2Flast-month%2Ftoday.comes.saintshierarchy)](https://openupm.com/packages/today.comes.saintshierarchy/)
+
 Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ![](https://github.com/user-attachments/assets/35037962-3488-426a-98ca-25c9dae696a0)
 
 ## Features ##
 
-1.  Draw indent guild
-2.  Allow set icons (pre-set & custom)
-3.  Auto set icons for camera, cavans, light, eventSystem & Wwise Initializer
-4.  Prefab footer icon if you have custom icon set
+1.  Favorate GameObjects for quick access
+2.  Draw indent guild
+3.  Allow set icons (pre-set & custom)
+4.  Auto set icons for camera, cavans, light, eventSystem & Wwise Initializer
+5.  Prefab footer icon if you have custom icon set
 
+## Install ##
+
+*   Using [OpenUPM](https://openupm.com/packages/today.comes.saintsfield/)
+
+    ```bash
+    openupm add today.comes.saintshierarchy
+    ```
+
+*   Using git upm:
+
+    add to `Packages/manifest.json` in your project
+
+    ```javascript
+    {
+        "dependencies": {
+            "today.comes.saintshierarchy": "https://github.com/TylerTemp/SaintsHierarchy.git",
+            // your other dependencies...
+        }
+    }
+    ```
+
+*   Using git upm (Unity UI):
+
+    1. `Window` - `Package Manager`
+    2. Click `+` button, `Add package from git URL`
+    3. Enter the following URL:
+
+    ```
+    https://github.com/TylerTemp/SaintsHierarchy.git
+    ```
+
+
+*   Using a `unitypackage`:
+
+    Go to the [Release Page](https://github.com/TylerTemp/SaintsHierarchy/releases) to download a desired version of `unitypackage` and import it to your project
+
+*   Using a git submodule:
+
+    ```bash
+    git submodule add https://github.com/TylerTemp/SaintsHierarchy.git Packages/today.comes.saintshierarchy
+    ```
 
 ## Config ##
 
