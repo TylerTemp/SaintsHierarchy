@@ -15,6 +15,7 @@ namespace SaintsHierarchy.Editor
 {
     public class SaintsHierarchyWindow
     {
+        private static Texture2D _colorStripTex;
         private static Type _sceneHierarchyWindowType;
         private static FieldInfo _sLastInteractedHierarchy;
         private static FieldInfo _fieldMSceneHierarchy;
@@ -205,6 +206,8 @@ namespace SaintsHierarchy.Editor
                 FavoriteConfig = config;
                 // Status = RuntimeFavoriteStatus.Default;
             }
+
+            public bool HasValue() => LoadedGameObject is not null;
         }
 
         private static readonly List<RuntimeFavoriteGameObject> CurrentFavoriteGameObjects = new List<RuntimeFavoriteGameObject>();
@@ -689,6 +692,29 @@ namespace SaintsHierarchy.Editor
             public readonly string Text;
             public readonly Texture2D Icon;
 
+            public readonly bool HasColor;
+            public readonly Color Color;
+
+            public FavoriteDrawingInfo(RuntimeFavoriteGameObject runtimeConfig,
+                RuntimeFavoriteStatus status,
+                string text,
+                Texture2D icon,
+                float width,
+                bool hasColor,
+                Color color
+            )
+            {
+                RuntimeConfig = runtimeConfig;
+                Status = status;
+                Width = width;
+
+                Text = text;
+                Icon = icon;
+
+                HasColor = hasColor;
+                Color = color;
+            }
+
             public static string HelperGetDisplayText(RuntimeFavoriteGameObject config)
             {
                 string alias = config.FavoriteConfig.alias;
@@ -730,23 +756,164 @@ namespace SaintsHierarchy.Editor
             }
             // public Texture2D GetDisplayIcon() => EditorGUIUtility.GetIconForObject(RuntimeConfig.LoadedGameObject);
 
-            public FavoriteDrawingInfo(RuntimeFavoriteGameObject runtimeConfig,
-                RuntimeFavoriteStatus status,
-                string text,
-                Texture2D icon,
-                float width
-            )
-            {
-                RuntimeConfig = runtimeConfig;
-                Status = status;
-                Width = width;
 
-                Text = text;
+        }
+
+        // private static bool _inDrag;
+
+        private readonly struct MergedConfig
+        {
+            public readonly bool HasColor;
+            public readonly Color Color;
+            public readonly Texture2D Icon;
+
+            public MergedConfig(bool hasColor, Color color, Texture2D icon)
+            {
+                HasColor = hasColor;
+                Color = color;
                 Icon = icon;
             }
         }
 
-        // private static bool _inDrag;
+        private static MergedConfig GetMergedConfig(GameObject go, RuntimeFavoriteGameObject favoriteConfig)
+        {
+            bool goConfigFound = false;
+            GameObjectConfig goConfig = default;
+
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                (bool runtimeFound, GameObjectConfig runtimeConfig) =
+                    RuntimeCacheConfig.instance.Search(go.GetInstanceID());
+                // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+                if (runtimeFound)
+                {
+                    goConfig = runtimeConfig;
+                    goConfigFound = true;
+                }
+                else
+                {
+                    (bool found, GameObjectConfig config) c = Util.GetGameObjectConfig(go);
+                    goConfig = c.config;
+                    goConfigFound = c.found;
+                }
+            }
+            else
+            {
+                (bool found, GameObjectConfig goConfigResult) = Util.GetGameObjectConfig(go);
+                if (found)
+                {
+                    RuntimeCacheConfig.instance.Upsert(go.GetInstanceID(), goConfigResult);
+                    goConfigFound = true;
+                    goConfig = goConfigResult;
+                }
+            }
+
+            Texture2D icon = GetMergedIcon(go, favoriteConfig, goConfig);
+            bool hasColor = false;
+            Color color = default;
+
+            if (goConfigFound)
+            {
+                hasColor = goConfig.hasColor;
+                color = goConfig.color;
+            }
+
+            return new MergedConfig(hasColor, color, icon);
+        }
+
+        private static Texture2D GetMergedIcon(GameObject go, RuntimeFavoriteGameObject favoriteConfig, GameObjectConfig goConfig)
+        {
+            switch (favoriteConfig.FavoriteConfig.iconType)
+            {
+                case GameObjectFavoriteIconType.Default:
+                {
+                    if (!string.IsNullOrEmpty(goConfig.icon))
+                    {
+                        return Util.LoadResource<Texture2D>(goConfig.icon);
+                    }
+
+                    bool isMissingPrefab = IsMissingPrefab(go);
+                    if (isMissingPrefab)
+                    {
+                        return Util.LoadResource<Texture2D>("prefab_warning.png");
+                    }
+                    Texture2D compIcon = Util.GetIconByComponent(go.GetComponents<Component>());
+                    // ReSharper disable once ConvertIfStatementToReturnStatement
+                    if (compIcon is not null)
+                    {
+                        return compIcon;
+                    }
+
+                    return GetUnityDefaultIcon(go);
+                }
+                case GameObjectFavoriteIconType.UnityDefault:
+                {
+                    return GetUnityDefaultIcon(go);
+                }
+                case GameObjectFavoriteIconType.None:
+                {
+                    return null;
+                }
+                case GameObjectFavoriteIconType.Custom:
+                {
+                    return Util.LoadResource<Texture2D>(favoriteConfig.FavoriteConfig.icon);
+                }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(favoriteConfig.FavoriteConfig.iconType), favoriteConfig.FavoriteConfig.iconType, null);
+            }
+        }
+
+        private static Texture2D GetUnityDefaultIcon(GameObject go)
+        {
+            Texture2D icon = EditorGUIUtility.GetIconForObject(go);
+            if (icon is not null)
+            {
+                return icon;
+            }
+
+            if (!PrefabUtility.IsAnyPrefabInstanceRoot(go))
+            {
+                IConfig config = Util.GetUsingConfig();
+                if(config.noDefaultIcon || config.transparentDefaultIcon)
+                {
+                    return null;
+                }
+                return EditorGUIUtility.IconContent("d_GameObject Icon").image as Texture2D;
+            }
+
+            PrefabInstanceStatus instanceStatus = PrefabUtility.GetPrefabInstanceStatus(go);
+
+            if (instanceStatus == PrefabInstanceStatus.MissingAsset)
+            {
+                return Util.LoadResource<Texture2D>("prefab_warning.png");
+            }
+
+            PrefabAssetType assetType = PrefabUtility.GetPrefabAssetType(go);
+
+            // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+            switch (assetType)
+            {
+                case PrefabAssetType.Regular:
+                    return EditorGUIUtility.IconContent("d_Prefab Icon").image as Texture2D;
+                case PrefabAssetType.Variant:
+                    return EditorGUIUtility.IconContent("d_PrefabVariant Icon").image as Texture2D;
+                case PrefabAssetType.Model:
+                    return EditorGUIUtility.IconContent("d_PrefabModel Icon").image as Texture2D;
+            }
+
+            return null;
+        }
+
+        private static bool IsMissingPrefab(GameObject go)
+        {
+            if (!PrefabUtility.IsAnyPrefabInstanceRoot(go))
+            {
+                return false;
+            }
+            PrefabInstanceStatus instanceStatus = PrefabUtility.GetPrefabInstanceStatus(go);
+
+            return instanceStatus == PrefabInstanceStatus.MissingAsset;
+        }
 
         private class EditorWindowStatus
         {
@@ -811,8 +978,11 @@ namespace SaintsHierarchy.Editor
             Dictionary<GameObject, RuntimeFavoriteGameObject> existedDragging = new Dictionary<GameObject, RuntimeFavoriteGameObject>();
             foreach (RuntimeFavoriteGameObject runtimeFavoriteGameObject in CurrentFavoriteGameObjects)
             {
+                GameObject go = runtimeFavoriteGameObject.LoadedGameObject;
+                MergedConfig mergedConfig = GetMergedConfig(go, runtimeFavoriteGameObject);
+
                 string text = FavoriteDrawingInfo.HelperGetDisplayText(runtimeFavoriteGameObject);
-                Texture2D icon = FavoriteDrawingInfo.HelperGetDisplayIcon(runtimeFavoriteGameObject);
+                Texture2D icon = mergedConfig.Icon;
 
                 float textWidth = GUI.skin.button.CalcSize(new GUIContent(text)).x;
                 float iconWidth = icon is null? 0: EditorGUIUtility.singleLineHeight;
@@ -820,7 +990,7 @@ namespace SaintsHierarchy.Editor
                 // float totalWidth = new GUIStyle("Button").CalcSize(new GUIContent(text, )) + iconWidth + gap * 2;
 
                 FavoriteDrawingInfo info = new FavoriteDrawingInfo(runtimeFavoriteGameObject, RuntimeFavoriteStatus.Default, text,
-                    icon, totalWidth);
+                    icon, totalWidth, mergedConfig.HasColor, mergedConfig.Color);
 
                 if (windowStatus.Dragging.Contains(runtimeFavoriteGameObject.LoadedGameObject))
                 {
@@ -835,13 +1005,17 @@ namespace SaintsHierarchy.Editor
             List<FavoriteDrawingInfo> draggingDrawingInfos = new List<FavoriteDrawingInfo>();
             foreach (GameObject dragging in windowStatus.Dragging)
             {
-                bool exists = existedDragging.TryGetValue(dragging,  out RuntimeFavoriteGameObject runtimeFavoriteGameObject);
+                bool exists = existedDragging.TryGetValue(dragging, out RuntimeFavoriteGameObject runtimeFavoriteGameObject);
+
+                MergedConfig mergedConfig = GetMergedConfig(dragging, runtimeFavoriteGameObject);
+
+                Texture2D icon = mergedConfig.Icon;
+                bool hasColor = mergedConfig.HasColor;
+                Color color = mergedConfig.Color;
+
                 string text = exists
                     ? FavoriteDrawingInfo.HelperGetDisplayText(runtimeFavoriteGameObject)
                     : dragging.name;
-                Texture2D icon = exists
-                    ? FavoriteDrawingInfo.HelperGetDisplayIcon(runtimeFavoriteGameObject)
-                    : FavoriteDrawingInfo.HelperGetDisplayIcon(dragging);
 
                 float textWidth = GUI.skin.button.CalcSize(new GUIContent(text)).x;
                 float iconWidth = icon is null? 0: EditorGUIUtility.singleLineHeight;
@@ -861,7 +1035,10 @@ namespace SaintsHierarchy.Editor
                     }),
                     exists? RuntimeFavoriteStatus.DragExisted: RuntimeFavoriteStatus.DragNew,
                     text,
-                    icon, totalWidth);
+                    icon,
+                    totalWidth,
+                    hasColor,
+                    color);
                 draggingDrawingInfos.Add(info);
             }
 
@@ -947,7 +1124,21 @@ namespace SaintsHierarchy.Editor
                 GUIContent content = new GUIContent(favoriteDrawingInfo.Text, favoriteDrawingInfo.Icon);
                 using (new GUIBackgroundColorScoopWithStatus(favoriteDrawingInfo.Status))
                 {
-                    GUI.Box(drawRect, content, GUI.skin.button);
+                    if (favoriteDrawingInfo.HasColor)
+                    {
+                        GUI.Box(drawRect, "", GUI.skin.button);
+                        _colorStripTex ??= Util.LoadResource<Texture2D>("color-strip-boxed.png");
+                        // GUI.backgroundColor = favoriteDrawingInfo.Color;
+                        using(new GUIColorScoop(favoriteDrawingInfo.Color))
+                        {
+                            GUI.DrawTexture(drawRect, _colorStripTex, ScaleMode.StretchToFill, true);
+                        }
+                        GUI.Box(drawRect, content, GUI.skin.label);
+                    }
+                    else
+                    {
+                        GUI.Box(drawRect, content, GUI.skin.button);
+                    }
                 }
                 bool btnClicked = false;
 

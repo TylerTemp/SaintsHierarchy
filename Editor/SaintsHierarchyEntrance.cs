@@ -132,13 +132,13 @@ namespace SaintsHierarchy.Editor
                 }
                 else
                 {
-                    goConfig = GetGameObjectConfig(go).config;
+                    goConfig = Util.GetGameObjectConfig(go).config;
                 }
             }
             else
             {
                 bool found;
-                (found, goConfig) = GetGameObjectConfig(go);
+                (found, goConfig) = Util.GetGameObjectConfig(go);
                 if(found)
                 {
                     RuntimeCacheConfig.instance.Upsert(instanceID, goConfig);
@@ -243,7 +243,7 @@ namespace SaintsHierarchy.Editor
                 Color useColor = TreeColor;
                 if (parentTrans != null)
                 {
-                    GameObjectConfig config = GetGameObjectConfig(parentTrans.gameObject).config;
+                    GameObjectConfig config = Util.GetGameObjectConfig(parentTrans.gameObject).config;
                     if (config.hasColor)
                     {
                         useColor = config.color;
@@ -300,7 +300,7 @@ namespace SaintsHierarchy.Editor
             }
             else
             {
-                iconTexture = GetIconByComponent(allComponents);
+                iconTexture = Util.GetIconByComponent(allComponents);
             }
 
             Texture prefabTexture = null;
@@ -1091,198 +1091,6 @@ namespace SaintsHierarchy.Editor
                 },
             };
         }
-        private static Texture2D GetIconByComponent(IEnumerable<Component> components)
-        {
-            foreach (Component comp in components)
-            {
-                switch (comp)
-                {
-                    case IHierarchyIconPath hierarchyIconPath:
-                        return Util.LoadResource<Texture2D>(hierarchyIconPath.HierarchyIconPath);
-                    case IHierarchyIconTexture2D hierarchyIconTexture2D:
-                        return hierarchyIconTexture2D.HierarchyIconTexture2D;
-                    case Camera:
-                        return (Texture2D)EditorGUIUtility.IconContent("d_Camera Icon").image;
-                    case Light:
-                        return (Texture2D)EditorGUIUtility.IconContent("d_DirectionalLight Icon").image;
-                    case Canvas:
-                        return (Texture2D)EditorGUIUtility.IconContent("d_Canvas Icon").image;
-                    case EventSystem:
-                        return (Texture2D)EditorGUIUtility.IconContent("d_EventSystem Icon").image;
-#if SAINTSHIERARCHY_UNITY_RENDER_PIPELINES_CORE
-                    case UnityEngine.Rendering.Volume:
-                        return Util.LoadResource<Texture2D>("d_Volume Icon.asset");
-#endif
-#if SAINTSHIERARCHY_WWISE
-                    case AkInitializer:
-                        return Util.LoadResource<Texture2D>("wwise-logo.png");
-#endif
-                }
-            }
-
-            return null;
-        }
-
-        private static IReadOnlyList<(GameObject root, string path)> GetPrefabRootTopToBottom(GameObject go)
-        {
-            List<(GameObject, string)> result = new List<(GameObject, string)>();
-
-            List<string> names = new List<string>();
-
-            Transform current = go.transform;
-            while (current != null)
-            {
-                if (PrefabUtility.IsAnyPrefabInstanceRoot(current.gameObject))
-                {
-                    string subName = string.Join("/", names);
-                    result.Add((current.gameObject, subName));
-                }
-                names.Insert(0, current.name);
-                current = current.parent;
-            }
-
-            result.Reverse();
-
-            return result;
-        }
-
-        private static (bool found, GameObjectConfig config) GetGameObjectConfig(GameObject go)
-        {
-            GlobalObjectId goId = GlobalObjectId.GetGlobalObjectIdSlow(go);
-            // if (go.name == "PrefabInsideAPrefab")
-            // {
-            //     Debug.Log($"raw: {goId}");
-            // }
-
-            string scenePath = go.scene.path;
-            // Debug.Log($"scenePath={scenePath}");
-            if (string.IsNullOrEmpty(scenePath))
-            {
-                scenePath = AssetDatabase.GetAssetPath(go);
-            }
-            string sceneGuid = AssetDatabase.AssetPathToGUID(scenePath);
-            string norId = Util.GlobalObjectIdNormString(goId);
-            // (bool found, SaintsHierarchyConfig.GameObjectConfig config) = FindConfig(sceneGuid, Utils.GlobalObjectIdNormStringNoPrefabLink(goId));
-            // if (go.name == "PrefabInsideAPrefab")
-            // {
-            //     Debug.Log($"nor: {norId}");
-            // }
-            (bool found, GameObjectConfig config) = FindConfig(sceneGuid, norId);
-            // string upkId = Utils.GlobalObjectIdNormStringNoPrefabLink(goId);
-            // (bool found, SaintsHierarchyConfig.GameObjectConfig config) = FindConfig(sceneGuid, upkId);
-            if (found)
-            {
-                return (true, config);
-            }
-
-            // IReadOnlyList<GameObject> prefabRootTopToBottom = GetPrefabRootTopToBottom(go);
-            foreach ((GameObject prefabInstanceRoot, string relativePath) in GetPrefabRootTopToBottom(go))
-            {
-                // if (go.name == "PrefabInsideAPrefab")
-                // {
-                //     Debug.Log($"go={go.name}: {prefabInstanceRoot.name}->{relativePath}");
-                // }
-                // GameObject prefabAsset = PrefabUtility.GetCorrespondingObjectFromOriginalSource(prefabInstanceRoot);
-                string prefabPath =
-                    AssetDatabase.GetAssetPath(
-                        PrefabUtility.GetCorrespondingObjectFromOriginalSource(prefabInstanceRoot));
-                // Debug.Log(prefabPath);
-                if (string.IsNullOrEmpty(prefabPath))  // broken prefab
-                {
-                    return default;
-                }
-                // Debug.Log(prefabPath);
-                GameObject prefabAsset;
-                if(prefabPath.EndsWith(".prefab"))
-                {
-                    prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
-                }
-                else  // fbx etc
-                {
-                    // Debug.Log(AssetDatabase.LoadAssetAtPath<DefaultAsset>(prefabPath));
-                    // Debug.Log(go);
-                    // Debug.Log(prefabPath);
-                    continue;
-                    // foreach (Object o in AssetDatabase
-                    //              .LoadAllAssetsAtPath(prefabPath))
-                    // {
-                    //     Debug.Log($"out: {o}");
-                    // }
-                    // prefabAsset = AssetDatabase
-                    //     .LoadAllAssetsAtPath(prefabPath)
-                    //     .OfType<GameObject>()
-                    //     .FirstOrDefault();
-                    // if (prefabAsset == null)
-                    // {
-                    //     Debug.LogWarning($"Failed to load file {prefabPath}. Please report this issue");
-                    //     // return (false, default);
-                    //     continue;
-                    // }
-                }
-
-                // Debug.Log($"{prefabAsset}: {prefabPath}->{relativePath}");
-
-                GameObject prefabSubGo;
-                // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
-                if (relativePath == "")
-                {
-                    prefabSubGo = prefabAsset;
-                }
-                else
-                {
-                    Transform subTarget = prefabAsset.transform.Find(relativePath);
-                    if (subTarget == null)
-                    {
-
-#if SAINTSHIERARCHY_DEBUG
-                        Debug.LogWarning($"Could not find prefab asset {prefabPath} relative to {relativePath}");
-#endif
-                        continue;
-                    }
-                    prefabSubGo = subTarget.gameObject;
-                }
-                GlobalObjectId prefabSubGoId = GlobalObjectId.GetGlobalObjectIdSlow(prefabSubGo);
-                string prefabSubGoIdStr = Util.GlobalObjectIdNormString(prefabSubGoId);
-                string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(prefabAsset));
-                // if (go.name == "PrefabInsideAPrefab")
-                // {
-                //     Debug.Log($"prefab prefabSubGo = {prefabSubGo.name}");
-                //     Debug.Log($"prefab path = {prefabPath}");
-                //     Debug.Log($"prefab={guid}/goId={prefabSubGoIdStr}");
-                // }
-                (bool found, GameObjectConfig config) prefabConfig = FindConfig(guid, prefabSubGoIdStr);
-                if (prefabConfig.found)
-                {
-                    return (true, prefabConfig.config);
-                }
-            }
-
-            return (false, default);
-        }
-
-        private static (bool found, GameObjectConfig config) FindConfig(string sceneGuid, string goIdString)
-        {
-            bool personalDisabled = !PersonalHierarchyConfig.instance.personalEnabled;
-            List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList = personalDisabled
-                ? SaintsHierarchyConfig.instance.sceneGuidToGoConfigsList
-                : PersonalHierarchyConfig.instance.sceneGuidToGoConfigsList;
-
-            foreach (SceneGuidToGoConfigs sceneGuidToGoConfigs in sceneGuidToGoConfigsList)
-            {
-                if (sceneGuidToGoConfigs.sceneGuid == sceneGuid)
-                {
-                    foreach (GameObjectConfig gameObjectConfig in sceneGuidToGoConfigs.configs)
-                    {
-                        if (gameObjectConfig.globalObjectIdString == goIdString)
-                        {
-                            return (true, gameObjectConfig);
-                        }
-                    }
-                }
-            }
-
-            return (false, default);
-        }
 
         private static bool _sceneHierarchyWindowsFieldInit;
         private static FieldInfo _sceneHierarchyWindowsField;
@@ -1516,7 +1324,7 @@ namespace SaintsHierarchy.Editor
                 Transform parent = trans.parent;
                 if (parent != null)
                 {
-                    GameObjectConfig config = GetGameObjectConfig(parent.gameObject).config;
+                    GameObjectConfig config = Util.GetGameObjectConfig(parent.gameObject).config;
                     if (config.hasColor)
                     {
                         useColor = config.color;
@@ -1558,7 +1366,7 @@ namespace SaintsHierarchy.Editor
                     Color useColor = TreeColor;
                     if (parent != null)
                     {
-                        GameObjectConfig config = GetGameObjectConfig(parent.gameObject).config;
+                        GameObjectConfig config = Util.GetGameObjectConfig(parent.gameObject).config;
                         if (config.hasColor)
                         {
                             useColor = config.color;

@@ -5,7 +5,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace SaintsHierarchy.Editor
+namespace SaintsHierarchy.Editor.UIElement
 {
 #if UNITY_6000_0_OR_NEWER
     [UxmlElement]
@@ -16,6 +16,10 @@ namespace SaintsHierarchy.Editor
 #if !UNITY_6000_0_OR_NEWER
         public new class UxmlFactory : UxmlFactory<IconPickerElement, UxmlTraits> { }
 #endif
+        [UxmlAttribute]
+        // ReSharper disable once UnassignedField.Global
+        // ReSharper disable once MemberCanBePrivate.Global
+        public bool NoDeleteButton;
 
         private static Texture2D _closeIcon;
         private static VisualTreeAsset _iconPickerTemplate;
@@ -99,7 +103,7 @@ namespace SaintsHierarchy.Editor
                 customButton.style.display = DisplayStyle.None;
             }
 
-            if (!string.IsNullOrEmpty(_curIcon))  // has icon
+            if (!string.IsNullOrEmpty(_curIcon) && !NoDeleteButton)  // has icon
             {
                 ItemButtonElement noIconButton = MakeIconButton(_closeIcon ??= Util.LoadResource<Texture2D>("close.png"));
                 noIconButton.Button.tooltip = "Delete Icon Config";

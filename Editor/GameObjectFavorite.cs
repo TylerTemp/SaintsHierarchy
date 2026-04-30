@@ -12,7 +12,7 @@ namespace SaintsHierarchy.Editor
         public string alias;
         public GameObjectFavoriteIconType iconType;
         public string icon;
-        public bool hasColor;
+        public GameObjectFavoriteColorType colorType;
         public Color color;
 
         public bool Equals(GameObjectFavorite other)

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UIElements;
 
-namespace SaintsHierarchy.Editor
+namespace SaintsHierarchy.Editor.UIElement
 {
     public class FavoriteConfigPanel : VisualElement
     {
@@ -15,6 +15,10 @@ namespace SaintsHierarchy.Editor
 
         private readonly GameObjectFavorite _favorite;
         private readonly TextField _aliasField;
+
+        private readonly EnumField _colorTypeField;
+        private readonly ColorPickerElement _colorPickerElement;
+
         private readonly EnumField _iconTypeField;
         private readonly IconPickerElement _iconPickerElement;
 
@@ -35,7 +39,18 @@ namespace SaintsHierarchy.Editor
             _aliasField.value = _favorite.alias ?? string.Empty;
             _aliasField.RegisterCallback<KeyDownEvent>(OnAliasKeyDown, TrickleDown.TrickleDown);
 
+            _colorPickerElement = root.Q<ColorPickerElement>();
+            _colorPickerElement.NoDeleteButton();
+            _colorPickerElement.value = new ColorPickerResult(favoriteConfig.colorType == GameObjectFavoriteColorType.CustomColor, false, favoriteConfig.color);
+
+            _colorTypeField = root.Q<EnumField>("colorType");
+            _colorTypeField.RegisterValueChangedCallback(evt =>
+                GameObjectFavoriteColorTypeChanged((GameObjectFavoriteColorType)evt.newValue));
+            _colorTypeField.value = _favorite.colorType;
+
             _iconPickerElement = root.Q<IconPickerElement>();
+            _iconPickerElement.value = favoriteConfig.icon;
+
             _iconTypeField = root.Q<EnumField>("iconType");
             // _iconTypeField.Init(_favorite.iconType);
             _iconTypeField.RegisterValueChangedCallback(evt =>
@@ -54,8 +69,11 @@ namespace SaintsHierarchy.Editor
             RegisterCallback<AttachToPanelEvent>(AttachToPanel);
             RegisterCallback<GeometryChangedEvent>(GeometryChanged);
 
+            GameObjectFavoriteColorTypeChanged(_favorite.colorType);
             GameObjectFavoriteIconTypeChanged(_favorite.iconType);
         }
+
+
 
         private void GeometryChanged(GeometryChangedEvent evt)
         {
@@ -83,6 +101,13 @@ namespace SaintsHierarchy.Editor
         {
             bool display = iconType == GameObjectFavoriteIconType.Custom;
             _iconPickerElement.style.display = display ? DisplayStyle.Flex : DisplayStyle.None;
+            schedule.Execute(RefreshHeight).StartingIn(150);
+        }
+
+        private void GameObjectFavoriteColorTypeChanged(GameObjectFavoriteColorType colorType)
+        {
+            bool display = colorType == GameObjectFavoriteColorType.CustomColor;
+            _colorPickerElement.style.display = display ? DisplayStyle.Flex : DisplayStyle.None;
             schedule.Execute(RefreshHeight).StartingIn(150);
         }
 
@@ -125,6 +150,12 @@ namespace SaintsHierarchy.Editor
 
             GameObjectFavorite updatedFavorite = config.favorites[foundIndex];
             updatedFavorite.alias = _aliasField.value ?? string.Empty;
+
+            updatedFavorite.colorType = _colorTypeField.value is GameObjectFavoriteColorType colorType
+                ? colorType
+                : updatedFavorite.colorType;
+            updatedFavorite.color = _colorPickerElement.value.Color;
+
             updatedFavorite.iconType = _iconTypeField.value is GameObjectFavoriteIconType iconType
                 ? iconType
                 : updatedFavorite.iconType;

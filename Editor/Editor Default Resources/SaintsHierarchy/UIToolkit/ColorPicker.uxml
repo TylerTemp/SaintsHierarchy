@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:Template name="CloseButtonElement" src="project://database/Packages/today.comes.saintshierarchy/Editor/Editor%20Default%20Resources/SaintsHierarchy/UIToolkit/CloseButtonElement.uxml?fileID=9197481963319205126&amp;guid=8914c3d220619d444a53da06e95e8b7e&amp;type=3#CloseButtonElement"/>
+    <Style src="project://database/Packages/today.comes.saintshierarchy/Editor/Editor%20Default%20Resources/SaintsHierarchy/UIToolkit/ColorPickerStyle.uss?fileID=7433441132597879392&amp;guid=2e3e0ce7f041c8b458291495f1049d3a&amp;type=3#ColorPickerStyle"/>
+    <ui:VisualElement name="ColorContainer" class="ColorContainer">
+        <ui:VisualElement name="CustomColorContainer">
+            <uie:ColorField name="CustomColor" tooltip="Custom Color"/>
+            <ui:VisualElement name="CustomColorIcon" picking-mode="Ignore" style="flex-grow: 1;"/>
+        </ui:VisualElement>
+        <ui:Instance template="CloseButtonElement" name="CloseButtonTemplate"/>
+    </ui:VisualElement>
+</ui:UXML>

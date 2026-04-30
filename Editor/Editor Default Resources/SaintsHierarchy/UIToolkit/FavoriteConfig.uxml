@@ -6,7 +6,9 @@
     </ui:VisualElement>
     <ui:VisualElement name="content" class="content">
         <ui:TextField label="Alias" name="aliasInput" class="InputWithLabel"/>
+        <ui:EnumField label="Color Type" type="SaintsHierarchy.Editor.GameObjectFavoriteColorType, SaintsHierarchy.Editor" name="colorType" class="InputWithLabel"/>
+        <SaintsHierarchy.Editor.UIElement.ColorPickerElement no-delete-button="true"/>
         <ui:EnumField label="Icon Type" type="SaintsHierarchy.Editor.GameObjectFavoriteIconType, SaintsHierarchy.Editor" name="iconType" class="InputWithLabel"/>
-        <SaintsHierarchy.Editor.IconPickerElement/>
+        <SaintsHierarchy.Editor.UIElement.IconPickerElement no-delete-button="true"/>
     </ui:VisualElement>
 </ui:UXML>
