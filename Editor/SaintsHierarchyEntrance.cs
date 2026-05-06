@@ -682,6 +682,9 @@ namespace SaintsHierarchy.Editor
 
                             AdvancedDropdownList<string> scenePaths = new AdvancedDropdownList<string>();
 
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_SCENE_SELECTOR
+                            Debug.Log("getting Scene in build");
+#endif
                             EditorBuildSettingsScene[] inBuildScenes = EditorBuildSettings.scenes;
                             bool hasInBuildScenes = inBuildScenes.Length > 0;
                             HashSet<string> addedScenePaths = new HashSet<string>();
@@ -703,12 +706,16 @@ namespace SaintsHierarchy.Editor
                                 }
                                 // scenePaths.Add(buildScenes);
                             }
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_SCENE_SELECTOR
+                            Debug.Log("done getting Scene in build");
+#endif
 
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_SCENE_SELECTOR
+                            Debug.Log("getting Scene in addressable");
+#endif
                             bool hasAddressableScenes = false;
-                            foreach (SceneAsset addressableScene in GetAddressableScenes())
+                            foreach (string assetPath in GetAddressableScenes())
                             {
-                                string assetPath = AssetDatabase.GetAssetPath(addressableScene);
-
                                 if (!addedScenePaths.Add(assetPath))
                                 {
                                     continue;
@@ -726,11 +733,18 @@ namespace SaintsHierarchy.Editor
                                 scenePaths.Add($"[Addressable]/{dropPath}", assetPath);
                             }
 
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_SCENE_SELECTOR
+                            Debug.Log("done getting Scene in addressable");
+#endif
+
                             if (hasAddressableScenes)
                             {
                                 needSeparator = true;
                             }
 
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_SCENE_SELECTOR
+                            Debug.Log("getting Scene in assets");
+#endif
                             // bool hasAssetScene = false;
                             foreach (string sceneGuid in AssetDatabase.FindAssets("t:scene"))
                             {
@@ -769,8 +783,15 @@ namespace SaintsHierarchy.Editor
                                 string dropPath = assetPath[..^".unity".Length];
                                 scenePaths.Add(dropPath, assetPath);
                             }
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_SCENE_SELECTOR
+                            Debug.Log("done getting Scene in assets");
+#endif
 
                             scenePaths.SelfCompact();
+
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_SCENE_SELECTOR
+                            Debug.Log("done dropdown compact");
+#endif
 
                             AdvancedDropdownMetaInfo meta = new AdvancedDropdownMetaInfo
                             {
@@ -786,6 +807,9 @@ namespace SaintsHierarchy.Editor
 
                             (Rect worldBound, float maxHeight) = SaintsTreeDropdownUIToolkit.GetProperPos(useBound);
 
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_SCENE_SELECTOR
+                            Debug.Log("dropdown show");
+#endif
                             PopupWindow.Show(worldBound, new SaintsTreeDropdownUIToolkit(
                                 meta,
                                 worldBound.width,
@@ -798,6 +822,10 @@ namespace SaintsHierarchy.Editor
                                     return null;
                                 }
                             ));
+
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_SCENE_SELECTOR
+                            Debug.Log("done dropdown show");
+#endif
                         }
                     }
                 }
@@ -836,7 +864,7 @@ namespace SaintsHierarchy.Editor
         }
 
 
-        private static IEnumerable<SceneAsset> GetAddressableScenes()
+        private static IEnumerable<string> GetAddressableScenes()
         {
 #if USE_ADDRESSABLE
             AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.GetSettings(false);
@@ -850,10 +878,12 @@ namespace SaintsHierarchy.Editor
             {
                 foreach (AddressableAssetEntry addressableAssetEntry in addressableAssetGroup.entries)
                 {
-                    if (addressableAssetEntry.MainAsset is SceneAsset sceneAsset)
+                    if (!addressableAssetEntry.IsScene)
                     {
-                        yield return sceneAsset;
+                        continue;
                     }
+
+                    yield return addressableAssetEntry.AssetPath;
                 }
             }
 #else
