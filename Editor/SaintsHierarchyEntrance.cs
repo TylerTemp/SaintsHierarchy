@@ -685,6 +685,7 @@ namespace SaintsHierarchy.Editor
                             EditorBuildSettingsScene[] inBuildScenes = EditorBuildSettings.scenes;
                             bool hasInBuildScenes = inBuildScenes.Length > 0;
                             HashSet<string> addedScenePaths = new HashSet<string>();
+                            bool needSeparator = hasInBuildScenes;
                             if(hasInBuildScenes)
                             {
                                 // AdvancedDropdownList<string> buildScenes = new AdvancedDropdownList<string>("Builds");
@@ -706,7 +707,6 @@ namespace SaintsHierarchy.Editor
                             bool hasAddressableScenes = false;
                             foreach (SceneAsset addressableScene in GetAddressableScenes())
                             {
-
                                 string assetPath = AssetDatabase.GetAssetPath(addressableScene);
 
                                 if (!addedScenePaths.Add(assetPath))
@@ -714,60 +714,60 @@ namespace SaintsHierarchy.Editor
                                     continue;
                                 }
 
-                                if (!hasAddressableScenes)
+                                if (needSeparator)
                                 {
-                                    hasAddressableScenes = true;
-                                    if (hasInBuildScenes)
-                                    {
-                                        scenePaths.AddSeparator();
-                                    }
+                                    scenePaths.AddSeparator();
+                                    needSeparator = false;
                                 }
+                                hasAddressableScenes = true;
 
                                 // Debug.Log($"address: {addressableScene.name}");
                                 string dropPath = assetPath[..^".unity".Length];
                                 scenePaths.Add($"[Addressable]/{dropPath}", assetPath);
                             }
 
-                            bool hasAssetScene = false;
+                            if (hasAddressableScenes)
+                            {
+                                needSeparator = true;
+                            }
+
+                            // bool hasAssetScene = false;
                             foreach (string sceneGuid in AssetDatabase.FindAssets("t:scene"))
                             {
-                                if(GUID.TryParse(sceneGuid, out GUID guid))
+                                if (!GUID.TryParse(sceneGuid, out GUID guid))
                                 {
-                                    string assetPath = AssetDatabase.GUIDToAssetPath(guid);
-                                    if (!assetPath.EndsWith(".unity"))
-                                    {
-                                        continue;
-                                    }
-                                    if (!addedScenePaths.Add(assetPath))
-                                    {
-                                        continue;
-                                    }
-
-                                    SceneAsset assetScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(assetPath);
-                                    if (assetScene != null)
-                                    {
-                                        bool editable = AssetDatabase.IsOpenForEdit(
-                                            assetPath,
-                                            out string _,
-                                            StatusQueryOptions.ForceUpdate
-                                        );
-                                        if (!editable)
-                                        {
-                                            continue;
-                                        }
-
-                                        if (!hasAssetScene)
-                                        {
-                                            hasAssetScene = true;
-                                            if ((hasInBuildScenes && !hasAddressableScenes) || hasAddressableScenes)
-                                            {
-                                                scenePaths.AddSeparator();
-                                            }
-                                        }
-                                        string dropPath = assetPath[..^".unity".Length];
-                                        scenePaths.Add(dropPath, assetPath);
-                                    }
+                                    continue;
                                 }
+
+                                string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                                if (!assetPath.EndsWith(".unity"))
+                                {
+                                    continue;
+                                }
+                                if (!addedScenePaths.Add(assetPath))
+                                {
+                                    continue;
+                                }
+
+                                bool editable = AssetDatabase.IsOpenForEdit(
+                                    assetPath,
+                                    out string _,
+                                    StatusQueryOptions.ForceUpdate
+                                );
+
+                                if (!editable)
+                                {
+                                    continue;
+                                }
+
+                                if (needSeparator)
+                                {
+                                    scenePaths.AddSeparator();
+                                    needSeparator = false;
+                                }
+
+                                string dropPath = assetPath[..^".unity".Length];
+                                scenePaths.Add(dropPath, assetPath);
                             }
 
                             scenePaths.SelfCompact();
