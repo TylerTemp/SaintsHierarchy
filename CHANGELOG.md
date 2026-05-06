@@ -1,3 +1,8 @@
+## 1.3.2 ##
+
+1.  Fix: `sv` color didn't paint an underline color
+2.  Add: Favorite GameObjects now can paint the correct underline by config
+
 ## 1.3.1 ##
 
 1.  Fix: Scene selector was very slow if you use addressable

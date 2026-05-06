@@ -61,8 +61,8 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ## Change Log ##
 
-1.  Fix: Scene selector was very slow if you use addressable
-2.  Fix: Accidently drag the scene if you try drag the mouse while scene selector is already open
+1.  Fix: `sv` color didn't paint an underline color
+2.  Add: Favorite GameObjects now can paint the correct underline by config
 
 See [the full changelog](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
 

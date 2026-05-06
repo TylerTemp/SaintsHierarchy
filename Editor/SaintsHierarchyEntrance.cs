@@ -396,27 +396,19 @@ namespace SaintsHierarchy.Editor
             GUIContent content = new GUIContent(trans.name);
             float labelWidth = textColorStyle.CalcSize(content).x;
 
+            bool underlineDraw = false;
+            Color underlineColor = default;
+            Rect underlineRect = default;
             if (goIcon != null && goIcon.name.StartsWith("sv_label_"))
             {
-                Color labelColor = goIcon.name switch
-                {
-                    "sv_label_0" => new Color32(140, 140, 140, 255),
-                    "sv_label_1" => new Color32(70, 119, 202, 255),
-                    "sv_label_2" => new Color32(65, 184, 161, 255),
-                    "sv_label_3" => new Color32(48, 188, 47, 255),
-                    "sv_label_4" => new Color32(234, 206, 43, 255),
-                    "sv_label_5" => new Color32(229, 135, 35, 255),
-                    "sv_label_6" => new Color32(204, 39, 39, 255),
-                    "sv_label_7" => new Color32(187, 72, 170, 255),
-                    _ => Color.clear,
-                };
-                // Debug.Log(goIcon.name);
-                EditorGUI.DrawRect(new Rect(rawRightRect)
+                (underlineDraw, underlineColor) = Util.GetUnderline(goIcon.name);
+
+                underlineRect = new Rect(rawRightRect)
                 {
                     y = rawRightRect.yMax - 1,
                     height = 1,
-                    width = labelWidth,
-                }, labelColor);
+                    // width = labelWidth,
+                };
 
                 // GUI.DrawTexture(new Rect(labelRect)
                 // {
@@ -466,12 +458,11 @@ namespace SaintsHierarchy.Editor
 
             #endregion
 
-            // late draw
-            // icon
+            #region late draw
+
+            #region icon
             EditorGUI.DrawRect(iconRect, bgDefaultColor);
-            if(personalDisabled
-                   ? SaintsHierarchyConfig.instance.backgroundStrip
-                   : PersonalHierarchyConfig.instance.backgroundStrip)
+            if(Util.GetUsingConfig().backgroundStrip )
             {
                 bool needLight = (rowIndex + 1) % 2 == 0;
                 if (needLight)
@@ -535,15 +526,15 @@ namespace SaintsHierarchy.Editor
                         ScaleMode.ScaleToFit, true);
                 }
             }
-            // label
+            #endregion
+
+            #region label
             Rect labelRect = new Rect(rawRightRect)
             {
                 width = labelWidth,
             };
             EditorGUI.DrawRect(labelRect, bgDefaultColor);
-            if(personalDisabled
-                   ? SaintsHierarchyConfig.instance.backgroundStrip
-                   : PersonalHierarchyConfig.instance.backgroundStrip)
+            if(Util.GetUsingConfig().backgroundStrip)
             {
                 bool needLight = (rowIndex + 1) % 2 == 0;
                 if (needLight)
@@ -560,6 +551,23 @@ namespace SaintsHierarchy.Editor
                 }
             }
             EditorGUI.LabelField(rawRightRect, content, textColorStyle);
+            #endregion
+
+            #region label underline
+
+            if (underlineDraw)
+            {
+                EditorGUI.DrawRect(new Rect(underlineRect)
+                {
+                    y = rawRightRect.yMax - 1,
+                    height = 1,
+                    width = labelWidth,
+                }, underlineColor);
+            }
+
+            #endregion
+
+            #endregion
 
             #region disabled
 

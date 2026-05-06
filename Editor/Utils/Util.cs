@@ -871,14 +871,22 @@ namespace SaintsHierarchy.Editor.Utils
             //     Debug.Log($"raw: {goId}");
             // }
 
-            string scenePath = go.scene.path;
+            string scenePath;
+            try
+            {
+                scenePath = go.scene.path;
+            }
+            catch (MissingReferenceException)
+            {
+                return (false, default);
+            }
             // Debug.Log($"scenePath={scenePath}");
             if (string.IsNullOrEmpty(scenePath))
             {
                 scenePath = AssetDatabase.GetAssetPath(go);
             }
             string sceneGuid = AssetDatabase.AssetPathToGUID(scenePath);
-            string norId = Util.GlobalObjectIdNormString(goId);
+            string norId = GlobalObjectIdNormString(goId);
             // (bool found, SaintsHierarchyConfig.GameObjectConfig config) = FindConfig(sceneGuid, Utils.GlobalObjectIdNormStringNoPrefabLink(goId));
             // if (go.name == "PrefabInsideAPrefab")
             // {
@@ -959,7 +967,7 @@ namespace SaintsHierarchy.Editor.Utils
                     prefabSubGo = subTarget.gameObject;
                 }
                 GlobalObjectId prefabSubGoId = GlobalObjectId.GetGlobalObjectIdSlow(prefabSubGo);
-                string prefabSubGoIdStr = Util.GlobalObjectIdNormString(prefabSubGoId);
+                string prefabSubGoIdStr = GlobalObjectIdNormString(prefabSubGoId);
                 string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(prefabAsset));
                 // if (go.name == "PrefabInsideAPrefab")
                 // {
@@ -1031,7 +1039,7 @@ namespace SaintsHierarchy.Editor.Utils
                 switch (comp)
                 {
                     case IHierarchyIconPath hierarchyIconPath:
-                        return Util.LoadResource<Texture2D>(hierarchyIconPath.HierarchyIconPath);
+                        return GetCachedIcon(hierarchyIconPath.HierarchyIconPath);
                     case IHierarchyIconTexture2D hierarchyIconTexture2D:
                         return hierarchyIconTexture2D.HierarchyIconTexture2D;
                     case Camera:
@@ -1044,16 +1052,44 @@ namespace SaintsHierarchy.Editor.Utils
                         return (Texture2D)EditorGUIUtility.IconContent("d_EventSystem Icon").image;
 #if SAINTSHIERARCHY_UNITY_RENDER_PIPELINES_CORE
                     case UnityEngine.Rendering.Volume:
-                        return Util.LoadResource<Texture2D>("d_Volume Icon.asset");
+                        return GetCachedIcon("d_Volume Icon.asset");
 #endif
 #if SAINTSHIERARCHY_WWISE
                     case AkInitializer:
-                        return Util.LoadResource<Texture2D>("wwise-logo.png");
+                        return GetCachedIcon("wwise-logo.png");
 #endif
                 }
             }
 
             return null;
+        }
+
+        private static readonly Dictionary<string, Texture2D> NameToTexture2DCache = new Dictionary<string, Texture2D>();
+
+        public static Texture2D GetCachedIcon(string name)
+        {
+            if (NameToTexture2DCache.TryGetValue(name, out Texture2D cache))
+            {
+                return cache;
+            }
+
+            return NameToTexture2DCache[name] = LoadResource<Texture2D>(name);
+        }
+
+        public static (bool hasUnderline, Color underlineColor) GetUnderline(string iconName)
+        {
+            return iconName switch
+            {
+                "sv_label_0" => (true, new Color32(140, 140, 140, 255)),
+                "sv_label_1" => (true, new Color32(70, 119, 202, 255)),
+                "sv_label_2" => (true, new Color32(65, 184, 161, 255)),
+                "sv_label_3" => (true, new Color32(48, 188, 47, 255)),
+                "sv_label_4" => (true, new Color32(234, 206, 43, 255)),
+                "sv_label_5" => (true, new Color32(229, 135, 35, 255)),
+                "sv_label_6" => (true, new Color32(204, 39, 39, 255)),
+                "sv_label_7" => (true, new Color32(187, 72, 170, 255)),
+                _ => ((bool hasUnderline, Color underlineColor))(false, default)
+            };
         }
     }
 }

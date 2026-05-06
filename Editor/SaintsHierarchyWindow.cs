@@ -15,7 +15,7 @@ namespace SaintsHierarchy.Editor
 {
     public class SaintsHierarchyWindow
     {
-        private static Texture2D _colorStripTex;
+        // private static Texture2D _colorStripTex;
         private static Type _sceneHierarchyWindowType;
         private static FieldInfo _sLastInteractedHierarchy;
         private static FieldInfo _fieldMSceneHierarchy;
@@ -695,13 +695,18 @@ namespace SaintsHierarchy.Editor
             public readonly bool HasColor;
             public readonly Color Color;
 
+            public readonly bool HasUnderline;
+            public readonly Color UnderlineColor;
+
             public FavoriteDrawingInfo(RuntimeFavoriteGameObject runtimeConfig,
                 RuntimeFavoriteStatus status,
                 string text,
                 Texture2D icon,
                 float width,
                 bool hasColor,
-                Color color
+                Color color,
+                bool hasUnderline,
+                Color underlineColor
             )
             {
                 RuntimeConfig = runtimeConfig;
@@ -713,6 +718,9 @@ namespace SaintsHierarchy.Editor
 
                 HasColor = hasColor;
                 Color = color;
+
+                HasUnderline = hasUnderline;
+                UnderlineColor = underlineColor;
             }
 
             public static string HelperGetDisplayText(RuntimeFavoriteGameObject config)
@@ -724,36 +732,6 @@ namespace SaintsHierarchy.Editor
             // public string GetDisplayText() => RuntimeConfig.LoadedGameObject.name;
             private static Texture2D _defaultIcon;
 
-            public static Texture2D HelperGetDisplayIcon(RuntimeFavoriteGameObject config)
-            {
-                switch (config.FavoriteConfig.iconType)
-                {
-                    case GameObjectFavoriteIconType.None:
-                        return null;
-                    case GameObjectFavoriteIconType.Default:
-                    case GameObjectFavoriteIconType.UnityDefault:
-                        return HelperGetDisplayIcon(config.LoadedGameObject);
-                    case GameObjectFavoriteIconType.Custom:
-                    {
-                        if (string.IsNullOrEmpty(config.FavoriteConfig.icon))
-                        {
-                            return null;
-                        }
-                        Texture2D icon = Util.LoadResource<Texture2D>(config.FavoriteConfig.icon);
-                        return icon == null
-                            ? null
-                            : icon;
-                    }
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(config.FavoriteConfig.iconType),  config.FavoriteConfig.iconType, null);
-                }
-
-            }
-
-            public static Texture2D HelperGetDisplayIcon(GameObject go)
-            {
-                return EditorGUIUtility.GetIconForObject(go) ?? EditorGUIUtility.IconContent("d_GameObject Icon").image as Texture2D;
-            }
             // public Texture2D GetDisplayIcon() => EditorGUIUtility.GetIconForObject(RuntimeConfig.LoadedGameObject);
 
 
@@ -765,12 +743,16 @@ namespace SaintsHierarchy.Editor
         {
             public readonly bool HasColor;
             public readonly Color Color;
+            public readonly bool HasUnderline;
+            public readonly Color UnderlineColor;
             public readonly Texture2D Icon;
 
-            public MergedConfig(bool hasColor, Color color, Texture2D icon)
+            public MergedConfig(bool hasColor, Color color, bool hasUnderline, Color underlineColor, Texture2D icon)
             {
                 HasColor = hasColor;
                 Color = color;
+                HasUnderline = hasUnderline;
+                UnderlineColor = underlineColor;
                 Icon = icon;
             }
         }
@@ -806,7 +788,13 @@ namespace SaintsHierarchy.Editor
 
             Texture2D icon = GetMergedIcon(go, favoriteConfig, goConfig);
             (bool hasColor, Color color) = GetMergedColor(favoriteConfig, goConfig);
-            return new MergedConfig(hasColor, color, icon);
+            (bool hasUnderline, Color underlineColor) = GetUnderline(go);
+            if (hasColor && icon is null)
+            {
+                icon = Util.GetCachedIcon("transparent_square.png");
+            }
+
+            return new MergedConfig(hasColor, color, hasUnderline, underlineColor, icon);
         }
 
         private static Texture2D GetMergedIcon(GameObject go, RuntimeFavoriteGameObject favoriteConfig, GameObjectConfig goConfig)
@@ -832,11 +820,22 @@ namespace SaintsHierarchy.Editor
                         return compIcon;
                     }
 
-                    return GetUnityDefaultIcon(go);
+                    goto case GameObjectFavoriteIconType.UnityDefault;
                 }
                 case GameObjectFavoriteIconType.UnityDefault:
                 {
-                    return GetUnityDefaultIcon(go);
+                    Texture2D unityIcon = GetUnityDefaultIcon(go);
+                    // ReSharper disable once InvertIf
+                    if (unityIcon is not null)
+                    {
+                        (bool hasUnderline, Color _) = Util.GetUnderline(unityIcon.name);
+                        if (hasUnderline)
+                        {
+                            return null;
+                        }
+                    }
+
+                    return unityIcon;
                 }
                 case GameObjectFavoriteIconType.None:
                 {
@@ -871,6 +870,18 @@ namespace SaintsHierarchy.Editor
                 default:
                     throw new ArgumentOutOfRangeException(nameof(favoriteConfig.FavoriteConfig.colorType), favoriteConfig.FavoriteConfig.colorType, null);
             }
+        }
+
+        private static (bool hasUnderline, Color underlineColor) GetUnderline(GameObject go)
+        {
+            Texture2D icon = EditorGUIUtility.GetIconForObject(go);
+            // ReSharper disable once ConvertIfStatementToReturnStatement
+            if (icon is null)
+            {
+                return (false, default);
+            }
+
+            return Util.GetUnderline(icon.name);
         }
 
         private static Texture2D GetUnityDefaultIcon(GameObject go)
@@ -1000,7 +1011,7 @@ namespace SaintsHierarchy.Editor
                 // float totalWidth = new GUIStyle("Button").CalcSize(new GUIContent(text, )) + iconWidth + gap * 2;
 
                 FavoriteDrawingInfo info = new FavoriteDrawingInfo(runtimeFavoriteGameObject, RuntimeFavoriteStatus.Default, text,
-                    icon, totalWidth, mergedConfig.HasColor, mergedConfig.Color);
+                    icon, totalWidth, mergedConfig.HasColor, mergedConfig.Color, mergedConfig.HasUnderline, mergedConfig.UnderlineColor);
 
                 if (windowStatus.Dragging.Contains(runtimeFavoriteGameObject.LoadedGameObject))
                 {
@@ -1048,7 +1059,9 @@ namespace SaintsHierarchy.Editor
                     icon,
                     totalWidth,
                     hasColor,
-                    color);
+                    color,
+                    mergedConfig.HasUnderline,
+                    mergedConfig.UnderlineColor);
                 draggingDrawingInfos.Add(info);
             }
 
@@ -1131,28 +1144,47 @@ namespace SaintsHierarchy.Editor
                     favoriteDrawingInfo.OriginalY + toolbarRect.y, favoriteDrawingInfo.Width, rowHeight);
 
                 Rect drawRect = new Rect(useRect.x + 1, useRect.y + 1, useRect.width - 2, useRect.height - 2);
+
                 GUIContent content = new GUIContent(favoriteDrawingInfo.Text, favoriteDrawingInfo.Icon);
                 using (new GUIBackgroundColorScoopWithStatus(favoriteDrawingInfo.Status))
                 {
                     if (favoriteDrawingInfo.HasColor)
                     {
-                        GUI.Box(drawRect, "", GUI.skin.button);
-                        _colorStripTex ??= Util.LoadResource<Texture2D>("color-strip-boxed.png");
+                        GUI.Box(drawRect, "", GUI.skin.button);  // bg
+
                         // GUI.backgroundColor = favoriteDrawingInfo.Color;
                         using(new GUIColorScoop(favoriteDrawingInfo.Color))
                         {
-                            GUI.DrawTexture(drawRect, _colorStripTex, ScaleMode.StretchToFill, true);
+                            // color bg box
+                            GUI.DrawTexture(drawRect, Util.GetCachedIcon("color-strip-boxed.png"), ScaleMode.StretchToFill, true);
+                            // color square
                             EditorGUI.DrawRect(new Rect(drawRect)
                             {
                                 width = drawRect.height,
                             }, favoriteDrawingInfo.Color);
                         }
+                        // Debug.Log($"{content.text}/{content.image}");
                         GUI.Box(drawRect, content, GUI.skin.label);
                     }
                     else
                     {
                         GUI.Box(drawRect, content, GUI.skin.button);
                     }
+                }
+
+                if (favoriteDrawingInfo.HasUnderline)
+                {
+                    Rect underlineRect;
+                    if (favoriteDrawingInfo.Icon is null)
+                    {
+                        underlineRect = new Rect(drawRect.x + 1, drawRect.yMax - 2, drawRect.width - 2, 1);
+                    }
+                    else
+                    {
+                        underlineRect = new Rect(drawRect.x + drawRect.height, drawRect.yMax - 2,
+                            drawRect.width - 1 - drawRect.height, 1);
+                    }
+                    EditorGUI.DrawRect(underlineRect, favoriteDrawingInfo.UnderlineColor);
                 }
                 bool btnClicked = false;
 
