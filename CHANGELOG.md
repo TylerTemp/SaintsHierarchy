@@ -1,3 +1,8 @@
+## 1.3.1 ##
+
+1.  Fix: Scene selector was very slow if you use addressable
+2.  Fix: Accidently drag the scene if you try drag the mouse while scene selector is already open   
+
 ## 1.3.0 ##
 
 Add: Now you can click the scene name to switch scene in your project

@@ -606,6 +606,7 @@ namespace SaintsHierarchy.Editor
 
         private static string _mouseDownSceneSelectorStringId;
         private static Vector2 _mouseDownSceneSelectorMousePosition = Vector2.zero;
+        private static bool _sceneSelectorOpen = false;
 
         private static void RenderSceneSelector(int instanceID, Rect selectionRect)
         {
@@ -662,10 +663,15 @@ namespace SaintsHierarchy.Editor
                     {
                         _mouseDownSceneSelectorStringId = sceneStringId;
                         _mouseDownSceneSelectorMousePosition = Event.current.mousePosition;
+                        _sceneSelectorOpen = false;
                     }
                     else if (Event.current.type == EventType.MouseDrag)
                     {
-                        if (_mouseDownSceneSelectorStringId == sceneStringId)
+                        if (_sceneSelectorOpen)
+                        {
+                            Event.current.Use();
+                        }
+                        else if (_mouseDownSceneSelectorStringId == sceneStringId)
                         {
                             if (Vector2.SqrMagnitude(_mouseDownSceneSelectorMousePosition -
                                                      Event.current.mousePosition) > 3 * 3)
@@ -810,6 +816,7 @@ namespace SaintsHierarchy.Editor
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_SCENE_SELECTOR
                             Debug.Log("dropdown show");
 #endif
+                            _sceneSelectorOpen = true;
                             PopupWindow.Show(worldBound, new SaintsTreeDropdownUIToolkit(
                                 meta,
                                 worldBound.width,
@@ -819,9 +826,12 @@ namespace SaintsHierarchy.Editor
                                 {
                                     // Debug.Log(curItem);
                                     OpenAScene(scene, (string)curItem);
+                                    _sceneSelectorOpen = false;
+                                    Event.current.Use();
                                     return null;
                                 }
                             ));
+                            Event.current.Use();
 
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_SCENE_SELECTOR
                             Debug.Log("done dropdown show");

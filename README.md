@@ -59,6 +59,13 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
     git submodule add https://github.com/TylerTemp/SaintsHierarchy.git Packages/today.comes.saintshierarchy
     ```
 
+## Change Log ##
+
+1.  Fix: Scene selector was very slow if you use addressable
+2.  Fix: Accidently drag the scene if you try drag the mouse while scene selector is already open
+
+See [the full changelog](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
+
 ## Config ##
 
 This will automaticlly add indent tree, and icon for camera, light, canvas, event system, wwise
