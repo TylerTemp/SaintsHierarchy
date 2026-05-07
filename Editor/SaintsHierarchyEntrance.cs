@@ -1600,10 +1600,9 @@ namespace SaintsHierarchy.Editor
             object treeViewControllerStateRaw = _treeViewControllerStateField.GetValue(treeViewController);
             // Debug.Log(treeViewControllerStateRaw);
             if (treeViewControllerStateRaw is not
-#if UNITY_6000_3_OR_NEWER
-                TreeViewState<EntityId>
-#else
                 TreeViewState
+#if UNITY_6000_3_OR_NEWER
+                <EntityId>
 #endif
                 treeViewControllerState)
             {
@@ -1615,11 +1614,16 @@ namespace SaintsHierarchy.Editor
             // ReSharper disable once RedundantCast
             List<
 #if UNITY_6000_4_OR_NEWER
-            EntityId
+                EntityId
 #else
                 int
 #endif
-            > expandedIds = treeViewControllerState.expandedIDs;
+            > expandedIds = treeViewControllerState.expandedIDs
+#if !UNITY_6000_4_OR_NEWER
+                .Select(each => (int)each)
+                .ToList()
+#endif
+                ;
             // Debug.Log($"expanded: {string.Join(", ", treeViewControllerState.expandedIDs)}");
             return ("", expandedIds);
         }
@@ -1679,7 +1683,12 @@ namespace SaintsHierarchy.Editor
 #else
             int
 #endif
-            > selectedIDs = treeViewControllerState.selectedIDs;
+            > selectedIDs = treeViewControllerState.selectedIDs
+#if !UNITY_6000_4_OR_NEWER
+                .Select(each => (int)each)
+                .ToList()
+#endif
+                ;
             // Debug.Log($"expanded: {string.Join(", ", treeViewControllerState.expandedIDs)}");
             return ("", selectedIDs);
         }
