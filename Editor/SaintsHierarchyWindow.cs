@@ -163,7 +163,9 @@ namespace SaintsHierarchy.Editor
                         {
                             go = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as GameObject;
                         }
+#pragma warning disable CS0168 // Variable is declared but never used
                         catch (Exception e)
+#pragma warning restore CS0168 // Variable is declared but never used
                         {
 #if SAINTSHIERARCHY_DEBUG
                             Debug.LogException(e);
@@ -764,7 +766,13 @@ namespace SaintsHierarchy.Editor
             if (EditorApplication.isPlayingOrWillChangePlaymode)
             {
                 (bool runtimeFound, GameObjectConfig runtimeConfig) =
-                    RuntimeCacheConfig.instance.Search(go.GetInstanceID());
+                    RuntimeCacheConfig.instance.Search(go.
+#if UNITY_6000_4_OR_NEWER
+                        GetEntityId
+#else
+                        GetInstanceID
+#endif
+                            ());
                 // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
                 if (runtimeFound)
                 {
@@ -781,7 +789,13 @@ namespace SaintsHierarchy.Editor
                 (bool found, GameObjectConfig goConfigResult) = Util.GetGameObjectConfig(go);
                 if (found)
                 {
-                    RuntimeCacheConfig.instance.Upsert(go.GetInstanceID(), goConfigResult);
+                    RuntimeCacheConfig.instance.Upsert(go.
+#if UNITY_6000_4_OR_NEWER
+                        GetEntityId
+#else
+                        GetInstanceID
+#endif
+                            (), goConfigResult);
                     goConfig = goConfigResult;
                 }
             }

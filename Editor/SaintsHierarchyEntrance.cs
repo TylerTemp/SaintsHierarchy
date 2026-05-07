@@ -34,7 +34,13 @@ namespace SaintsHierarchy.Editor
         [InitializeOnLoadMethod]
         private static void Entrance()
         {
-            EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
+            EditorApplication.
+#if UNITY_6000_4_OR_NEWER
+            hierarchyWindowItemByEntityIdOnGUI
+#else
+            hierarchyWindowItemOnGUI
+#endif
+                += OnHierarchyGUI;
         }
 
         private const int StartOffset = 60;
@@ -43,29 +49,17 @@ namespace SaintsHierarchy.Editor
         private const int PrefabExpandWidth = 16;
         private const int RowHeight = 16;
 
-//         private static int? _selectedInstance;
-//
-//         private static bool IsSelected(int instanceID)
-//         {
-//             if (_selectedInstance != null)
-//             {
-//                 return instanceID == _selectedInstance;
-//             }
-//
-//             return Selection.
-// #if UNITY_6000_3_OR_NEWER
-//                 entityIds
-// #else
-//                 instanceIDs
-// #endif
-//                 .Contains(instanceID);
-//         }
-
         private static readonly Color TreeColor = new Color(0.4f, 0.4f, 0.4f);
         private static Texture2D _colorStripTex;
         private static Texture2D _transparentTex;
 
-        private static void OnHierarchyGUI(int instanceID, Rect selectionRect)
+        private static void OnHierarchyGUI(
+#if UNITY_6000_4_OR_NEWER
+            EntityId
+#else
+            int
+#endif
+                instanceID, Rect selectionRect)
         {
             // Debug.Log(selectionRect.y);
             bool personalDisabled = !PersonalHierarchyConfig.instance.personalEnabled;
@@ -216,7 +210,14 @@ namespace SaintsHierarchy.Editor
             bool thisExpand = false;
             if (hasFoldout)
             {
-                (string expandedError, int[] expandedIds) = GetExpandedIds(sceneHierarchy);
+                (string expandedError,
+                    IReadOnlyList<
+#if UNITY_6000_4_OR_NEWER
+                    EntityId
+#else
+                    int
+#endif
+                    > expandedIds) = GetExpandedIds(sceneHierarchy);
                 if (expandedError != "")
                 {
 #if SAINTSHIERARCHY_DEBUG
@@ -614,9 +615,15 @@ namespace SaintsHierarchy.Editor
 
         private static string _mouseDownSceneSelectorStringId;
         private static Vector2 _mouseDownSceneSelectorMousePosition = Vector2.zero;
-        private static bool _sceneSelectorOpen = false;
+        private static bool _sceneSelectorOpen;
 
-        private static void RenderSceneSelector(int instanceID, Rect selectionRect)
+        private static void RenderSceneSelector(
+#if UNITY_6000_4_OR_NEWER
+            EntityId
+#else
+            int
+#endif
+            instanceID, Rect selectionRect)
         {
             Scene activeScene = SceneManager.GetActiveScene();
             for (int i = 0; i < SceneManager.sceneCount; i++)
@@ -1488,9 +1495,25 @@ namespace SaintsHierarchy.Editor
             SelectUnfocus,
         }
 
-        private static (string error, SelectStatus selectStatus) GetBgColor(EditorWindow sceneHierarchyWindow, object sceneHierarchy, int instanceID, bool isHover)
+        private static (string error, SelectStatus selectStatus) GetBgColor(
+            EditorWindow sceneHierarchyWindow,
+            object sceneHierarchy,
+#if UNITY_6000_4_OR_NEWER
+            EntityId
+#else
+            int
+#endif
+                instanceID,
+            bool isHover)
         {
-            (string selectedError, int[] selectedIds) = GetSelectedIds(sceneHierarchy);
+            (string selectedError,
+                IReadOnlyList<
+#if UNITY_6000_4_OR_NEWER
+                EntityId
+#else
+                int
+#endif
+                    > selectedIds) = GetSelectedIds(sceneHierarchy);
             if (selectedError != "")
             {
                 return (selectedError, default);
@@ -1541,7 +1564,14 @@ namespace SaintsHierarchy.Editor
         private static PropertyInfo _treeViewControllerStateField;
         private static bool _treeViewControllerStateFieldInit;
 
-        private static (string error, int[] expandedIds) GetExpandedIds(object sceneHierarchy)
+        private static (string error,
+            IReadOnlyList<
+#if UNITY_6000_4_OR_NEWER
+            EntityId
+#else
+            int
+#endif
+            > expandedIds) GetExpandedIds(object sceneHierarchy)
         {
             if (!_treeViewFieldInit)
             {
@@ -1583,12 +1613,25 @@ namespace SaintsHierarchy.Editor
             // Debug.Log(treeViewControllerState.expandedIDs);
 
             // ReSharper disable once RedundantCast
-            int[] expandedIds = treeViewControllerState.expandedIDs.Select(each => (int)each).ToArray();
+            List<
+#if UNITY_6000_4_OR_NEWER
+            EntityId
+#else
+                int
+#endif
+            > expandedIds = treeViewControllerState.expandedIDs;
             // Debug.Log($"expanded: {string.Join(", ", treeViewControllerState.expandedIDs)}");
             return ("", expandedIds);
         }
 
-        private static (string error, int[] selectedIds) GetSelectedIds(object sceneHierarchy)
+        private static (string error,
+            IReadOnlyList<
+#if UNITY_6000_4_OR_NEWER
+            EntityId
+#else
+                int
+#endif
+            > selectedIds) GetSelectedIds(object sceneHierarchy)
         {
             if (!_treeViewFieldInit)
             {
@@ -1630,7 +1673,13 @@ namespace SaintsHierarchy.Editor
             // Debug.Log(treeViewControllerState.expandedIDs);
 
             // ReSharper disable once RedundantCast
-            int[] selectedIDs = treeViewControllerState.selectedIDs.Select(each => (int)each).ToArray();
+            IReadOnlyList<
+#if UNITY_6000_4_OR_NEWER
+            EntityId
+#else
+            int
+#endif
+            > selectedIDs = treeViewControllerState.selectedIDs;
             // Debug.Log($"expanded: {string.Join(", ", treeViewControllerState.expandedIDs)}");
             return ("", selectedIDs);
         }

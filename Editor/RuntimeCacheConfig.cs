@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 
 namespace SaintsHierarchy.Editor
 {
@@ -9,13 +10,26 @@ namespace SaintsHierarchy.Editor
         [Serializable]
         public struct RuntimeConfig
         {
-            public int instanceId;
+            public
+#if UNITY_6000_4_OR_NEWER
+                EntityId
+#else
+                int
+#endif
+                instanceId;
             public GameObjectConfig config;
         }
 
         public List<RuntimeConfig> configs = new List<RuntimeConfig>();
 
-        public void Upsert(int instanceId, GameObjectConfig config)
+        public void Upsert(
+#if UNITY_6000_4_OR_NEWER
+            EntityId
+#else
+            int
+#endif
+
+            instanceId, GameObjectConfig config)
         {
             int index = -1;
             for (int searchIndex = 0; searchIndex < configs.Count; searchIndex++)
@@ -44,7 +58,13 @@ namespace SaintsHierarchy.Editor
             }
         }
 
-        public (bool found, GameObjectConfig config) Search(int instanceId)
+        public (bool found, GameObjectConfig config) Search(
+#if UNITY_6000_4_OR_NEWER
+            EntityId
+#else
+            int
+#endif
+            instanceId)
         {
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
             foreach (RuntimeConfig runtimeConfig in configs)
