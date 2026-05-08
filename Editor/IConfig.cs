@@ -11,6 +11,8 @@ namespace SaintsHierarchy.Editor
         public bool gameObjectEnabledChecker { get; }
         public bool gameObjectEnabledCheckerEveryRow { get; }
         public bool componentIcons { get; }
+        public bool componentIconsForGeneralScripts { get; }
+        public bool componentIconsForTransform { get; }
         public bool noDefaultIcon { get; }
         public bool transparentDefaultIcon { get; }
 

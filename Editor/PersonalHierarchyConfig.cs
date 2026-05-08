@@ -22,6 +22,8 @@ namespace SaintsHierarchy.Editor
         [field: SerializeField, FormerlySerializedAs("gameObjectEnabledChecker")] public bool gameObjectEnabledChecker { get; set; }
         [field: SerializeField, FormerlySerializedAs("gameObjectEnabledCheckerEveryRow")] public bool gameObjectEnabledCheckerEveryRow { get; set; }
         [field: SerializeField, FormerlySerializedAs("componentIcons")] public bool componentIcons { get; set; }
+        [field: SerializeField] public bool componentIconsForGeneralScripts { get; set; }
+        [field: SerializeField] public bool componentIconsForTransform { get; set; }
         [field: SerializeField, FormerlySerializedAs("noDefaultIcon")] public bool noDefaultIcon { get; set; }
         [field: SerializeField, FormerlySerializedAs("transparentDefaultIcon")] public bool transparentDefaultIcon { get; set; }
 

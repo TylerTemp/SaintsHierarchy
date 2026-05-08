@@ -50,6 +50,8 @@ namespace SaintsHierarchy.Editor.Utils
                     PersonalHierarchyConfig.instance.disabled = SaintsHierarchyConfig.instance.disabled;
                     PersonalHierarchyConfig.instance.backgroundStrip = SaintsHierarchyConfig.instance.backgroundStrip;
                     PersonalHierarchyConfig.instance.componentIcons = SaintsHierarchyConfig.instance.componentIcons;
+                    PersonalHierarchyConfig.instance.componentIconsForGeneralScripts = SaintsHierarchyConfig.instance.componentIconsForGeneralScripts;
+                    PersonalHierarchyConfig.instance.componentIconsForTransform = SaintsHierarchyConfig.instance.componentIconsForTransform;
                     PersonalHierarchyConfig.instance.gameObjectEnabledChecker = SaintsHierarchyConfig.instance.gameObjectEnabledChecker;
                     PersonalHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow = SaintsHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow;
                     PersonalHierarchyConfig.instance.sceneGuidToGoConfigsList = SaintsHierarchyConfig.instance.sceneGuidToGoConfigsList.ToList();
@@ -107,9 +109,69 @@ namespace SaintsHierarchy.Editor.Utils
             Refresh();
         }
 
+        private const string ComponentIconsForGeneralScriptsPath = MenuRoot + "Component Icons For General Scripts";
+        [MenuItem(ComponentIconsForGeneralScriptsPath, priority=2)]
+        public static void ComponentIconsForGeneralScripts()
+        {
+            bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
+            if (personalEnabled)
+            {
+                EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
+                PersonalHierarchyConfig.instance.componentIconsForGeneralScripts = !PersonalHierarchyConfig.instance.componentIconsForGeneralScripts;
+                PersonalHierarchyConfig.instance.SaveToDisk();
+            }
+            else
+            {
+                EditorUtility.SetDirty(SaintsHierarchyConfig.instance);
+                SaintsHierarchyConfig.instance.componentIconsForGeneralScripts = !SaintsHierarchyConfig.instance.componentIconsForGeneralScripts;
+                SaintsHierarchyConfig.instance.SaveToDisk();
+            }
+
+            Refresh();
+        }
+
+        [MenuItem(ComponentIconsForGeneralScriptsPath, true)]
+        private static bool ValidateComponentIconsForGeneralScripts()
+        {
+            bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
+            return personalEnabled
+                ? PersonalHierarchyConfig.instance.componentIcons
+                : SaintsHierarchyConfig.instance.componentIcons;
+        }
+
+        private const string ComponentIconsForTransformPath = MenuRoot + "Component Icons For Transform";
+        [MenuItem(ComponentIconsForTransformPath, priority=3)]
+        public static void ComponentIconsForTransform()
+        {
+            bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
+            if (personalEnabled)
+            {
+                EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
+                PersonalHierarchyConfig.instance.componentIconsForTransform = !PersonalHierarchyConfig.instance.componentIconsForTransform;
+                PersonalHierarchyConfig.instance.SaveToDisk();
+            }
+            else
+            {
+                EditorUtility.SetDirty(SaintsHierarchyConfig.instance);
+                SaintsHierarchyConfig.instance.componentIconsForTransform = !SaintsHierarchyConfig.instance.componentIconsForTransform;
+                SaintsHierarchyConfig.instance.SaveToDisk();
+            }
+
+            Refresh();
+        }
+
+        [MenuItem(ComponentIconsForTransformPath, true)]
+        private static bool ValidateComponentIconsForTransform()
+        {
+            bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
+            return personalEnabled
+                ? PersonalHierarchyConfig.instance.componentIcons
+                : SaintsHierarchyConfig.instance.componentIcons;
+        }
+
         #region GameObject Enabled Checker
         private const string GameObjectEnabledCheckerPath = MenuRoot + "GameObject Enabled Checker";
-        [MenuItem(GameObjectEnabledCheckerPath, priority=3)]
+        [MenuItem(GameObjectEnabledCheckerPath, priority=4)]
         public static void GameObjectEnabledChecker()
         {
             bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
@@ -130,7 +192,7 @@ namespace SaintsHierarchy.Editor.Utils
         }
 
         private const string GameObjectEnabledCheckerEveryRowPath = MenuRoot + "GameObject Enabled Checker Every Row";
-        [MenuItem(GameObjectEnabledCheckerEveryRowPath, priority=4)]
+        [MenuItem(GameObjectEnabledCheckerEveryRowPath, priority=5)]
         public static void GameObjectEnabledCheckerEveryRow()
         {
             bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
@@ -162,7 +224,7 @@ namespace SaintsHierarchy.Editor.Utils
 
         #region Default Icon
         private const string NoDefaultIconPath = MenuRoot + "No Default Icon";
-        [MenuItem(NoDefaultIconPath, priority = 5)]
+        [MenuItem(NoDefaultIconPath, priority = 6)]
         public static void NoDefaultIcon()
         {
             bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
@@ -183,7 +245,7 @@ namespace SaintsHierarchy.Editor.Utils
         }
 
         private const string TransparentDefaultIconPath = MenuRoot + "Transparent Default Icon";
-        [MenuItem(TransparentDefaultIconPath, priority = 6)]
+        [MenuItem(TransparentDefaultIconPath, priority = 7)]
         public static void TransparentDefaultIcon()
         {
             bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
@@ -217,7 +279,7 @@ namespace SaintsHierarchy.Editor.Utils
 
         private const string DisableFavoritesPath = MenuRoot + "Disable Favorites";
 
-        [MenuItem(DisableFavoritesPath, priority = 7)]
+        [MenuItem(DisableFavoritesPath, priority = 8)]
         public static void DisableFavorites()
         {
             IConfig config = Util.GetUsingConfig();
@@ -235,7 +297,7 @@ namespace SaintsHierarchy.Editor.Utils
 
         private const string SaveFavoritesToProjectConfigPath = MenuRoot + "Save Favorites To Project Config";
 
-        [MenuItem(SaveFavoritesToProjectConfigPath, priority = 8)]
+        [MenuItem(SaveFavoritesToProjectConfigPath, priority = 9)]
         public static void SaveFavoritesToProjectConfig()
         {
             IConfig config = Util.GetUsingConfig();
@@ -265,9 +327,9 @@ namespace SaintsHierarchy.Editor.Utils
 
         #region Scene Selector
 
-        private const string DisableSceneSelectorPath = MenuRoot + "Disable Scene Selector";
+            private const string DisableSceneSelectorPath = MenuRoot + "Disable Scene Selector";
 
-        [MenuItem(DisableSceneSelectorPath, priority = 9)]
+        [MenuItem(DisableSceneSelectorPath, priority = 10)]
         public static void DisableSceneSelector()
         {
             IConfig config = Util.GetUsingConfig();
@@ -319,6 +381,16 @@ namespace SaintsHierarchy.Editor.Utils
 
             bool componentIcons = personalEnabled? PersonalHierarchyConfig.instance.componentIcons : SaintsHierarchyConfig.instance.componentIcons;
             Menu.SetChecked(ComponentIconsPath, componentIcons);
+
+            bool componentIconsForGeneralScripts = personalEnabled
+                ? PersonalHierarchyConfig.instance.componentIconsForGeneralScripts
+                : SaintsHierarchyConfig.instance.componentIconsForGeneralScripts;
+            Menu.SetChecked(ComponentIconsForGeneralScriptsPath, componentIcons && componentIconsForGeneralScripts);
+
+            bool componentIconsForTransform = personalEnabled
+                ? PersonalHierarchyConfig.instance.componentIconsForTransform
+                : SaintsHierarchyConfig.instance.componentIconsForTransform;
+            Menu.SetChecked(ComponentIconsForTransformPath, componentIcons && componentIconsForTransform);
 
             bool noDefaultIcon = personalEnabled? PersonalHierarchyConfig.instance.noDefaultIcon : SaintsHierarchyConfig.instance.noDefaultIcon;
             Menu.SetChecked(NoDefaultIconPath, noDefaultIcon);

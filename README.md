@@ -61,8 +61,10 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ## Change Log ##
 
-1.  Fix: `sv` color didn't paint an underline color
-2.  Add: Favorite GameObjects now can paint the correct underline by config
+1.  Add: `Alt` + left click a component icon to open a resizable component properties popup
+2.  Add: Configs for showing component icons for general scripts and Transform
+3.  Add: Component properties popup can toggle `Behaviour.enabled`
+4.  Add: Disabled Behaviour component icons are dimmed
 
 See [the full changelog](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
 
@@ -111,6 +113,12 @@ Clicking on a scene's name to quickly switch to another scene in this project. I
 `Tools` - `Saints Hierarchy` - `Component Icons`
 
 You can set the script icon and show the icons at the end of row
+
+Use `Alt` + left click on a component icon to open that component's properties popup. The popup supports UI Toolkit and IMGUI inspectors, and can toggle `Behaviour.enabled` for Behaviour components.
+
+Disabled Behaviour component icons are dimmed.
+
+You can also use `Tools` - `Saints Hierarchy` - `Component Icons For General Scripts` and `Tools` - `Saints Hierarchy` - `Component Icons For Transform` to control whether default script icons and Transform/RectTransform icons are shown.
 
 Setup:
 

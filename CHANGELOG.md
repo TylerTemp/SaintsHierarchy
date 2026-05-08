@@ -1,3 +1,10 @@
+## 1.4.0 ##
+
+1.  Add: Alt + left click a component icon to open a resizable component properties popup near the hierarchy item
+2.  Add: Configs for showing component icons for general scripts and Transform
+3.  Add: Component properties popup can toggle `Behaviour.enabled`
+4.  Add: Disabled Behaviour component icons are dimmed
+
 ## 1.3.2 ##
 
 1.  Fix: `sv` color didn't paint an underline color

@@ -440,22 +440,26 @@ namespace SaintsHierarchy.Editor
                 xMax = selectionRect.xMax,
             };
             // EditorGUI.DrawRect(rightRect, Color.blueViolet);
-            bool gameObjectEnabledChecker = personalDisabled
-                ? SaintsHierarchyConfig.instance.gameObjectEnabledChecker
-                : PersonalHierarchyConfig.instance.gameObjectEnabledChecker;
-            bool gameObjectEnabledCheckerEveryRow = personalDisabled
-                ? SaintsHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow
-                : PersonalHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow;
+            IConfig usingConfig = Util.GetUsingConfig();
+            bool gameObjectEnabledChecker = usingConfig.gameObjectEnabledChecker;
+            bool gameObjectEnabledCheckerEveryRow = usingConfig.gameObjectEnabledCheckerEveryRow;
+            bool componentIcons = usingConfig.componentIcons;
+            bool componentIconsForGeneralScripts = usingConfig.componentIconsForGeneralScripts;
+            bool componentIconsForTransform = usingConfig.componentIconsForTransform;
 
-
-            bool componentIcons = personalDisabled
-                ? SaintsHierarchyConfig.instance.componentIcons
-                : PersonalHierarchyConfig.instance.componentIcons;
-
-            DrawRect(gameObjectEnabledChecker, gameObjectEnabledCheckerEveryRow, componentIcons, originGo, allComponents, new Rect(rawRightRect)
-            {
-                width = labelWidth,
-            }, rightRect);
+            DrawRect(
+                gameObjectEnabledChecker,
+                gameObjectEnabledCheckerEveryRow,
+                componentIcons,
+                componentIconsForGeneralScripts,
+                componentIconsForTransform,
+                originGo,
+                allComponents,
+                new Rect(rawRightRect)
+                {
+                    width = labelWidth,
+                },
+                rightRect);
 
             #endregion
 
@@ -960,7 +964,9 @@ namespace SaintsHierarchy.Editor
             return false;
         }
 
-        private static void DrawRect(bool gameObjectEnabledChecker, bool gameObjectEnabledCheckerEveryRow, bool componentIcons, GameObject originGo, Component[] allComponents, Rect labelRect, Rect rightRect)
+        private static void DrawRect(bool gameObjectEnabledChecker, bool gameObjectEnabledCheckerEveryRow,
+            bool componentIcons, bool componentIconsForGeneralScripts, bool componentIconsForTransform,
+            GameObject originGo, Component[] allComponents, Rect labelRect, Rect rightRect)
         {
             HierarchyButtonDrawer.Update();
 
@@ -1000,9 +1006,25 @@ namespace SaintsHierarchy.Editor
                         case CanvasRenderer:
                             break;
                         case RectTransform rt:
-                            rectTransform = rt;
+                            if (componentIconsForTransform)
+                            {
+                                rectTransform = rt;
+                            }
                             break;
-                        case Transform:
+                        case Transform transform:
+                            if (componentIconsForTransform)
+                            {
+                                Texture2D transformIcon = EditorGUIUtility.IconContent("d_Transform Icon").image as Texture2D;
+                                if (transformIcon == null)
+                                {
+                                    transformIcon = EditorGUIUtility.IconContent("Transform Icon").image as Texture2D;
+                                }
+
+                                if (transformIcon != null)
+                                {
+                                    componentAndIcon.Add((transform, false, transformIcon));
+                                }
+                            }
                             break;
                         case Canvas:
                             hasCanvas = true;
@@ -1036,17 +1058,33 @@ namespace SaintsHierarchy.Editor
                                 }
                             }
 
-                            if (icon == null && component is MonoBehaviour mb)
+                            MonoBehaviour monoBehaviour = component as MonoBehaviour;
+                            bool isMonoBehaviour = monoBehaviour != null;
+                            if (!componentIconsForGeneralScripts && isMonoBehaviour && IsGeneralScriptIcon(icon))
                             {
-                                MonoScript script = MonoScript.FromMonoBehaviour(mb);
+                                icon = null;
+                            }
+
+                            if (icon == null && isMonoBehaviour)
+                            {
+                                MonoScript script = MonoScript.FromMonoBehaviour(monoBehaviour);
                                 if(script != null)
                                 {
                                     Texture2D scriptIcon = AssetPreview.GetMiniThumbnail(script);
-                                    if(scriptIcon != null && scriptIcon.name != "d_cs Script Icon")
+                                    if(scriptIcon != null)
                                     {
-                                        icon = scriptIcon;
+                                        bool isGeneralScriptIcon = IsGeneralScriptIcon(scriptIcon);
+                                        if (!isGeneralScriptIcon || componentIconsForGeneralScripts)
+                                        {
+                                            icon = scriptIcon;
+                                        }
                                     }
                                 }
+                            }
+
+                            if (icon == null && componentIconsForGeneralScripts)
+                            {
+                                icon = Util.GetCachedIcon("question-mark-grey-20.png");
                             }
                             if (icon != null)
                             {
@@ -1076,8 +1114,20 @@ namespace SaintsHierarchy.Editor
                             continue;
                         }
                         Rect iconRect = new Rect(x, useRect.y, RowHeight, RowHeight);
-                        GUI.DrawTexture(iconRect, compInfo.icon,
-                            ScaleMode.ScaleToFit, true);
+                        // GUIContent iconContent = new GUIContent(compInfo.icon);
+                        // EditorStyles.iconButton.Draw(iconRect, iconContent, iconRect.Contains(Event.current.mousePosition), false, false, false);
+                        using (new GUIColorScoop(IsDisabledBehaviour(compInfo.component) ? new Color(1f, 1f, 1f, 0.35f) : Color.white))
+                        {
+                            GUI.DrawTexture(iconRect, compInfo.icon, ScaleMode.ScaleToFit, true);
+                        }
+                        if (Event.current.type == EventType.MouseDown
+                            && Event.current.button == 0
+                            && Event.current.alt
+                            && iconRect.Contains(Event.current.mousePosition))
+                        {
+                            ComponentPropertiesPopup.Show(compInfo.component, iconRect);
+                            Event.current.Use();
+                        }
                         // if (compInfo.canToggle)
                         // {
                         //     Behaviour behavior = (Behaviour)compInfo.component;
@@ -1394,6 +1444,16 @@ namespace SaintsHierarchy.Editor
                     }
                 }
             }
+        }
+
+        private static bool IsGeneralScriptIcon(Texture2D icon)
+        {
+            return icon != null && (icon.name == "d_cs Script Icon" || icon.name == "cs Script Icon");
+        }
+
+        private static bool IsDisabledBehaviour(Component component)
+        {
+            return component is Behaviour behaviour && !behaviour.enabled;
         }
 
         private static GUIStyle _labelStylePrefab;
