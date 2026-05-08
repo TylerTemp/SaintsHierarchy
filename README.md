@@ -114,11 +114,11 @@ Clicking on a scene's name to quickly switch to another scene in this project. I
 
 You can set the script icon and show the icons at the end of row
 
-Use `Alt` + left click on a component icon to open that component's properties popup. The popup supports UI Toolkit and IMGUI inspectors, and can toggle `Behaviour.enabled` for Behaviour components.
+Use `Alt` + left click on a component icon to open that component's properties popup. You can also toggle `Behaviour.enabled` for Behaviour components.
 
 Disabled Behaviour component icons are dimmed.
 
-You can also use `Tools` - `Saints Hierarchy` - `Component Icons For General Scripts` and `Tools` - `Saints Hierarchy` - `Component Icons For Transform` to control whether default script icons and Transform/RectTransform icons are shown.
+You can also use `Tools` - `Saints Hierarchy` - `Component Icons For General Scripts` and `Tools` - `Saints Hierarchy` - `Component Icons For Transform` to control whether default script icons and Transform icons are shown.
 
 Setup:
 
@@ -127,6 +127,10 @@ Setup:
 Result:
 
 ![](https://github.com/user-attachments/assets/423da9d8-1282-4d53-8ba9-d4bb4a83bdc6)
+
+Alt-Click popup inspector:
+
+![](https://github.com/user-attachments/assets/c6306227-d687-4dcb-bfcc-d6671b3a8e37)
 
 ### GameObject Enabled Checker ###
 
