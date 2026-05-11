@@ -979,6 +979,8 @@ namespace SaintsHierarchy.Editor
                 Rect checkerRect = new Rect(useRect.xMax + 2,  useRect.y, 16, useRect.height);
                 using EditorGUI.ChangeCheckScope changeCheckScope = new EditorGUI.ChangeCheckScope();
                 bool goEnable = EditorGUI.Toggle(checkerRect, originGo.activeSelf);
+                GUI.Label(checkerRect, new GUIContent(string.Empty,
+                    $"{(originGo.activeSelf? "Inactive": "Active")} {originGo.name}"), GUIStyle.none);
                 if (changeCheckScope.changed)
                 {
                     originGo.SetActive(goEnable);
@@ -1120,6 +1122,10 @@ namespace SaintsHierarchy.Editor
                         {
                             GUI.DrawTexture(iconRect, compInfo.icon, ScaleMode.ScaleToFit, true);
                         }
+                        GUI.Label(iconRect, new GUIContent(string.Empty,
+                            ObjectNames.NicifyVariableName(compInfo.component.GetType().Name)), GUIStyle.none);
+
+                        // ReSharper disable once InvertIf
                         if (Event.current.type == EventType.MouseDown
                             && Event.current.button == 0
                             && Event.current.alt
