@@ -64,7 +64,11 @@ namespace SaintsHierarchy.Editor.UIElement
             _curIcon = curIcon;
 
             RefreshIconRows();
-            Search.RegisterValueChangedCallback(_ => RefreshIconRows());
+            Search.RegisterValueChangedCallback(evt =>
+            {
+                evt.StopPropagation();
+                RefreshIconRows();
+            });
 
             // RegisterCallback<AttachToPanelEvent>(_ => _search.Focus());
         }

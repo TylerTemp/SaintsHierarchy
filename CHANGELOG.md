@@ -1,3 +1,7 @@
+## 1.4.1 ##
+
+Fix: Search input for icon will close the popup
+
 ## 1.4.0 ##
 
 1.  Add: Alt + left click a component icon to open a resizable component properties popup near the hierarchy item
