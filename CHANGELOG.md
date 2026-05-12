@@ -1,3 +1,10 @@
+## 1.4.2 ##
+
+1.  Add: Tooltips for hierarchy component icons
+2.  Add: Improved favorite gameObject clicking animation. Config for favorite click to also inspect the target GameObject
+3.  Improve: Wwise component icons now use specific icons for Initializer, Audio Listener, and Game Object components
+4.  Add: a little icon for favorite gameObject panel
+
 ## 1.4.1 ##
 
 Fix: Search input for icon will close the popup

@@ -61,7 +61,10 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ## Change Log ##
 
-Fix: Search input for icon will close the popup
+1.  Add: Tooltips for hierarchy component icons
+2.  Add: Improved favorite gameObject clicking animation. Config for favorite click to also inspect the target GameObject
+3.  Improve: Wwise component icons now use specific icons for Initializer, Audio Listener, and Game Object components
+4.  Add: a little icon for favorite gameObject panel
 
 See [the full changelog](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
 
@@ -82,6 +85,8 @@ Drag & Drop GameObject from hierarchy to the top space to add it to favorite.
 *   Right click (or `alt` + click) the favorite button to change alias, icon, color, or remove it from favorite
 
 You can disable this feature in `Tools` - `Saints Hierarchy` - `Disable Favorites`
+
+By default, clicking the favorite gameObject will only expand and highlight you to the target. If you want to inspect it when clicking, use `Tools` - `Saints Hierarchy` - `Favorite Click To Inspect`
 
 It by default save favorite configs to personal config. If you're a one-person-army, you can use `Tools` - `Saints Hierarchy` - `Save Favorites To Project Config` so this config can be tracked by your version control like git. 
 
