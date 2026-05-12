@@ -9,7 +9,7 @@ namespace SaintsHierarchy.Editor
 #if SAINTSHIERARCHY_DEBUG
     [CreateAssetMenu(fileName = "SaintsHierarchyConfig", menuName = "Debug/Saints Hierarchy Config")]
 #endif
-
+    [System.Serializable]
     public class SaintsHierarchyConfig: ScriptableSingleton<SaintsHierarchyConfig>, IConfig
     {
         private void OnEnable()

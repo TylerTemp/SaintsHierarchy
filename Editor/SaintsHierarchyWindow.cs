@@ -208,8 +208,6 @@ namespace SaintsHierarchy.Editor
                 FavoriteConfig = config;
                 // Status = RuntimeFavoriteStatus.Default;
             }
-
-            public bool HasValue() => LoadedGameObject is not null;
         }
 
         private static readonly List<RuntimeFavoriteGameObject> CurrentFavoriteGameObjects = new List<RuntimeFavoriteGameObject>();
@@ -1081,6 +1079,12 @@ namespace SaintsHierarchy.Editor
 
             // Calc
             float toolHeight = CalcRelativePos(existsDrawingInfos.Concat(draggingDrawingInfos), rowHeight, windowWidth);
+
+            // fav icon
+            Texture2D favIcon = Util.GetCachedIcon("fav.png");
+            Rect iconRect = new Rect(windowWidth - 18, 0, 18, 18);
+            GUI.DrawTexture(iconRect, favIcon, ScaleMode.StretchToFill, true);
+
             Rect toolbarRect = new Rect(0, 0, windowWidth, toolHeight);
 
             // re-sort
@@ -1589,29 +1593,30 @@ namespace SaintsHierarchy.Editor
                 parent = parent.parent;
             }
 
-            int rowCount = wrapInfo.GetRowCount();
-            float maxScrollPos = rowCount * 16 - window.position.height + 26.9f;
-
-            int rowIndex = wrapInfo.GetRow(gameObject.
-#if UNITY_6000_3_OR_NEWER
-                    GetEntityId()
-#else
-                    GetInstanceID()
-#endif
-                );
-
-            float rowPos = rowIndex * 16f + 8;
+            // int rowCount = wrapInfo.GetRowCount();
+//             float maxScrollPos = rowCount * 16 - window.position.height + 26.9f;
+//
+//             int rowIndex = wrapInfo.GetRow(gameObject.
+// #if UNITY_6000_3_OR_NEWER
+//                     GetEntityId()
+// #else
+//                     GetInstanceID()
+// #endif
+//                 );
+//
+//             float rowPos = rowIndex * 16f + 8;
             // float scrollAreaHeight = wrapInfo.GetTreeViewRect(window).height;
 
-            float targetScrollPos = Mathf.Clamp(rowPos - margin, 0, maxScrollPos);
+            // float targetScrollPos = Mathf.Clamp(rowPos - margin, 0, maxScrollPos);
+            //
+            // if (targetScrollPos < 25)
+            // {
+            //     targetScrollPos = 0;
+            // }
 
-            if (targetScrollPos < 25)
-            {
-                targetScrollPos = 0;
-            }
-
-            wrapInfo.TreeViewState.scrollPos = Vector2.up * targetScrollPos;
-            Selection.activeGameObject = gameObject;
+            // wrapInfo.TreeViewState.scrollPos = Vector2.up * targetScrollPos;
+            // Selection.activeGameObject = gameObject;
+            EditorGUIUtility.PingObject(gameObject);
             // window.GetMemberValue("m_SceneHierarchy").GetMemberValue<TreeViewState>("m_TreeViewState").scrollPos = Vector2.up * targetScrollPos;
         }
 
@@ -1674,74 +1679,6 @@ namespace SaintsHierarchy.Editor
             //     DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
             // }
         }
-
-
-        // private static void AddToConfig(GameObject go)
-        // {
-        //     // GameObject targetGo = go;
-        //     // string curScenePath = go.scene.path;
-        //     // Debug.Log(curScenePath);
-        //     // if (!string.IsNullOrEmpty(curScenePath) && curScenePath.EndsWith(".prefab"))
-        //     // {
-        //     //     targetGo = Util.GetPrefabSubGameObject(curScenePath, go);
-        //     //     if (targetGo == null)
-        //     //     {
-        //     //         return;
-        //     //     }
-        //     // }
-        //     string scenePath = go.scene.path;
-        //     string sceneGuid = AssetDatabase.AssetPathToGUID(scenePath);
-        //
-        //     GlobalObjectId targetId = GlobalObjectId.GetGlobalObjectIdSlow(go);
-        //     // string targetGoIdStr = Util.GlobalObjectIdNormString(targetId);
-        //     string targetGoIdStr = targetId.ToString();
-        //     IConfig config = SaintsHierarchyConfig.instance;
-        //     List<GameObjectFavorite> favorites = null;
-        //     foreach (SceneGuidToGoFavorites sceneGuidToGoFavorites in config.sceneGuidToGoFavoritesList)
-        //     {
-        //         if (sceneGuidToGoFavorites.sceneGuid == sceneGuid)
-        //         {
-        //             favorites = sceneGuidToGoFavorites.favorites;
-        //             foreach (GameObjectFavorite gameObjectFavorite in favorites)
-        //             {
-        //                 if (gameObjectFavorite.globalObjectIdString == targetGoIdStr)
-        //                 {
-        //                     Debug.Log($"exists, skip {targetGoIdStr}");
-        //                     return;
-        //                 }
-        //             }
-        //         }
-        //     }
-        //
-        //     GameObjectFavorite item = new GameObjectFavorite
-        //     {
-        //         globalObjectIdString = targetGoIdStr,
-        //         alias = string.Empty,
-        //         color = default,
-        //         hasColor = false,
-        //         icon = string.Empty,
-        //     };
-        //     if (favorites != null)
-        //     {
-        //         Debug.Log($"add {targetGoIdStr} in {sceneGuid}");
-        //         favorites.Add(item);
-        //     }
-        //     else
-        //     {
-        //         Debug.Log($"add {targetGoIdStr} created {sceneGuid}");
-        //         config.sceneGuidToGoFavoritesList.Add(new SceneGuidToGoFavorites
-        //         {
-        //             sceneGuid = sceneGuid,
-        //             favorites = new List<GameObjectFavorite>
-        //             {
-        //                 item,
-        //             },
-        //         });
-        //     }
-        //
-        //     ReloadSceneFav(scenePath);
-        //     config.SaveToDisk();
-        // }
 
         private static (Type foundType, MethodInfo methodInfo) RecGetMethodInfo(Type type, string name, BindingFlags flags, Type[] types)
         {
