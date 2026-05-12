@@ -29,6 +29,7 @@ namespace SaintsHierarchy.Editor
 
         [field: SerializeField, FormerlySerializedAs("sceneGuidToGoConfigsList")] public List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList { get; set; } = new List<SceneGuidToGoConfigs>();
         [field: SerializeField] public bool disableFavorites { get; set; }
+        [field: SerializeField] public bool FavoriteClickToInspect { get; set; }
         [field: SerializeField] public bool saveFavoritesToProjectConfig { get; set; }
 
         [field: SerializeField] public List<GameObjectFavorite> favorites { get; set; }  = new List<GameObjectFavorite>();

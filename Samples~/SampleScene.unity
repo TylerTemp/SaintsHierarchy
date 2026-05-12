@@ -298,10 +298,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 141487074}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ffc8aa5f3a58c3c4da8aa49f0cd1f4f5, type: 3}
+  m_Script: {fileID: 11500000, guid: 75c7a73a6f6dabb45ba4487565e34b57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: AK.Wwise.Unity.MonoBehaviour::AkInitializer
-  InitializationSettings: {fileID: 11400000, guid: bd2dd1604dd283b458c27308c87d7b32, type: 2}
+  InitializationSettings: {fileID: 11400000, guid: a4132b9bf3272894baea3fa67ddd2262, type: 2}
   basePath: 
   language: 
   defaultPoolSize: 0
@@ -519,7 +519,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 182954219}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5afe7bad4e2fc54da011f2631b9e6e2, type: 3}
+  m_Script: {fileID: 11500000, guid: 93c0589e021040d4b87579314f462257, type: 3}
   m_Name: 
   m_EditorClassIdentifier: AK.Wwise.Unity.MonoBehaviour::AkAudioListener
   isDefaultListener: 1
@@ -535,7 +535,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 182954219}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fa955cffcc8f37f4bb626f60ca9f8a30, type: 3}
+  m_Script: {fileID: 11500000, guid: a2ff943c4c79df7418b052686671976e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: AK.Wwise.Unity.MonoBehaviour::AkGameObj
   m_listeners:

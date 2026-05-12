@@ -996,16 +996,52 @@ namespace SaintsHierarchy.Editor
                 {
                     switch (component)
                     {
-                        case Camera:
-                        case Light:
-                        case EventSystem:
+
 #if SAINTSHIERARCHY_UNITY_RENDER_PIPELINES_CORE
                         case UnityEngine.Rendering.Volume:
+                        {
+                            if (componentIconsForGeneralScripts)
+                            {
+                                componentAndIcon.Add((component, component is Behaviour, Util.GetCachedIcon("d_Volume Icon.asset")));
+                            }
+                        }
+                            break;
 #endif
 #if SAINTSHIERARCHY_WWISE
                         case AkInitializer:
+                        {
+                            if (componentIconsForGeneralScripts)
+                            {
+                                componentAndIcon.Add((component, component is Behaviour, Util.GetCachedIcon("wwise-logo.png")));
+                            }
+                        }
+                            break;
+                        case AkAudioListener:
+                        {
+                            if (componentIconsForGeneralScripts)
+                            {
+                                componentAndIcon.Add((component, component is Behaviour, Util.GetCachedIcon("wwise-audio-listener.psd")));
+                            }
+                        }
+                            break;
+                        case AkGameObj:
+                        {
+                            if (componentIconsForGeneralScripts)
+                            {
+                                componentAndIcon.Add((component, component is Behaviour, Util.GetCachedIcon("wwise-game-object.psd")));
+                            }
+                        }
+                            break;
 #endif
+
+                        case Camera:
+                        case Light:
+                        case EventSystem:
                         case CanvasRenderer:
+                            if (componentIconsForGeneralScripts)
+                            {
+                                goto default;
+                            }
                             break;
                         case RectTransform rt:
                             if (componentIconsForTransform)

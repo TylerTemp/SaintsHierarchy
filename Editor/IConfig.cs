@@ -19,6 +19,7 @@ namespace SaintsHierarchy.Editor
         public List<SceneGuidToGoConfigs> sceneGuidToGoConfigsList { get; }
 
         public bool disableFavorites { get; set; }
+        public bool FavoriteClickToInspect { get; set; }
         public bool saveFavoritesToProjectConfig { get; set; }
         public List<GameObjectFavorite> favorites { get; }
 

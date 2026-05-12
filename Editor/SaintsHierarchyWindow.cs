@@ -1615,8 +1615,11 @@ namespace SaintsHierarchy.Editor
             // }
 
             // wrapInfo.TreeViewState.scrollPos = Vector2.up * targetScrollPos;
-            // Selection.activeGameObject = gameObject;
             EditorGUIUtility.PingObject(gameObject);
+            if (GetUsingConfig().FavoriteClickToInspect)
+            {
+                Selection.activeGameObject = gameObject;
+            }
             // window.GetMemberValue("m_SceneHierarchy").GetMemberValue<TreeViewState>("m_TreeViewState").scrollPos = Vector2.up * targetScrollPos;
         }
 
