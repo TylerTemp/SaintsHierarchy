@@ -159,18 +159,21 @@ namespace SaintsHierarchy.Editor
                     if (GlobalObjectId.TryParse(gameIdStr, out GlobalObjectId id))
                     {
                         GameObject go;
-                        try
+                        using(new DisableUnityLogScoop())
                         {
-                            go = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as GameObject;
-                        }
+                            try
+                            {
+                                go = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as GameObject;
+                            }
 #pragma warning disable CS0168 // Variable is declared but never used
-                        catch (Exception e)
+                            catch (Exception e)
 #pragma warning restore CS0168 // Variable is declared but never used
-                        {
+                            {
 #if SAINTSHIERARCHY_DEBUG
-                            Debug.LogException(e);
+                                Debug.LogException(e);
 #endif
-                            return;
+                                return;
+                            }
                         }
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
                         Debug.Log($"get {go}");

@@ -81,6 +81,10 @@ namespace SaintsHierarchy.Editor
                     {
                         flexShrink = 1,
                         flexGrow = 1,
+                        marginTop = 0,
+                        marginBottom = 0,
+                        marginLeft = 0,
+                        marginRight = 0,
                     },
                 };
                 enabledToggle.AddToClassList(Toggle.alignedFieldUssClassName);
@@ -174,7 +178,7 @@ namespace SaintsHierarchy.Editor
         {
             if (_editor != null)
             {
-                Object.DestroyImmediate(_editor);
+                DestroyImmediate(_editor);
                 _editor = null;
             }
         }
