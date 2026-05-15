@@ -8,7 +8,9 @@
         "SaintsField.Runtime",
         "SaintsField.Editor",
         "Unity.Addressables",
-        "Unity.Addressables.Editor"
+        "Unity.Addressables.Editor",
+        "spine-csharp",
+        "spine-unity"
     ],
     "includePlatforms": [
         "Editor"
@@ -34,6 +36,11 @@
             "name": "com.unity.addressables",
             "expression": "",
             "define": "SAINTSHIERARCHY_ADDRESSABLE"
+        },
+        {
+            "name": "com.esotericsoftware.spine.spine-unity",
+            "expression": "",
+            "define": "SAINTSHIERARCHY_SPINE_UNITY"
         }
     ],
     "noEngineReferences": false

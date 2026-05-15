@@ -61,10 +61,10 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ## Change Log ##
 
-1.  Add: Tooltips for hierarchy component icons
-2.  Add: Improved favorite gameObject clicking animation. Config for favorite click to also inspect the target GameObject
-3.  Improve: Wwise component icons now use specific icons for Initializer, Audio Listener, and Game Object components
-4.  Add: a little icon for favorite gameObject panel
+1.  Fix: Scene selector did not work in play mode
+2.  Add: Icon for Spine
+3.  Fix: `RectTransform` did not shown for `Canvas` when general scripts icon is on
+4.  Change: `Transform` icon now is always at the end of component icons
 
 See [the full changelog](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
 

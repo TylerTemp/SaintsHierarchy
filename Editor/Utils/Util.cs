@@ -1061,6 +1061,12 @@ namespace SaintsHierarchy.Editor.Utils
                     case UnityEngine.Rendering.Volume:
                         return GetCachedIcon("d_Volume Icon.asset");
 #endif
+#if SAINTSHIERARCHY_SPINE_UNITY
+                    case Spine.Unity.SkeletonAnimation:
+                        return GetCachedIcon("spine-icon.png");
+                    case Spine.Unity.SkeletonGraphic:
+                        return GetCachedIcon("spine-skeleton-graphic.psd");
+#endif
 #if SAINTSHIERARCHY_WWISE
                     case AkInitializer:
                         return GetCachedIcon("wwise-logo.png");

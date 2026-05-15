@@ -1,3 +1,10 @@
+## 1.4.3 ##
+
+1.  Fix: Scene selector did not work in play mode
+2.  Add: Icon for Spine
+3.  Fix: `RectTransform` did not shown for `Canvas` when general scripts icon is on
+4.  Change: `Transform` icon now is always at the end of component icons
+
 ## 1.4.2 ##
 
 1.  Add: Tooltips for hierarchy component icons

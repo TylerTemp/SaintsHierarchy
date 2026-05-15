@@ -881,15 +881,31 @@ namespace SaintsHierarchy.Editor
             }
             else
             {
-                Scene openedScene = EditorSceneManager.OpenScene(toOpenScene, OpenSceneMode.Additive);
-                EditorSceneManager.MoveSceneAfter(openedScene, toReplaceScene);
-                if (SceneManager.GetActiveScene() == toReplaceScene)
+                if (EditorApplication.isPlaying)
                 {
-                    SceneManager.SetActiveScene(openedScene);
-                }
+                    SceneManager.sceneLoaded += OnRuntimeSceneLoaded;
 
-                EditorSceneManager.CloseScene(toReplaceScene, true);
+                    SceneManager.LoadScene(toOpenScene, LoadSceneMode.Additive);
+                    SceneManager.UnloadSceneAsync(toReplaceScene);
+                }
+                else
+                {
+                    Scene openedScene = EditorSceneManager.OpenScene(toOpenScene, OpenSceneMode.Additive);
+                    EditorSceneManager.MoveSceneAfter(openedScene, toReplaceScene);
+                    if (SceneManager.GetActiveScene() == toReplaceScene)
+                    {
+                        SceneManager.SetActiveScene(openedScene);
+                    }
+
+                    EditorSceneManager.CloseScene(toReplaceScene, true);
+                }
             }
+        }
+
+        private static void OnRuntimeSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            SceneManager.sceneLoaded -= OnRuntimeSceneLoaded;
+            SceneManager.SetActiveScene(scene);
         }
 
 
@@ -992,6 +1008,7 @@ namespace SaintsHierarchy.Editor
                 List<(Component component, bool canToggle, Texture2D icon)> componentAndIcon = new List<(Component, bool, Texture2D)>(allComponents.Length);
                 bool hasCanvas = false;
                 RectTransform rectTransform = null;
+                Transform transform = null;
                 foreach (Component component in allComponents)
                 {
                     switch (component)
@@ -1049,24 +1066,39 @@ namespace SaintsHierarchy.Editor
                                 rectTransform = rt;
                             }
                             break;
-                        case Transform transform:
+                        case Transform trans:
                             if (componentIconsForTransform)
                             {
-                                Texture2D transformIcon = EditorGUIUtility.IconContent("d_Transform Icon").image as Texture2D;
-                                if (transformIcon == null)
-                                {
-                                    transformIcon = EditorGUIUtility.IconContent("Transform Icon").image as Texture2D;
-                                }
-
-                                if (transformIcon != null)
-                                {
-                                    componentAndIcon.Add((transform, false, transformIcon));
-                                }
+                                transform = trans;
                             }
                             break;
                         case Canvas:
                             hasCanvas = true;
+                            if (componentIconsForGeneralScripts)
+                            {
+                                goto default;
+                            }
                             break;
+                        case ParticleSystemRenderer:  // Ignored
+                            break;
+#if SAINTSHIERARCHY_SPINE_UNITY
+                        case Spine.Unity.SkeletonAnimation:
+                        {
+                            if (componentIconsForGeneralScripts)
+                            {
+                                componentAndIcon.Add((component, component is Behaviour, Util.GetCachedIcon("spine-icon.png")));
+                            }
+                        }
+                            break;
+                        case Spine.Unity.SkeletonGraphic:
+                        {
+                            if (componentIconsForGeneralScripts)
+                            {
+                                componentAndIcon.Add((component, component is Behaviour, Util.GetCachedIcon("spine-skeleton-graphic.psd")));
+                            }
+                        }
+                            break;
+#endif
                         default:
                         {
                             if (component == null)
@@ -1134,10 +1166,15 @@ namespace SaintsHierarchy.Editor
                 }
 
                 // rectTransform always at end
-                if (!hasCanvas && rectTransform is not null)
+                if ((!hasCanvas || componentIconsForGeneralScripts) && rectTransform is not null)
                 {
                     componentAndIcon.Add((rectTransform, false,
                         EditorGUIUtility.IconContent("d_RectTransform Icon").image as Texture2D));
+                }
+
+                if (componentIconsForGeneralScripts && transform is not null)  // always last
+                {
+                    componentAndIcon.Add((transform, false, EditorGUIUtility.IconContent("Transform Icon").image as Texture2D));
                 }
 
                 if (componentAndIcon.Count > 0)
