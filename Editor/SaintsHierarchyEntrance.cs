@@ -119,6 +119,13 @@ namespace SaintsHierarchy.Editor
             // }
 
             string curScenePath = originGo.scene.path;
+
+            // null check for TestRunner(In Play Mode) GameObject
+            if (curScenePath == null)
+            {
+                return;
+            }
+
             // Debug.Log($"popup parent: {string.Join(",", parentRoots)}");
             // Debug.Log($"popup scene: {curScenePath}");
             // GameObject targetGo = go;
