@@ -61,12 +61,9 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ## Change Log ##
 
-1.  Fix: Scene selector did not work in play mode
-2.  Add: Icon for Spine
-3.  Fix: `RectTransform` did not shown for `Canvas` when general scripts icon is on
-4.  Change: `Transform` icon now is always at the end of component icons
+Fix: Scene selector can not set active scene in play mode
 
-See [the full changelog](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
+See [the full change log](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
 
 ## Config ##
 

@@ -1,3 +1,7 @@
+## 1.4.4 ##
+
+Fix: Scene selector can not set active scene in play mode
+
 ## 1.4.3 ##
 
 1.  Fix: Scene selector did not work in play mode
