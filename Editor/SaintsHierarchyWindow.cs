@@ -158,6 +158,7 @@ namespace SaintsHierarchy.Editor
                     // Debug.Log($"parsing {gameIdStr}");
                     if (GlobalObjectId.TryParse(gameIdStr, out GlobalObjectId id))
                     {
+                        bool originEnabled = Debug.unityLogger.logEnabled;
                         GameObject go;
                         try
                         {
@@ -170,13 +171,14 @@ namespace SaintsHierarchy.Editor
 #pragma warning restore CS0168 // Variable is declared but never used
                         {
 #if SAINTSHIERARCHY_DEBUG
+                            Debug.unityLogger.logEnabled = true;
                             Debug.LogException(e);
 #endif
                             continue;
                         }
                         finally
                         {
-                            Debug.unityLogger.logEnabled = true;
+                            Debug.unityLogger.logEnabled = originEnabled;
                         }
 
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
@@ -1019,6 +1021,10 @@ namespace SaintsHierarchy.Editor
             foreach (RuntimeFavoriteGameObject runtimeFavoriteGameObject in CurrentFavoriteGameObjects)
             {
                 GameObject go = runtimeFavoriteGameObject.LoadedGameObject;
+                if (go == null)
+                {
+                    return;
+                }
                 MergedConfig mergedConfig = GetMergedConfig(go, runtimeFavoriteGameObject);
 
                 string text = FavoriteDrawingInfo.HelperGetDisplayText(runtimeFavoriteGameObject);

@@ -861,12 +861,16 @@ namespace SaintsHierarchy.Editor
             }
         }
 
+        private static IReadOnlyList<string> _runtimeAdditiveScenesToRestore;
+
         private static void OpenAScene(Scene toReplaceScene, string toOpenScene)
         {
             if (!Application.isPlaying && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
             {
                 return;
             }
+
+            bool replacingActiveScene = SceneManager.GetActiveScene() == toReplaceScene;
 
             if (SceneManager.sceneCount == 1)
             {
@@ -883,16 +887,29 @@ namespace SaintsHierarchy.Editor
             {
                 if (EditorApplication.isPlaying)
                 {
-                    SceneManager.sceneLoaded += OnRuntimeSceneLoaded;
+                    if (replacingActiveScene)
+                    {
+                        _runtimeAdditiveScenesToRestore = Enumerable.Range(0, SceneManager.sceneCount)
+                            .Select(SceneManager.GetSceneAt)
+                            .Where(each => each.isLoaded && each != toReplaceScene && each.path != "" && each.path != toOpenScene)
+                            .Select(each => each.path)
+                            .ToList();
+                        SceneManager.sceneLoaded += OnRuntimeSceneLoaded;
+                        SceneManager.LoadScene(toOpenScene, LoadSceneMode.Single);
+                    }
+                    else
+                    {
+                        SceneManager.sceneLoaded += OnRuntimeSceneLoaded;
 
-                    SceneManager.LoadScene(toOpenScene, LoadSceneMode.Additive);
-                    SceneManager.UnloadSceneAsync(toReplaceScene);
+                        SceneManager.LoadScene(toOpenScene, LoadSceneMode.Additive);
+                        SceneManager.UnloadSceneAsync(toReplaceScene);
+                    }
                 }
                 else
                 {
                     Scene openedScene = EditorSceneManager.OpenScene(toOpenScene, OpenSceneMode.Additive);
                     EditorSceneManager.MoveSceneAfter(openedScene, toReplaceScene);
-                    if (SceneManager.GetActiveScene() == toReplaceScene)
+                    if (replacingActiveScene)
                     {
                         SceneManager.SetActiveScene(openedScene);
                     }
@@ -906,6 +923,18 @@ namespace SaintsHierarchy.Editor
         {
             SceneManager.sceneLoaded -= OnRuntimeSceneLoaded;
             SceneManager.SetActiveScene(scene);
+
+            if (_runtimeAdditiveScenesToRestore == null)
+            {
+                return;
+            }
+
+            foreach (string scenePath in _runtimeAdditiveScenesToRestore)
+            {
+                SceneManager.LoadScene(scenePath, LoadSceneMode.Additive);
+            }
+
+            _runtimeAdditiveScenesToRestore = null;
         }
 
 
