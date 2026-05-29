@@ -1,3 +1,8 @@
+## 1.4.5 ##
+
+1.  Fix: UI Prefab did not correctly show name and components of `Canvas (Environment)`/`Prefab Mode in Context` node
+2.  NullReferenceException on scene path when entering play mode [PR#2](https://github.com/TylerTemp/SaintsHierarchy/pull/2) by [@hookSSi](https://github.com/hookSSi)
+
 ## 1.4.4 ##
 
 Fix: Scene selector can not set active scene in play mode

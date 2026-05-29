@@ -95,7 +95,7 @@ namespace SaintsHierarchy.Editor
                 return;
             }
 
-            // Debug.Log($"insId:  {instanceID} obj: {go.name}");
+            // Debug.Log($"insId:  {instanceID} obj: {originGo.name}");
 
             int rowIndex = Mathf.RoundToInt(selectionRect.y) / RowHeight;
             Rect fullRect = new Rect(selectionRect)
@@ -130,9 +130,13 @@ namespace SaintsHierarchy.Editor
             // Debug.Log($"popup scene: {curScenePath}");
             // GameObject targetGo = go;
             GameObject go = originGo;
-            if (curScenePath.EndsWith(".prefab"))
+            bool isInsideCurrentPrefabContents = IsInsideCurrentPrefabContents(originGo);
+            bool isPrefabStageContextObject = IsPrefabStageContextObject(originGo);
+            bool isPrefabAssetSceneObject = curScenePath.EndsWith(".prefab");
+            if (isPrefabAssetSceneObject && isInsideCurrentPrefabContents)
             {
                 go = Util.GetPrefabSubGameObject(curScenePath, originGo);
+                // Debug.Log($"switch from {originGo.name} to {go?.name}");
                 if (go == null)
                 {
                     return;
@@ -162,6 +166,8 @@ namespace SaintsHierarchy.Editor
                     RuntimeCacheConfig.instance.Upsert(instanceID, goConfig);
                 }
             }
+
+            // Debug.Log($"origin: {originGo.name}/go: {go.name}/prefabCtx:{isPrefabStageContextObject}");
 
             Transform trans = go.transform;
 
@@ -583,7 +589,7 @@ namespace SaintsHierarchy.Editor
 
             #region disabled
 
-            if (!ActiveInAnyHierarchy(go))
+            if (isPrefabStageContextObject || !ActiveInAnyHierarchy(go))
             {
                 // if (goConfig.hasColor)
                 // {
@@ -1564,6 +1570,35 @@ namespace SaintsHierarchy.Editor
         private static bool IsGeneralScriptIcon(Texture2D icon)
         {
             return icon != null && (icon.name == "d_cs Script Icon" || icon.name == "cs Script Icon");
+        }
+
+        private static bool IsInsideCurrentPrefabContents(GameObject go)
+        {
+            PrefabStage stage = PrefabStageUtility.GetCurrentPrefabStage();
+            if (stage == null || stage.prefabContentsRoot == null)
+            {
+                return false;
+            }
+
+            Transform prefabRoot = stage.prefabContentsRoot.transform;
+            Transform target = go.transform;
+            return target == prefabRoot || target.IsChildOf(prefabRoot);
+        }
+
+        private static bool IsPrefabStageContextObject(GameObject go)
+        {
+            PrefabStage stage = PrefabStageUtility.GetCurrentPrefabStage();
+            if (stage == null || stage.prefabContentsRoot == null)
+            {
+                return false;
+            }
+
+            if (go.scene != stage.scene)
+            {
+                return false;
+            }
+
+            return !IsInsideCurrentPrefabContents(go);
         }
 
         private static bool IsDisabledBehaviour(Component component)
