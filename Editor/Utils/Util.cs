@@ -1104,5 +1104,17 @@ namespace SaintsHierarchy.Editor.Utils
                 _ => ((bool hasUnderline, Color underlineColor))(false, default)
             };
         }
+
+        /// <see href="https://uninomicon.com/globalobjectid">Prefabs have two GlobalObjectIds</see>
+        public static (bool converted, GlobalObjectId result) ConvertPrefabGidToUnpackedGid(GlobalObjectId id)
+        {
+            ulong fileId = (id.targetObjectId ^ id.targetPrefabId) & 0x7fffffffffffffff;
+            bool success = GlobalObjectId.TryParse(
+                $"GlobalObjectId_V1-{id.identifierType}-{id.assetGUID}-{fileId}-0",
+                out GlobalObjectId unpackedGid);
+            // Assert.IsTrue(success);
+            // return unpackedGid;
+            return (success, unpackedGid);
+        }
     }
 }

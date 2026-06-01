@@ -1,3 +1,8 @@
+## 1.4.6 ##
+
+1.  Fix: The injection point now is more safe, and will not trigger many errors when entering play mode
+2.  Fix: Favorite GameObject failed to display in play mode if the object is a prefab directly placed in scene
+
 ## 1.4.5 ##
 
 1.  Fix: UI Prefab did not correctly show name and components of `Canvas (Environment)`/`Prefab Mode in Context` node

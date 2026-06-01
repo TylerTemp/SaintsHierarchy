@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using SaintsHierarchy.Editor.Utils;
 using UnityEditor;
-using UnityEditor.IMGUI.Controls;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -22,6 +21,28 @@ namespace SaintsHierarchy.Editor
         // private static PropertyInfo _propertyTreeViewRect;
 
         [InitializeOnLoadMethod]
+        private static void InitializeOnLoadMethod()
+        {
+            if (EditorApplication.isCompiling ||
+                EditorApplication.isUpdating)
+            {
+                EditorApplication.delayCall += OnLoad;
+                return;
+            }
+
+            OnLoad();
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        }
+
+        private static void OnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.EnteredPlayMode)
+            {
+                OnLoad();
+            }
+        }
+
         public static void OnLoad()
         {
             if (GetUsingConfig().disableFavorites)
@@ -163,7 +184,28 @@ namespace SaintsHierarchy.Editor
                         try
                         {
                             Debug.unityLogger.logEnabled = false;
-                            go = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as GameObject;
+                            Object result = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id);
+                            if (result is GameObject resultGo)
+                            {
+                                go = resultGo;
+                            }
+                            else if (result is null && EditorApplication.isPlaying)
+                            {
+                                (bool unpackConverted, GlobalObjectId unpackResult) = Util.ConvertPrefabGidToUnpackedGid(id);
+                                Debug.Log($"unpack {id} -> {unpackConverted}: {unpackResult}");
+                                if (unpackConverted && GlobalObjectId.GlobalObjectIdentifierToObjectSlow(unpackResult) is GameObject unpackGo)
+                                {
+                                    go = unpackGo;
+                                }
+                                else
+                                {
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                continue;
+                            }
 
                         }
 #pragma warning disable CS0168 // Variable is declared but never used
@@ -171,7 +213,6 @@ namespace SaintsHierarchy.Editor
 #pragma warning restore CS0168 // Variable is declared but never used
                         {
 #if SAINTSHIERARCHY_DEBUG
-                            Debug.unityLogger.logEnabled = true;
                             Debug.LogException(e);
 #endif
                             continue;
@@ -374,24 +415,7 @@ namespace SaintsHierarchy.Editor
 #endif
                 , bool, bool> SetExpand;
 
-            private readonly object _treeViewData;
-            private readonly PropertyInfo _propRowCount;
             // private readonly PropertyInfo _propTreeViewRect;
-
-            public readonly Func<
-#if UNITY_6000_3_OR_NEWER
-                EntityId
-#else
-                int
-#endif
-                , int
-            > GetRow;
-
-            public readonly TreeViewState
-#if UNITY_6000_3_OR_NEWER
-                <EntityId>
-#endif
-                TreeViewState;
 
             public WrapInfo(object hostViewParent, Delegate originalOnGUI, Delegate wrappedOnGUI, Func<
 #if UNITY_6000_3_OR_NEWER
@@ -399,22 +423,7 @@ namespace SaintsHierarchy.Editor
 #else
                 int
 #endif
-                , bool, bool> setExpand,
-                object treeViewData,
-                PropertyInfo propRowCount,
-                Func<
-#if UNITY_6000_3_OR_NEWER
-                    EntityId
-#else
-                    int
-#endif
-                    , int
-                > getRow,
-                TreeViewState
-#if UNITY_6000_3_OR_NEWER
-                    <EntityId>
-#endif
-                treeViewState
+                , bool, bool> setExpand
                 )
             {
                 HostViewParent = hostViewParent;
@@ -422,14 +431,9 @@ namespace SaintsHierarchy.Editor
                 WrappedOnGUI = wrappedOnGUI;
                 SetExpand = setExpand;
 
-                _treeViewData = treeViewData;
-                _propRowCount = propRowCount;
-                GetRow = getRow;
                 // _propTreeViewRect = propTreeViewRect;
-                TreeViewState = treeViewState;
             }
 
-            public int GetRowCount() => (int)_propRowCount.GetValue(_treeViewData);
             // public Rect GetTreeViewRect(EditorWindow window) => (Rect)_propTreeViewRect.GetValue(window);
         }
 
@@ -500,17 +504,6 @@ namespace SaintsHierarchy.Editor
             {
                 return default;
             }
-
-            TreeViewState
-#if UNITY_6000_3_OR_NEWER
-            <EntityId>
-#endif
-
-                treeViewState = (TreeViewState
-#if UNITY_6000_3_OR_NEWER
-                    <EntityId>
-#endif
-                )_fieldMTreeViewState.GetValue(sceneHierarchy);
 
             // UnityEditor.SceneHierarchyWindow.m_SceneHierarchy.m_TreeView;
             _fieldMTreeView ??= sceneHierarchy.GetType().GetField("m_TreeView", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -602,29 +595,6 @@ namespace SaintsHierarchy.Editor
                 return default;
             }
 
-            Func<
-#if UNITY_6000_3_OR_NEWER
-                EntityId
-#else
-                int
-#endif
-                , int
-            > getRow = (Func<
-#if UNITY_6000_3_OR_NEWER
-                EntityId
-#else
-                int
-#endif
-                , int
-            >)_methodGetRow.CreateDelegate(typeof(Func<
-#if UNITY_6000_3_OR_NEWER
-                EntityId
-#else
-                int
-#endif
-                , int
-            >), treeViewData);
-
             // Func<int> getRowCount = () => (int)_propertyRowCount.GetValue(treeViewData);
 
             object hostViewParent = _fieldMParent.GetValue(window);
@@ -676,7 +646,7 @@ namespace SaintsHierarchy.Editor
             // OriginDelegate[window] = wrappedDelegate;
             // window.Repaint();
 
-            return new WrapInfo(hostViewParent, onGuiDelegate, wrappedDelegate, setExpand, treeViewData, _propertyRowCount, getRow, treeViewState);
+            return new WrapInfo(hostViewParent, onGuiDelegate, wrappedDelegate, setExpand);
         }
 
         private static FieldInfo _fieldMPos;
@@ -1306,7 +1276,7 @@ namespace SaintsHierarchy.Editor
                     }
                     else
                     {
-                        ExpandInTree(favoriteDrawingInfo.RuntimeConfig.LoadedGameObject, wrapInfo, window, 20);
+                        ExpandInTree(favoriteDrawingInfo.RuntimeConfig.LoadedGameObject, wrapInfo);
                     }
                 }
 
@@ -1587,7 +1557,7 @@ namespace SaintsHierarchy.Editor
             }
         }
 
-        private static void ExpandInTree(GameObject gameObject, WrapInfo wrapInfo, EditorWindow window, float margin)
+        private static void ExpandInTree(GameObject gameObject, WrapInfo wrapInfo)
         {
             // Debug.Log($"expand {gameObject.name}");
             Transform parent = gameObject.transform.parent;
