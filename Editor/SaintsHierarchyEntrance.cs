@@ -132,6 +132,7 @@ namespace SaintsHierarchy.Editor
             GameObject go = originGo;
             bool isInsideCurrentPrefabContents = IsInsideCurrentPrefabContents(originGo);
             bool isPrefabStageContextObject = IsPrefabStageContextObject(originGo);
+            bool notEditable = (originGo.hideFlags & HideFlags.NotEditable) != 0;
             bool isPrefabAssetSceneObject = curScenePath.EndsWith(".prefab");
             if (isPrefabAssetSceneObject && isInsideCurrentPrefabContents)
             {
@@ -589,7 +590,7 @@ namespace SaintsHierarchy.Editor
 
             #region disabled
 
-            if (isPrefabStageContextObject || !ActiveInAnyHierarchy(go))
+            if (isPrefabStageContextObject || notEditable || !ActiveInAnyHierarchy(go))
             {
                 // if (goConfig.hasColor)
                 // {
