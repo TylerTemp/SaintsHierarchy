@@ -18,6 +18,7 @@ namespace SaintsHierarchy.Editor
         private static Type _sceneHierarchyWindowType;
         private static FieldInfo _sLastInteractedHierarchy;
         private static FieldInfo _fieldMSceneHierarchy;
+        private static bool _reloadQueuedAfterPlayModeTransition;
         // private static PropertyInfo _propertyTreeViewRect;
 
         [InitializeOnLoadMethod]
@@ -37,10 +38,22 @@ namespace SaintsHierarchy.Editor
 
         private static void OnPlayModeStateChanged(PlayModeStateChange state)
         {
-            if (state == PlayModeStateChange.EnteredPlayMode)
+            if (state is PlayModeStateChange.ExitingEditMode or PlayModeStateChange.ExitingPlayMode)
             {
-                OnLoad();
+                _reloadQueuedAfterPlayModeTransition = true;
+                return;
             }
+
+            if (state is PlayModeStateChange.EnteredPlayMode or PlayModeStateChange.EnteredEditMode)
+            {
+                EditorApplication.delayCall += ReloadAfterPlayModeTransition;
+            }
+        }
+
+        private static void ReloadAfterPlayModeTransition()
+        {
+            _reloadQueuedAfterPlayModeTransition = false;
+            OnLoad();
         }
 
         public static void OnLoad()
@@ -101,14 +114,37 @@ namespace SaintsHierarchy.Editor
             EditorSceneManager.newSceneCreated += OnNewSceneCreated;
             EditorApplication.hierarchyChanged -= ReloadAllScene;
             EditorApplication.hierarchyChanged += ReloadAllScene;
-            OnSceneCheck();
+            ReloadAllScene();
         }
 
         public static void ReloadAllScene()
         {
+            if (ShouldDelaySceneReload())
+            {
+                QueueReloadAfterPlayModeTransition();
+                return;
+            }
+
             // LoadedScenes.Clear();
             CurrentFavoriteGameObjects.Clear();
             OnSceneCheck();
+        }
+
+        private static bool ShouldDelaySceneReload()
+        {
+            return _reloadQueuedAfterPlayModeTransition ||
+                   (EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isPlaying);
+        }
+
+        private static void QueueReloadAfterPlayModeTransition()
+        {
+            if (_reloadQueuedAfterPlayModeTransition)
+            {
+                return;
+            }
+
+            _reloadQueuedAfterPlayModeTransition = true;
+            EditorApplication.delayCall += ReloadAfterPlayModeTransition;
         }
 
         // private static readonly HashSet<Scene> LoadedScenes = new HashSet<Scene>();
