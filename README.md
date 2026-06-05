@@ -61,8 +61,7 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ## Change Log ##
 
-1.  Fix: The injection point now is more safe, and will not trigger many errors when entering play mode
-2.  Fix: Favorite GameObject failed to display in play mode if the object is a prefab directly placed in scene
+Fix: Improve the injection point to not give error when entering play mode
 
 See [the full change log](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
 

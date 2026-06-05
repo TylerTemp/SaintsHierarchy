@@ -1,3 +1,7 @@
+## 1.4.7 ##
+
+Fix: Improve the injection point to not give error when entering play mode
+
 ## 1.4.6 ##
 
 1.  Fix: The injection point now is more safe, and will not trigger many errors when entering play mode
