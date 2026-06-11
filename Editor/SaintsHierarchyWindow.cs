@@ -228,7 +228,7 @@ namespace SaintsHierarchy.Editor
                             else if (result is null && EditorApplication.isPlaying)
                             {
                                 (bool unpackConverted, GlobalObjectId unpackResult) = Util.ConvertPrefabGidToUnpackedGid(id);
-                                Debug.Log($"unpack {id} -> {unpackConverted}: {unpackResult}");
+                                // Debug.Log($"unpack {id} -> {unpackConverted}: {unpackResult}");
                                 if (unpackConverted && GlobalObjectId.GlobalObjectIdentifierToObjectSlow(unpackResult) is GameObject unpackGo)
                                 {
                                     go = unpackGo;
