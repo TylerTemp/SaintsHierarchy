@@ -61,7 +61,8 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ## Change Log ##
 
-Fix: Improve the injection point to not give error when entering play mode
+1.  Fix: Improve the injection time for play mode
+2.  Fix: Import error
 
 See [the full change log](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
 

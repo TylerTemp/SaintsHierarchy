@@ -1,3 +1,8 @@
+## 1.4.8 ##
+
+1.  Fix: Improve the injection time for play mode
+2.  Fix: Import error
+
 ## 1.4.7 ##
 
 Fix: Improve the injection point to not give error when entering play mode
