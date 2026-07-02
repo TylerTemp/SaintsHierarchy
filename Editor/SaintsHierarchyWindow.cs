@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using SaintsHierarchy.Editor.Utils;
+using SaintsHierarchy.Packages.today.comes.saintshierarchy.Editor;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -18,71 +19,94 @@ namespace SaintsHierarchy.Editor
         private static Type _sceneHierarchyWindowType;
         private static FieldInfo _sLastInteractedHierarchy;
         private static FieldInfo _fieldMSceneHierarchy;
-        private const double PlayModeSceneReloadDelaySeconds = 1d;
-        private static bool _reloadQueuedAfterPlayModeTransition;
-        private static double _enteredPlayModeTime;
+        // private const double PlayModeSceneReloadDelaySeconds = 1d;
+        // private static bool _reloadQueuedAfterPlayModeTransition;
+        // private static double _enteredPlayModeTime;
         // private static PropertyInfo _propertyTreeViewRect;
+        private static double _playModeTimeoutLoad;
 
         [InitializeOnLoadMethod]
         private static void InitializeOnLoadMethod()
         {
-            if (EditorApplication.isCompiling ||
-                EditorApplication.isUpdating)
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+            Debug.Log($"InitializeOnLoadMethod {EditorApplication.isPlaying}/{EditorApplication.isPlayingOrWillChangePlaymode}");
+#endif
+            if(!EditorApplication.isPlaying && !EditorApplication.isPlayingOrWillChangePlaymode)
             {
-                EditorApplication.delayCall += OnLoad;
-                return;
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+                Debug.Log($"Directly call OnLoad in InitializeOnLoadMethod");
+#endif
+                OnLoad();
             }
+            else
+            {
+                // if (!SafeGlobalObjectIdGate.IsReadyForGlobalObjectIdLookup())
+                // {
+                //     EditorApplication.delayCall += InitializeOnLoadMethod;
+                // }
+                // SafeGlobalObjectIdGate.RunWhenSafe(OnLoad);
 
-            OnLoad();
-            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
-            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+                EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+                EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+            }
         }
 
         private static void OnPlayModeStateChanged(PlayModeStateChange state)
         {
-            if (state is PlayModeStateChange.ExitingEditMode or PlayModeStateChange.ExitingPlayMode)
-            {
-                _reloadQueuedAfterPlayModeTransition = true;
-                EditorApplication.update -= ReloadAfterEnteredPlayMode;
-                return;
-            }
-
             if (state == PlayModeStateChange.EnteredPlayMode)
             {
-                QueueReloadAfterEnteredPlayMode();
+                _playModeTimeoutLoad = EditorApplication.timeSinceStartup + 1;
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+                Debug.Log($"_playModeTimeoutLoad={_playModeTimeoutLoad}");
+#endif
+                EditorApplication.update -= PlayModeTimeoutChecker;
+                EditorApplication.update += PlayModeTimeoutChecker;
+            }
+            else if (state == PlayModeStateChange.ExitingPlayMode)
+            {
+                EditorApplication.update -= PlayModeTimeoutChecker;
+            }
+        }
+
+        private static void PlayModeTimeoutChecker()
+        {
+            if (EditorApplication.timeSinceStartup < _playModeTimeoutLoad)
+            {
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+                Debug.Log($"OnLoad in _playModeTimeoutLoad {_playModeTimeoutLoad - EditorApplication.timeSinceStartup}");
+#endif
                 return;
             }
 
-            if (state == PlayModeStateChange.EnteredEditMode)
+            for (int i = 0; i < SceneManager.sceneCount; i++)
             {
-                EditorApplication.delayCall += ReloadAfterPlayModeTransition;
-            }
-        }
-
-        private static void QueueReloadAfterEnteredPlayMode()
-        {
-            _reloadQueuedAfterPlayModeTransition = true;
-            _enteredPlayModeTime = EditorApplication.timeSinceStartup;
-            EditorApplication.update -= ReloadAfterEnteredPlayMode;
-            EditorApplication.update += ReloadAfterEnteredPlayMode;
-        }
-
-        private static void ReloadAfterEnteredPlayMode()
-        {
-            if (EditorApplication.timeSinceStartup - _enteredPlayModeTime < PlayModeSceneReloadDelaySeconds)
-            {
-                return;
+                Scene scene = SceneManager.GetSceneAt(i);
+                if (!scene.isLoaded)
+                {
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+                    Debug.Log($"OnLoad in _playModeTimeoutLoad wait scene {scene.name}@{i} loading");
+#endif
+                    return;
+                }
             }
 
-            EditorApplication.update -= ReloadAfterEnteredPlayMode;
-            ReloadAfterPlayModeTransition();
-        }
-
-        private static void ReloadAfterPlayModeTransition()
-        {
-            _reloadQueuedAfterPlayModeTransition = false;
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+            Debug.Log($"Play Timeout OnLoad _playModeTimeoutLoad: {_playModeTimeoutLoad}/{EditorApplication.isCompiling}/{EditorApplication.isUpdating}");
+#endif
+            EditorApplication.update -= PlayModeTimeoutChecker;
             OnLoad();
         }
+
+        // private static void ReloadAfterEnteredPlayMode()
+        // {
+        //     if (EditorApplication.timeSinceStartup - _enteredPlayModeTime < PlayModeSceneReloadDelaySeconds)
+        //     {
+        //         return;
+        //     }
+        //
+        //     EditorApplication.update -= ReloadAfterEnteredPlayMode;
+        //     ReloadAfterPlayModeTransition();
+        // }
 
         public static void OnLoad()
         {
@@ -147,50 +171,9 @@ namespace SaintsHierarchy.Editor
 
         public static void ReloadAllScene()
         {
-            if (ShouldDelaySceneReload())
-            {
-                QueueReloadAfterPlayModeTransition();
-                return;
-            }
-
-            // LoadedScenes.Clear();
-
-#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
-            Debug.Log("ReloadAllScene");
-#endif
-
             CurrentFavoriteGameObjects.Clear();
             OnSceneCheck();
         }
-
-        private static bool ShouldDelaySceneReload()
-        {
-            return _reloadQueuedAfterPlayModeTransition ||
-                   IsEnteringPlayMode();
-        }
-
-        private static void QueueReloadAfterPlayModeTransition()
-        {
-            if (_reloadQueuedAfterPlayModeTransition)
-            {
-                return;
-            }
-
-            _reloadQueuedAfterPlayModeTransition = true;
-            if (IsEnteringPlayMode())
-            {
-                return;
-            }
-
-            EditorApplication.delayCall += ReloadAfterPlayModeTransition;
-        }
-
-        private static bool IsEnteringPlayMode()
-        {
-            return EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isPlaying;
-        }
-
-        // private static readonly HashSet<Scene> LoadedScenes = new HashSet<Scene>();
 
         private static void OnSceneCheck()
         {
@@ -221,9 +204,9 @@ namespace SaintsHierarchy.Editor
             // }
 
             int count = SceneManager.sceneCount;
-#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
-            Debug.Log($"sceneCount={count}");
-#endif
+// #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+//             Debug.Log($"sceneCount={count}");
+// #endif
             HashSet<string> openSceneGuids = new HashSet<string>();
 
             for (int i = 0; i < count; i++)
@@ -231,9 +214,9 @@ namespace SaintsHierarchy.Editor
                 Scene scene = SceneManager.GetSceneAt(i);
 
                 string sceneGuid = AssetDatabase.GUIDFromAssetPath(scene.path).ToString();
-#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
-                Debug.Log($"opened scene@{i} guid sceneGuid={sceneGuid}");
-#endif
+// #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+//                 Debug.Log($"opened scene@{i} guid sceneGuid={sceneGuid}");
+// #endif
                 openSceneGuids.Add(sceneGuid);
                 // if (LoadedScenes.Add(scene))
                 // {
@@ -250,14 +233,14 @@ namespace SaintsHierarchy.Editor
             }
 
             IConfig config = Util.GetFavoriteConfig();
-#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
-            Debug.Log($"scene fav count {config.favorites.Count}");
-#endif
+// #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+//             Debug.Log($"scene fav count {config.favorites.Count}");
+// #endif
             foreach (GameObjectFavorite sceneGuidToGoFavorites in config.favorites)
             {
-#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
-                Debug.Log($"checking {sceneGuidToGoFavorites.DebugGetObject()} {sceneGuidToGoFavorites.sceneGuid}, scene opened={openSceneGuids.Contains(sceneGuidToGoFavorites.sceneGuid)}");
-#endif
+// #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+//                 Debug.Log($"checking {sceneGuidToGoFavorites.globalObjectIdString} {sceneGuidToGoFavorites.sceneGuid}, scene opened={openSceneGuids.Contains(sceneGuidToGoFavorites.sceneGuid)}");
+// #endif
                 if (openSceneGuids.Contains(sceneGuidToGoFavorites.sceneGuid))
                 {
                     // List<RuntimeFavoriteGameObject> fav = new List<RuntimeFavoriteGameObject>();
