@@ -1,4 +1,4 @@
-## 1.4.9  ##
+## 1.4.10 ##
 
 Fix: Delay injection when entering play mode to reduce unnecessary errors
 
