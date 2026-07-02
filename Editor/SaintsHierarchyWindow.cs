@@ -18,7 +18,9 @@ namespace SaintsHierarchy.Editor
         private static Type _sceneHierarchyWindowType;
         private static FieldInfo _sLastInteractedHierarchy;
         private static FieldInfo _fieldMSceneHierarchy;
+        private const double PlayModeSceneReloadDelaySeconds = 1d;
         private static bool _reloadQueuedAfterPlayModeTransition;
+        private static double _enteredPlayModeTime;
         // private static PropertyInfo _propertyTreeViewRect;
 
         [InitializeOnLoadMethod]
@@ -41,13 +43,39 @@ namespace SaintsHierarchy.Editor
             if (state is PlayModeStateChange.ExitingEditMode or PlayModeStateChange.ExitingPlayMode)
             {
                 _reloadQueuedAfterPlayModeTransition = true;
+                EditorApplication.update -= ReloadAfterEnteredPlayMode;
                 return;
             }
 
-            if (state is PlayModeStateChange.EnteredPlayMode or PlayModeStateChange.EnteredEditMode)
+            if (state == PlayModeStateChange.EnteredPlayMode)
+            {
+                QueueReloadAfterEnteredPlayMode();
+                return;
+            }
+
+            if (state == PlayModeStateChange.EnteredEditMode)
             {
                 EditorApplication.delayCall += ReloadAfterPlayModeTransition;
             }
+        }
+
+        private static void QueueReloadAfterEnteredPlayMode()
+        {
+            _reloadQueuedAfterPlayModeTransition = true;
+            _enteredPlayModeTime = EditorApplication.timeSinceStartup;
+            EditorApplication.update -= ReloadAfterEnteredPlayMode;
+            EditorApplication.update += ReloadAfterEnteredPlayMode;
+        }
+
+        private static void ReloadAfterEnteredPlayMode()
+        {
+            if (EditorApplication.timeSinceStartup - _enteredPlayModeTime < PlayModeSceneReloadDelaySeconds)
+            {
+                return;
+            }
+
+            EditorApplication.update -= ReloadAfterEnteredPlayMode;
+            ReloadAfterPlayModeTransition();
         }
 
         private static void ReloadAfterPlayModeTransition()
@@ -133,7 +161,7 @@ namespace SaintsHierarchy.Editor
         private static bool ShouldDelaySceneReload()
         {
             return _reloadQueuedAfterPlayModeTransition ||
-                   (EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isPlaying);
+                   IsEnteringPlayMode();
         }
 
         private static void QueueReloadAfterPlayModeTransition()
@@ -144,7 +172,17 @@ namespace SaintsHierarchy.Editor
             }
 
             _reloadQueuedAfterPlayModeTransition = true;
+            if (IsEnteringPlayMode())
+            {
+                return;
+            }
+
             EditorApplication.delayCall += ReloadAfterPlayModeTransition;
+        }
+
+        private static bool IsEnteringPlayMode()
+        {
+            return EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isPlaying;
         }
 
         // private static readonly HashSet<Scene> LoadedScenes = new HashSet<Scene>();

@@ -1,3 +1,7 @@
+## 1.4.9  ##
+
+Fix: Delay injection when entering play mode to reduce unnecessary errors
+
 ## 1.4.8 ##
 
 1.  Fix: Improve the injection time for play mode
