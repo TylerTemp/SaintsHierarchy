@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using SaintsHierarchy.Editor.Utils;
-using SaintsHierarchy.Packages.today.comes.saintshierarchy.Editor;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
