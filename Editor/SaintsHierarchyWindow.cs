@@ -77,6 +77,25 @@ namespace SaintsHierarchy.Editor
                 return;
             }
 
+            if (!CheckSceneLoadingOk())
+            {
+                return;
+            }
+
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+            Debug.Log($"Play Timeout OnLoad _playModeTimeoutLoad: {_playModeTimeoutLoad}/{EditorApplication.isCompiling}/{EditorApplication.isUpdating}");
+#endif
+            EditorApplication.update -= PlayModeTimeoutChecker;
+            OnLoad();
+        }
+
+        private static bool CheckSceneLoadingOk()
+        {
+            if(!EditorApplication.isPlaying && !EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                return true;
+            }
+
             for (int i = 0; i < SceneManager.sceneCount; i++)
             {
                 Scene scene = SceneManager.GetSceneAt(i);
@@ -85,15 +104,11 @@ namespace SaintsHierarchy.Editor
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
                     Debug.Log($"OnLoad in _playModeTimeoutLoad wait scene {scene.name}@{i} loading");
 #endif
-                    return;
+                    return false;
                 }
             }
 
-#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
-            Debug.Log($"Play Timeout OnLoad _playModeTimeoutLoad: {_playModeTimeoutLoad}/{EditorApplication.isCompiling}/{EditorApplication.isUpdating}");
-#endif
-            EditorApplication.update -= PlayModeTimeoutChecker;
-            OnLoad();
+            return true;
         }
 
         // private static void ReloadAfterEnteredPlayMode()
@@ -163,8 +178,8 @@ namespace SaintsHierarchy.Editor
             EditorSceneManager.sceneClosing += OnSceneClosing;
             EditorSceneManager.newSceneCreated -= OnNewSceneCreated;
             EditorSceneManager.newSceneCreated += OnNewSceneCreated;
-            EditorApplication.hierarchyChanged -= ReloadAllScene;
-            EditorApplication.hierarchyChanged += ReloadAllScene;
+            EditorApplication.hierarchyChanged -= OnHierarchyChanged;
+            EditorApplication.hierarchyChanged += OnHierarchyChanged;
             ReloadAllScene();
         }
 
@@ -172,6 +187,14 @@ namespace SaintsHierarchy.Editor
         {
             CurrentFavoriteGameObjects.Clear();
             OnSceneCheck();
+        }
+
+        private static void OnHierarchyChanged()
+        {
+            if(CheckSceneLoadingOk())
+            {
+                ReloadAllScene();
+            }
         }
 
         private static void OnSceneCheck()
