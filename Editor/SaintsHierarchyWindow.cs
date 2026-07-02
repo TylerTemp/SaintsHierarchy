@@ -154,6 +154,11 @@ namespace SaintsHierarchy.Editor
             }
 
             // LoadedScenes.Clear();
+
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+            Debug.Log("ReloadAllScene");
+#endif
+
             CurrentFavoriteGameObjects.Clear();
             OnSceneCheck();
         }
@@ -216,13 +221,20 @@ namespace SaintsHierarchy.Editor
             // }
 
             int count = SceneManager.sceneCount;
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+            Debug.Log($"sceneCount={count}");
+#endif
             HashSet<string> openSceneGuids = new HashSet<string>();
 
             for (int i = 0; i < count; i++)
             {
                 Scene scene = SceneManager.GetSceneAt(i);
 
-                openSceneGuids.Add(AssetDatabase.GUIDFromAssetPath(scene.path).ToString());
+                string sceneGuid = AssetDatabase.GUIDFromAssetPath(scene.path).ToString();
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+                Debug.Log($"opened scene@{i} guid sceneGuid={sceneGuid}");
+#endif
+                openSceneGuids.Add(sceneGuid);
                 // if (LoadedScenes.Add(scene))
                 // {
                 //     leftOutScenes.Remove(scene);
@@ -238,14 +250,14 @@ namespace SaintsHierarchy.Editor
             }
 
             IConfig config = Util.GetFavoriteConfig();
-// #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
-//             Debug.Log($"scene fav count {config.favorites.Count}");
-// #endif
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+            Debug.Log($"scene fav count {config.favorites.Count}");
+#endif
             foreach (GameObjectFavorite sceneGuidToGoFavorites in config.favorites)
             {
-// #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
-//                 Debug.Log($"checking {sceneGuidToGoFavorites.DebugGetObject()} {sceneGuidToGoFavorites.sceneGuid}->{guidStr}");
-// #endif
+#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
+                Debug.Log($"checking {sceneGuidToGoFavorites.DebugGetObject()} {sceneGuidToGoFavorites.sceneGuid}, scene opened={openSceneGuids.Contains(sceneGuidToGoFavorites.sceneGuid)}");
+#endif
                 if (openSceneGuids.Contains(sceneGuidToGoFavorites.sceneGuid))
                 {
                     // List<RuntimeFavoriteGameObject> fav = new List<RuntimeFavoriteGameObject>();
@@ -254,17 +266,12 @@ namespace SaintsHierarchy.Editor
                     if (GlobalObjectId.TryParse(gameIdStr, out GlobalObjectId id))
                     {
                         GameObject go;
+
+                        bool originEnabled = Debug.unityLogger.logEnabled;
                         try
                         {
-                            if (TryResolveFavoriteGameObject(id, out GameObject resultGo))
-                            {
-                                go = resultGo;
-                            }
-                            else
-                            {
-                                continue;
-                            }
-
+                            Debug.unityLogger.logEnabled = false;
+                            go = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as GameObject;
                         }
 #pragma warning disable CS0168 // Variable is declared but never used
                         catch (Exception e)
@@ -275,10 +282,11 @@ namespace SaintsHierarchy.Editor
 #endif
                             continue;
                         }
+                        finally
+                        {
+                            Debug.unityLogger.logEnabled = originEnabled;
+                        }
 
-#if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
-                        Debug.Log($"get {go}");
-#endif
                         if (go != null)
                         {
                             // Debug.Log($"add {go}");
@@ -295,31 +303,6 @@ namespace SaintsHierarchy.Editor
                 }
             }
         }
-
-        private static bool TryResolveFavoriteGameObject(GlobalObjectId id, out GameObject go)
-        {
-            go = null;
-
-            // GlobalObjectIdentifierToObjectSlow can assert internally during Play Mode
-            // hierarchy changes, before C# exception handling can catch anything.
-            if (EditorApplication.isPlaying)
-            {
-                return false;
-            }
-
-            bool originEnabled = Debug.unityLogger.logEnabled;
-            try
-            {
-                Debug.unityLogger.logEnabled = false;
-                go = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as GameObject;
-                return go != null;
-            }
-            finally
-            {
-                Debug.unityLogger.logEnabled = originEnabled;
-            }
-        }
-
 
 
         private readonly struct RuntimeFavoriteGameObject
