@@ -253,28 +253,12 @@ namespace SaintsHierarchy.Editor
                     // Debug.Log($"parsing {gameIdStr}");
                     if (GlobalObjectId.TryParse(gameIdStr, out GlobalObjectId id))
                     {
-                        bool originEnabled = Debug.unityLogger.logEnabled;
                         GameObject go;
                         try
                         {
-                            Debug.unityLogger.logEnabled = false;
-                            Object result = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id);
-                            if (result is GameObject resultGo)
+                            if (TryResolveFavoriteGameObject(id, out GameObject resultGo))
                             {
                                 go = resultGo;
-                            }
-                            else if (result is null && EditorApplication.isPlaying)
-                            {
-                                (bool unpackConverted, GlobalObjectId unpackResult) = Util.ConvertPrefabGidToUnpackedGid(id);
-                                // Debug.Log($"unpack {id} -> {unpackConverted}: {unpackResult}");
-                                if (unpackConverted && GlobalObjectId.GlobalObjectIdentifierToObjectSlow(unpackResult) is GameObject unpackGo)
-                                {
-                                    go = unpackGo;
-                                }
-                                else
-                                {
-                                    continue;
-                                }
                             }
                             else
                             {
@@ -290,10 +274,6 @@ namespace SaintsHierarchy.Editor
                             Debug.LogException(e);
 #endif
                             continue;
-                        }
-                        finally
-                        {
-                            Debug.unityLogger.logEnabled = originEnabled;
                         }
 
 #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV
@@ -313,6 +293,30 @@ namespace SaintsHierarchy.Editor
                     // return;
                     // CurrentFavoriteGameObjects.RemoveAll(static each => each.SceneGuid == sceneGuidToGoFavorites.sceneGuid);
                 }
+            }
+        }
+
+        private static bool TryResolveFavoriteGameObject(GlobalObjectId id, out GameObject go)
+        {
+            go = null;
+
+            // GlobalObjectIdentifierToObjectSlow can assert internally during Play Mode
+            // hierarchy changes, before C# exception handling can catch anything.
+            if (EditorApplication.isPlaying)
+            {
+                return false;
+            }
+
+            bool originEnabled = Debug.unityLogger.logEnabled;
+            try
+            {
+                Debug.unityLogger.logEnabled = false;
+                go = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as GameObject;
+                return go != null;
+            }
+            finally
+            {
+                Debug.unityLogger.logEnabled = originEnabled;
             }
         }
 
