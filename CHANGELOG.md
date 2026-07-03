@@ -1,3 +1,7 @@
+## 1.4.12 ##
+
+Fix: Favorite GameObject gave error if the scene has not finished loading in play mode
+
 ## 1.4.11 ##
 
 Fix: Delay injection when entering play mode to reduce unnecessary errors

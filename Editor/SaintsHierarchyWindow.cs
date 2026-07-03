@@ -234,6 +234,10 @@ namespace SaintsHierarchy.Editor
             for (int i = 0; i < count; i++)
             {
                 Scene scene = SceneManager.GetSceneAt(i);
+                if (!scene.isLoaded)
+                {
+                    continue;
+                }
 
                 string sceneGuid = AssetDatabase.GUIDFromAssetPath(scene.path).ToString();
 // #if SAINTSHIERARCHY_DEBUG && SAINTSHIERARCHY_DEBUG_RENDER_FAV

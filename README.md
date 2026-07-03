@@ -61,7 +61,7 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ## Change Log ##
 
-Fix: Delay injection when entering play mode to reduce unnecessary errors
+Fix: Favorite GameObject gave error if the scene has not finished loading in play mode
 
 See [the full change log](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
 
