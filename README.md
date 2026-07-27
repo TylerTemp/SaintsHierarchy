@@ -384,3 +384,14 @@ private HierarchyUsed DrawRight1G2(HierarchyArea headerArea)
 ```
 
 [![](https://github.com/user-attachments/assets/bd5db3ef-da03-4455-b665-1dc661901b15)](https://github.com/user-attachments/assets/260c9661-e7c2-4e0f-b666-a36287fe9eb4)
+
+
+## Package is too simple ##
+
+Your asset was reviewed by the Unity Content Operation team, and was not approved for the following reason(s): - Content Quality and Presentation. This package is too simple for our current standards (https://assetstore.unity.com/publishing/submission-guidelines, Section 1.1.a). Please spend more time researching the current game market, polishing and tweaking your package to a high degree of quality, and expanding its contents to reach a broader audience. We recommend visiting the Asset Store Forums so users may give you more feedback (https://forum.unity.com/forums/assets-and-asset-store.32/) and reading the Submission Guidelines (https://assetstore.unity.com/publishing/submission-guidelines). Until you make improvements, we have chosen not to publish this asset. However, we greatly appreciate the time and effort spent in preparing your submission. This restriction was made as the asset is not compliant with our content policy (https://unity.com/legal/asset-store-content-transparency). If you are based in the EU, you can see your redress options under the Digital Services Act in the Redress Options section (https://unity.com/legal/asset-store-content-transparency#redress-options).
+
+
+<img width="1606" height="265" alt="image" src="https://github.com/user-attachments/assets/66e7f6b2-7b1b-4229-ab84-9e1c248c4970" />
+
+Fuck you Unity.
+
