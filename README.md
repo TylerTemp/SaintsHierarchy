@@ -479,6 +479,3 @@ Your asset was reviewed by the Unity Content Operation team, and was not approve
 
 
 <img width="1606" height="265" alt="image" src="https://github.com/user-attachments/assets/66e7f6b2-7b1b-4229-ab84-9e1c248c4970" />
-
-Fuck you Unity.
-
