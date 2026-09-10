@@ -1,9 +1,10 @@
 using System;
 using System.Reflection;
+using SaintsHierarchy.Editor.Core.Draw;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace SaintsHierarchy.Editor.Draw
+namespace SaintsHierarchy.Editor.Legacy.Draw
 {
     public static class HierarchyDrawDrawer
     {

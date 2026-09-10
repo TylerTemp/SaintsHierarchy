@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace SaintsHierarchy.Editor.Utils
+namespace SaintsHierarchy.Editor.Legacy.Utils
 {
     public class GUIColorScoop: IDisposable
     {

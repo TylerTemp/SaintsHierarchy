@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using SaintsHierarchy.Editor.Utils;
+using SaintsHierarchy.Editor.Core;
+using SaintsHierarchy.Editor.Core.Utils;
+using SaintsHierarchy.Editor.Legacy.Utils;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -10,7 +12,7 @@ using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 using Scene = UnityEngine.SceneManagement.Scene;
 
-namespace SaintsHierarchy.Editor
+namespace SaintsHierarchy.Editor.Legacy
 {
     public class SaintsHierarchyWindow
     {

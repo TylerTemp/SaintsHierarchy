@@ -3,11 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using SaintsHierarchy.Editor.Utils;
+using SaintsHierarchy.Editor.Core.Draw;
+using SaintsHierarchy.Editor.Core.Utils;
 using UnityEditor;
 using UnityEngine;
 
-namespace SaintsHierarchy.Editor.Draw
+namespace SaintsHierarchy.Editor.Legacy.Draw
 {
     public static class HierarchyButtonDrawer
     {

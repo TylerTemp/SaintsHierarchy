@@ -7,18 +7,21 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using SaintsHierarchy.Editor.Draw;
-using SceneSelector = SaintsHierarchy.Editor.Core.Utils.SceneSelector;
-using SaintsHierarchy.Editor.Utils;
+using SaintsHierarchy.Editor.Core;
+using SaintsHierarchy.Editor.Core.Draw;
+using SaintsHierarchy.Editor.Core.Utils;
+using SaintsHierarchy.Editor.Legacy.Draw;
+using SaintsHierarchy.Editor.Legacy.Utils;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using SceneSelector = SaintsHierarchy.Editor.Core.Utils.SceneSelector;
 using Object = UnityEngine.Object;
 
-namespace SaintsHierarchy.Editor
+namespace SaintsHierarchy.Editor.Legacy
 {
     public static class SaintsHierarchyEntrance
     {
