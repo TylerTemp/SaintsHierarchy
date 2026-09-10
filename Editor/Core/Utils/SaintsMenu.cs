@@ -1,22 +1,30 @@
+#if (!UNITY_6000_6_OR_NEWER || SAINTSHIERARCHY_LEGACY) && !SAINTSHIERARCHY_NEW
+#define SAINTSHIERARCHY_USE_LEGACY
+#endif
+
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+#if UNITY_2023_1_OR_NEWER
+using UnityEditor.Build;
+#endif
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace SaintsHierarchy.Editor.Core.Utils
 {
     public static class SaintsMenu
     {
         private const string MenuRoot =
-#if SAINTSHIERARCHY_DEBUG
-                "Saints Hierarchy/"
-#else
-                "Tools/Saints Hierarchy/"
+#if !SAINTSHIERARCHY_DEBUG
+            "Tools/" +
 #endif
-            ;
+            "Saints Hierarchy/";
 
         private const string DisablePath = MenuRoot + "Disable Saints Hierarchy";
 
-        [MenuItem(DisablePath, priority=-101)]
+        [MenuItem(DisablePath, priority=-102)]
         public static void DisableSaintsHierarchy()
         {
             bool personalEnabled = PersonalHierarchyConfig.instance.personalEnabled;
@@ -36,7 +44,42 @@ namespace SaintsHierarchy.Editor.Core.Utils
             Refresh();
         }
 
+#if SAINTSHIERARCHY_USE_LEGACY
+        [MenuItem(MenuRoot + "Force Use New Hierarchy", priority=-101)]
+#else
+        [MenuItem(MenuRoot + "Force Use Legacy Hierarchy", priority=-101)]
+#endif
+        public static void ForceUseHierarchy()
+        {
+            const string newApi = "SAINTSHIERARCHY_NEW";
+            const string oldApi = "SAINTSHIERARCHY_LEGACY";
+
+            // ReSharper disable InlineTemporaryVariable
+#if SAINTSHIERARCHY_USE_LEGACY
+            const string defineToAdd = newApi;
+            const string defineToRemove = oldApi;
+#else
+            const string defineToAdd = oldApi;
+            const string defineToRemove = newApi;
+#endif
+            // ReSharper restore InlineTemporaryVariable
+
+            RemoveCompileDefine(defineToRemove);
+            AddCompileDefine(defineToAdd);
+        }
+
         private const string PersonalEnabledPath = MenuRoot + "Enable Personal Config";
+        private const string IndentGuidesPath = MenuRoot + "Indent Guides";
+
+        [MenuItem(IndentGuidesPath, priority = 0)]
+        public static void IndentGuides()
+        {
+            IConfig config = Util.GetUsingConfig();
+            EditorUtility.SetDirty((Object)config);
+            config.indentGuides = !config.indentGuides;
+            config.SaveToDisk();
+            Refresh();
+        }
 
         [MenuItem(PersonalEnabledPath, priority=-100)]
         public static void PersonalEnabled()
@@ -49,6 +92,7 @@ namespace SaintsHierarchy.Editor.Core.Utils
                     EditorUtility.SetDirty(PersonalHierarchyConfig.instance);
                     PersonalHierarchyConfig.instance.disabled = SaintsHierarchyConfig.instance.disabled;
                     PersonalHierarchyConfig.instance.backgroundStrip = SaintsHierarchyConfig.instance.backgroundStrip;
+                    PersonalHierarchyConfig.instance.indentGuides = SaintsHierarchyConfig.instance.indentGuides;
                     PersonalHierarchyConfig.instance.componentIcons = SaintsHierarchyConfig.instance.componentIcons;
                     PersonalHierarchyConfig.instance.componentIconsForGeneralScripts = SaintsHierarchyConfig.instance.componentIconsForGeneralScripts;
                     PersonalHierarchyConfig.instance.componentIconsForTransform = SaintsHierarchyConfig.instance.componentIconsForTransform;
@@ -68,6 +112,7 @@ namespace SaintsHierarchy.Editor.Core.Utils
             Refresh();
         }
 
+#if SAINTSHIERARCHY_USE_LEGACY
         private const string BackgroundStripPath = MenuRoot + "Background Strip";
         [MenuItem(BackgroundStripPath, priority = 0)]
         public static void BackgroundStrip()
@@ -110,6 +155,8 @@ namespace SaintsHierarchy.Editor.Core.Utils
             Refresh();
         }
 
+#endif
+
         private const string ComponentIconsForGeneralScriptsPath = MenuRoot + "Component Icons For General Scripts";
         [MenuItem(ComponentIconsForGeneralScriptsPath, priority=2)]
         public static void ComponentIconsForGeneralScripts()
@@ -131,6 +178,7 @@ namespace SaintsHierarchy.Editor.Core.Utils
             Refresh();
         }
 
+#if SAINTSHIERARCHY_USE_LEGACY
         [MenuItem(ComponentIconsForGeneralScriptsPath, true)]
         private static bool ValidateComponentIconsForGeneralScripts()
         {
@@ -139,6 +187,8 @@ namespace SaintsHierarchy.Editor.Core.Utils
                 ? PersonalHierarchyConfig.instance.componentIcons
                 : SaintsHierarchyConfig.instance.componentIcons;
         }
+
+#endif
 
         private const string ComponentIconsForTransformPath = MenuRoot + "Component Icons For Transform";
         [MenuItem(ComponentIconsForTransformPath, priority=3)]
@@ -161,6 +211,7 @@ namespace SaintsHierarchy.Editor.Core.Utils
             Refresh();
         }
 
+#if SAINTSHIERARCHY_USE_LEGACY
         [MenuItem(ComponentIconsForTransformPath, true)]
         private static bool ValidateComponentIconsForTransform()
         {
@@ -222,6 +273,7 @@ namespace SaintsHierarchy.Editor.Core.Utils
                 : SaintsHierarchyConfig.instance.gameObjectEnabledChecker;
         }
         #endregion
+#endif
 
         #region Default Icon
         private const string NoDefaultIconPath = MenuRoot + "No Default Icon";
@@ -348,7 +400,7 @@ namespace SaintsHierarchy.Editor.Core.Utils
 
         #region Scene Selector
 
-            private const string DisableSceneSelectorPath = MenuRoot + "Disable Scene Selector";
+        private const string DisableSceneSelectorPath = MenuRoot + "Disable Scene Selector";
 
         [MenuItem(DisableSceneSelectorPath, priority = 11)]
         public static void DisableSceneSelector()
@@ -373,6 +425,7 @@ namespace SaintsHierarchy.Editor.Core.Utils
 
         private static void Refresh()
         {
+            HierarchyEditorEvents.RequestInitialize();
             EditorApplication.RepaintHierarchyWindow();
             Checkmark();
         }
@@ -390,7 +443,9 @@ namespace SaintsHierarchy.Editor.Core.Utils
 
             bool disabled = personalEnabled? PersonalHierarchyConfig.instance.disabled : SaintsHierarchyConfig.instance.disabled;
             Menu.SetChecked(DisablePath, disabled);
+            Menu.SetChecked(IndentGuidesPath, Util.GetUsingConfig().indentGuides);
 
+#if SAINTSHIERARCHY_USE_LEGACY
             bool backgroundStrip = personalEnabled?  PersonalHierarchyConfig.instance.backgroundStrip : SaintsHierarchyConfig.instance.backgroundStrip;
             Menu.SetChecked(BackgroundStripPath, backgroundStrip);
 
@@ -402,15 +457,20 @@ namespace SaintsHierarchy.Editor.Core.Utils
 
             bool componentIcons = personalEnabled? PersonalHierarchyConfig.instance.componentIcons : SaintsHierarchyConfig.instance.componentIcons;
             Menu.SetChecked(ComponentIconsPath, componentIcons);
+#else
+            const bool componentIcons = true;
+#endif
 
             bool componentIconsForGeneralScripts = personalEnabled
                 ? PersonalHierarchyConfig.instance.componentIconsForGeneralScripts
                 : SaintsHierarchyConfig.instance.componentIconsForGeneralScripts;
+            // ReSharper disable once RedundantLogicalConditionalExpressionOperand
             Menu.SetChecked(ComponentIconsForGeneralScriptsPath, componentIcons && componentIconsForGeneralScripts);
 
             bool componentIconsForTransform = personalEnabled
                 ? PersonalHierarchyConfig.instance.componentIconsForTransform
                 : SaintsHierarchyConfig.instance.componentIconsForTransform;
+            // ReSharper disable once RedundantLogicalConditionalExpressionOperand
             Menu.SetChecked(ComponentIconsForTransformPath, componentIcons && componentIconsForTransform);
 
             bool noDefaultIcon = personalEnabled? PersonalHierarchyConfig.instance.noDefaultIcon : SaintsHierarchyConfig.instance.noDefaultIcon;
@@ -430,6 +490,91 @@ namespace SaintsHierarchy.Editor.Core.Utils
 
             bool disableSceneSelector = Util.GetUsingConfig().disableSceneSelector;
             Menu.SetChecked(DisableSceneSelectorPath, disableSceneSelector);
+        }
+
+        // ReSharper disable once UnusedMember.Local
+        private static void AddCompileDefine(string newDefineCompileConstant, IEnumerable<BuildTargetGroup> targetGroups = null)
+        {
+            IEnumerable<BuildTargetGroup> targets = targetGroups ?? Enum.GetValues(typeof(BuildTargetGroup)).Cast<BuildTargetGroup>();
+
+            foreach (BuildTargetGroup grp in targets.Where(each => each != BuildTargetGroup.Unknown))
+            {
+                string defines;
+                try
+                {
+#if UNITY_2023_1_OR_NEWER
+                    defines = PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.FromBuildTargetGroup(grp));
+#else
+                    defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(grp);
+#endif
+                }
+                catch (ArgumentException)
+                {
+                    continue;
+                }
+                if (!defines.Contains(newDefineCompileConstant))
+                {
+                    if (defines.Length > 0)
+                        defines += ";";
+
+                    defines += newDefineCompileConstant;
+                    try
+                    {
+#if UNITY_2023_1_OR_NEWER
+                        PlayerSettings.SetScriptingDefineSymbols(NamedBuildTarget.FromBuildTargetGroup(grp), defines);
+#else
+                        PlayerSettings.SetScriptingDefineSymbolsForGroup(grp, defines);
+#endif
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogException(e);
+                    }
+                }
+            }
+        }
+
+        // ReSharper disable once UnusedMember.Local
+        private static void RemoveCompileDefine(string defineCompileConstant, IEnumerable<BuildTargetGroup> targetGroups = null)
+        {
+            IEnumerable<BuildTargetGroup> targets = targetGroups ?? Enum.GetValues(typeof(BuildTargetGroup)).Cast<BuildTargetGroup>();
+
+            foreach (BuildTargetGroup grp in targets.Where(each => each != BuildTargetGroup.Unknown))
+            {
+                string defines;
+                try
+                {
+#if UNITY_2023_1_OR_NEWER
+                    defines = PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.FromBuildTargetGroup(grp));
+#else
+                    defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(grp);
+#endif
+                }
+                catch (ArgumentException)
+                {
+                    continue;
+                }
+
+                string result = string.Join(";", defines
+                    .Split(';')
+                    .Select(each => each.Trim())
+                    .Where(each => each != defineCompileConstant));
+
+                // Debug.Log(result);
+
+                try
+                {
+#if UNITY_2023_1_OR_NEWER
+                    PlayerSettings.SetScriptingDefineSymbols(NamedBuildTarget.FromBuildTargetGroup(grp), result);
+#else
+                    PlayerSettings.SetScriptingDefineSymbolsForGroup(grp, result);
+#endif
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
+            }
         }
     }
 }

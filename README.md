@@ -61,7 +61,15 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ## Change Log ##
 
-Fix: Favorite GameObject gave error if the scene has not finished loading in play mode
+1.  Add(New): Support new Hierarchy API from Unity 6k.3 (Unity default using the new Hierarchy in 6k.6)
+2.  Add(New): Drag/Reorder your favorite gameObjects now has animation
+3.  Add(New): `ComponentIcons` now a standalone column in new Hierarchy
+4.  Add: You can force to switch mode using "Tools" - "Saints Hierarchy" - "Force Use New/Legacy Hierarchy" to switch mode (Note: ensure your Unity Editor is at the coresponding mode before changing)
+5.  Add(New): `HierarchyDraw`/`HierarchyLeftDraw` now returns visual element in the new hierarchy system
+6.  Add(New): Unity no longer display a warning icon if the prefab is missing in new Hierarchy. This behavior is now restored by Saints Hierarchy.
+7.  Fix: Runtime mode no longer list scenes that is not in build list/addressable in scene selector (because the selection will fail)
+
+The new Hierarchy API might not be stable. If you face any issues, please report.
 
 See [the full change log](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
 
@@ -101,7 +109,15 @@ Clicking on a scene's name to quickly switch to another scene in this project. I
 
 [![video](https://github.com/user-attachments/assets/c0fad660-0b57-4ce1-8997-0e956446573e)](https://github.com/user-attachments/assets/be2d2704-fe91-4322-8dfb-c16688f9184d)
 
-### Background Strip ###
+### Indent Guides ###
+
+`Tools` - `Saints Hierarchy` - `Indent Guides` toggles tree connector lines in both the new and legacy Hierarchy. Enabled by default and saved in the active project or personal config.
+
+Lines use the corresponding parent's configured color. The new Hierarchy hides guides while filtering search results.
+
+### Background Strip (Legacy) ###
+
+This is legacy only. new Hierarchy by default uses background strip which is controlled by Unity.
 
 `Tools` - `Saints Hierarchy` - `Background Strip`
 
@@ -109,7 +125,11 @@ Clicking on a scene's name to quickly switch to another scene in this project. I
 
 ### Component Icons ###
 
-`Tools` - `Saints Hierarchy` - `Component Icons`
+New: Hierarchy Menu (3-dots) - `Components(SH)`
+
+![](https://github.com/user-attachments/assets/80cb50d8-ad09-4b4c-bc08-18e5c50ecd6a)
+
+Legacy: `Tools` - `Saints Hierarchy` - `Component Icons`
 
 You can set the script icon and show the icons at the end of row
 
@@ -131,7 +151,9 @@ Alt-Click popup inspector:
 
 ![](https://github.com/user-attachments/assets/c6306227-d687-4dcb-bfcc-d6671b3a8e37)
 
-### GameObject Enabled Checker ###
+### GameObject Enabled Checker (Legacy) ###
+
+New: Unity already has this feature.
 
 `Tools` - `Saints Hierarchy` - `GameObject Enabled Checker`
 
@@ -247,21 +269,86 @@ private void LeftClick()
 
 ### `HierarchyDraw`/`HierarchyLeftDraw` ###
 
-Manually draw content
+Manually draw content using UI Toolkit in the new Hierarchy or IMGUI in the legacy Hierarchy.
+
+#### New (UI Toolkit) ####
 
 Parameters:
 
-*   `string groupBy = null`: group the items virtically by this name. If `null`, it will not share space with anyone.
+*   `string groupBy = null`: stack consecutive items with the same group name vertically on their chosen side. If `null`, each item uses its own space.
+
+Use a method returning a `VisualElement` or `HierarchyArea`:
+
+```csharp
+VisualElement FuncName()
+HierarchyArea FuncName()
+```
+
+`HierarchyArea` has the following fields for the new Hierarchy:
+
+```csharp
+// The UI Toolkit element to display.
+public readonly VisualElement Element;
+// true to display in the left custom container; false for the right.
+public readonly bool IsLeft;
+```
+
+Return `new HierarchyArea(element)` or a `VisualElement` directly to display on the right
+
+Return `new HierarchyArea(true, element)` to display on the left
+
+Return `null` for a `VisualElement`, or `default` for a `HierarchyArea`, to display nothing
+
+```csharp
+using SaintsHierarchy;
+using UnityEngine;
+#if UNITY_EDITOR
+using UnityEngine.UIElements;
+#endif
+
+public class CustomHierarchyExample : MonoBehaviour
+{
+    [Range(0f, 1f)] public float progress;
+
+#if UNITY_EDITOR
+    [HierarchyDraw]
+    private VisualElement DrawProgress()
+    {
+        var bar = new ProgressBar
+        {
+            lowValue = 0,
+            highValue = 1,
+            value = progress,
+            style = { width = 80, height = 16, flexShrink = 0 },
+        };
+        bar.schedule.Execute(() => bar.value = progress).Every(100);
+        return bar;
+    }
+
+    [HierarchyLeftDraw]
+    private HierarchyArea DrawLeft()
+    {
+        return new HierarchyArea(true, new Label("Left"));
+    }
+#endif
+}
+```
+
+#### Legacy (IMGUI) ####
+
+Parameters:
+
+*   `string groupBy = null`: group the items vertically by this name. If `null`, it will not share space with anyone.
 
 Signature:
 
-The method must have this signaure:
+The method must have this signature:
 
 ```csharp
 HierarchyUsed FuncName(HierarchyArea hierarchyArea)
 ```
 
-`HierarchyArea` has the following fields:
+`HierarchyArea` has the following fields and helpers for the legacy Hierarchy:
 
 ```csharp
 /// <summary>

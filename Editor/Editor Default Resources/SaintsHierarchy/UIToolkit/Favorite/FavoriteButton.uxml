@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
+    <Style src="FavoriteButtonStyle.uss" />
+    <ui:Image name="favorite-icon" picking-mode="Ignore" class="favorite-button-icon" />
+    <ui:Label name="favorite-label" picking-mode="Ignore" />
+</ui:UXML>

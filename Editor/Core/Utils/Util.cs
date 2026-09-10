@@ -1144,6 +1144,8 @@ namespace SaintsHierarchy.Editor.Core.Utils
             return NameToTexture2DCache[name] = LoadResource<Texture2D>(name);
         }
 
+        public static Texture2D LoadAndCache(string resourcePath) => GetCachedIcon(resourcePath);
+
         public static (bool hasUnderline, Color underlineColor) GetUnderline(string iconName)
         {
             return iconName switch

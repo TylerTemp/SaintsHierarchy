@@ -1,3 +1,15 @@
+## 1.5.0 ##
+
+1.  Add(New): Support new Hierarchy API from Unity 6k.3 (Unity default using the new Hierarchy in 6k.6)
+2.  Add(New): Drag/Reorder your favorite gameObjects now has animation
+3.  Add(New): `ComponentIcons` now a standalone column in new Hierarchy
+4.  Add: You can force to switch mode using "Tools" - "Saints Hierarchy" - "Force Use New/Legacy Hierarchy" to switch mode (Note: ensure your Unity Editor is at the coresponding mode before changing)
+5.  Add(New): `HierarchyDraw`/`HierarchyLeftDraw` now returns visual element in the new hierarchy system
+6.  Add(New): Unity no longer display a warning icon if the prefab is missing in new Hierarchy. This behavior is now restored by Saints Hierarchy.
+7.  Fix: Runtime mode no longer list scenes that is not in build list/addressable in scene selector (because the selection will fail) 
+
+The new Hierarchy API might not be stable. If you face any issues, please report.
+ 
 ## 1.4.12 ##
 
 Fix: Favorite GameObject gave error if the scene has not finished loading in play mode

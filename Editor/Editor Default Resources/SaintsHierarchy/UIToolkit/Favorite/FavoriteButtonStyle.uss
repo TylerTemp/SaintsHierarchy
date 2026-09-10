@@ -1,0 +1,19 @@
+:root {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    height: 18px;
+    margin: 0;
+    padding: 0 3px;
+}
+
+.favorite-button-icon {
+    width: 14px;
+    height: 14px;
+    margin-right: 2px;
+}
+
+.favorite-ghost {
+    opacity: 0.45;
+    border-color: rgb(70, 160, 230);
+}

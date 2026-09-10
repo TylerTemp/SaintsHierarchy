@@ -19,6 +19,7 @@ namespace SaintsHierarchy.Editor.Core
         }
 
         // ReSharper disable InconsistentNaming
+        [field: SerializeField] public bool indentGuides { get; set; } = true;
         [field: SerializeField, FormerlySerializedAs("disabled")] public bool disabled { get; set; }
         [field: SerializeField, FormerlySerializedAs("backgroundStrip")] public bool backgroundStrip { get; set; }
         [field: SerializeField, FormerlySerializedAs("gameObjectEnabledChecker")] public bool gameObjectEnabledChecker { get; set; }

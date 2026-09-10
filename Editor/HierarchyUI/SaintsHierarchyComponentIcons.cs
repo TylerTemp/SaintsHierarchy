@@ -42,10 +42,12 @@ namespace SaintsHierarchy.Editor.HierarchyUI
             cell.Clear();
             cell.IsDefaultValue = false;
             IConfig config = Util.GetUsingConfig();
-            if (config.disabled || !config.componentIcons)
-            {
-                return;
-            }
+
+            // dont care. User can toggle it in Unity's menu
+            // if (config.disabled || !config.componentIcons)
+            // {
+            //     return;
+            // }
 
             GameObject go = EditorUtility.EntityIdToObject(
                 cell.View.Source.GetEntityIdFromNode(cell.Node)) as GameObject;

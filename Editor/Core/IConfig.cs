@@ -8,6 +8,7 @@ namespace SaintsHierarchy.Editor.Core
         public bool disabled { get; }
 
         public bool backgroundStrip { get; }
+        public bool indentGuides { get; set; }
         public bool gameObjectEnabledChecker { get; }
         public bool gameObjectEnabledCheckerEveryRow { get; }
         public bool componentIcons { get; }
