@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace SaintsHierarchy
+namespace SaintsHierarchy.Samples.Scripts
 {
     public class MyScriptWithIcon : MonoBehaviour
     {

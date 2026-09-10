@@ -1,0 +1,81 @@
+using System;
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
+
+namespace SaintsHierarchy.Editor.Core
+{
+    public class RuntimeCacheConfig: ScriptableSingleton<RuntimeCacheConfig>
+    {
+        [Serializable]
+        public struct RuntimeConfig
+        {
+            public
+#if UNITY_6000_4_OR_NEWER
+                EntityId
+#else
+                int
+#endif
+                instanceId;
+            public GameObjectConfig config;
+        }
+
+        public List<RuntimeConfig> configs = new List<RuntimeConfig>();
+
+        public void Upsert(
+#if UNITY_6000_4_OR_NEWER
+            EntityId
+#else
+            int
+#endif
+
+            instanceId, GameObjectConfig config)
+        {
+            int index = -1;
+            for (int searchIndex = 0; searchIndex < configs.Count; searchIndex++)
+            {
+                // ReSharper disable once InvertIf
+                if (instanceId == configs[searchIndex].instanceId)
+                {
+                    index = searchIndex;
+                    break;
+                }
+            }
+
+            RuntimeConfig newConfig = new RuntimeConfig
+            {
+                instanceId = instanceId,
+                config = config,
+            };
+
+            if (index == -1)
+            {
+                configs.Add(newConfig);
+            }
+            else
+            {
+                configs[index] = newConfig;
+            }
+        }
+
+        public (bool found, GameObjectConfig config) Search(
+#if UNITY_6000_4_OR_NEWER
+            EntityId
+#else
+            int
+#endif
+            instanceId)
+        {
+            // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+            foreach (RuntimeConfig runtimeConfig in configs)
+            {
+                if (runtimeConfig.instanceId == instanceId)
+                {
+                    return (true, runtimeConfig.config);
+                }
+            }
+
+            return (false, default);
+        }
+    }
+}

@@ -1,0 +1,56 @@
+using System;
+using UnityEditor;
+using UnityEngine;
+
+namespace SaintsHierarchy.Editor.Core
+{
+    [Serializable]
+    public struct GameObjectFavorite: IEquatable<GameObjectFavorite>
+    {
+        public string globalObjectIdString;
+        public string sceneGuid;
+        public string alias;
+        public GameObjectFavoriteIconType iconType;
+        public string icon;
+        public GameObjectFavoriteColorType colorType;
+        public Color color;
+
+        public bool Equals(GameObjectFavorite other)
+        {
+            return globalObjectIdString == other.globalObjectIdString;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is null)
+            {
+                return false;
+            }
+            // ReSharper disable once ConvertIfStatementToReturnStatement
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((GameObjectFavorite)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            // ReSharper disable once NonReadonlyMemberInGetHashCode
+            return globalObjectIdString != null
+                // ReSharper disable once NonReadonlyMemberInGetHashCode
+                ? globalObjectIdString.GetHashCode()
+                : 0;
+        }
+
+        public UnityEngine.Object DebugGetObject()
+        {
+            if (GlobalObjectId.TryParse(globalObjectIdString, out GlobalObjectId id))
+            {
+                return GlobalObjectId.GlobalObjectIdentifierToObjectSlow(id) as UnityEngine.Object;
+            }
+            return null;
+        }
+    }
+}

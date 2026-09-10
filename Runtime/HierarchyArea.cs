@@ -1,10 +1,29 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace SaintsHierarchy
 {
     public readonly struct HierarchyArea
     {
+        /// <summary>For the new UI Toolkit hierarchy: the decoration to display.</summary>
+        public readonly VisualElement Element;
+
+        /// <summary>For the new UI Toolkit hierarchy: use the left custom container instead of the right.</summary>
+        public readonly bool IsLeft;
+
+        /// <summary>For the new UI Toolkit hierarchy. Displays the element on the right.</summary>
+        public HierarchyArea(VisualElement element) : this(false, element)
+        {
+        }
+
+        /// <summary>For the new UI Toolkit hierarchy. Displays the element on the requested side.</summary>
+        public HierarchyArea(bool left, VisualElement element) : this()
+        {
+            IsLeft = left;
+            Element = element;
+        }
+
         /// <summary>
         /// Rect.y for drawing
         /// </summary>
@@ -59,7 +78,7 @@ namespace SaintsHierarchy
             return new Rect(x + width, Y, -width, Height);
         }
 
-        public HierarchyArea(float y, float height, float titleStartX, float titleEndX, float spaceStartX, float spaceEndX, float groupStartX, IReadOnlyList<Rect> groupUsedRect)
+        public HierarchyArea(float y, float height, float titleStartX, float titleEndX, float spaceStartX, float spaceEndX, float groupStartX, IReadOnlyList<Rect> groupUsedRect) : this()
         {
             Y = y;
             Height = height;

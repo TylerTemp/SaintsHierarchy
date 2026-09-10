@@ -1,0 +1,50 @@
+{
+  "name": "SaintsHierarchy.Editor.Legacy",
+  "rootNamespace": "SaintsHierarchy",
+  "references": [
+    "Unity.RenderPipelines.Core.Runtime",
+    "AK.Wwise.Unity.MonoBehaviour",
+    "SaintsHierarchy",
+    "SaintsField.Runtime",
+    "SaintsField.Editor",
+    "Unity.Addressables",
+    "Unity.Addressables.Editor",
+    "spine-csharp",
+    "spine-unity",
+    "SaintsHierarchy.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [
+    "!UNITY_6000_6_OR_NEWER || SAINTSHIERARCHY_LEGACY"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.render-pipelines.core",
+      "expression": "",
+      "define": "SAINTSHIERARCHY_UNITY_RENDER_PIPELINES_CORE"
+    },
+    {
+      "name": "today.comes.saintsfield",
+      "expression": "",
+      "define": "SAINTSHIERARCHY_SAINTSFIELD"
+    },
+    {
+      "name": "com.unity.addressables",
+      "expression": "",
+      "define": "SAINTSHIERARCHY_ADDRESSABLE"
+    },
+    {
+      "name": "com.esotericsoftware.spine.spine-unity",
+      "expression": "",
+      "define": "SAINTSHIERARCHY_SPINE_UNITY"
+    }
+  ],
+  "noEngineReferences": false
+}

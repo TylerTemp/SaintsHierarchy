@@ -1,0 +1,13 @@
+:root {
+    flex-direction: column;
+    min-height: 16px;
+    flex-shrink: 0;
+}
+
+.favIcon {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 0;
+    right: 0;
+}

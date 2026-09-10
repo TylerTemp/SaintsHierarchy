@@ -1,0 +1,4 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Packages/today.comes.saintshierarchy/Editor/Editor%20Default%20Resources/SaintsHierarchy/UIToolkit/Favorite/FavoritePanelStyle.uss?fileID=7433441132597879392&amp;guid=78b17b68115d5a0418e5ec68dd97ca46&amp;type=3#FavoritePanelStyle"/>
+    <ui:Image source="project://database/Packages/today.comes.saintshierarchy/Editor/Editor%20Default%20Resources/SaintsHierarchy/fav.png?fileID=2800000&amp;guid=2578f7e5d16f2b042b3c024dec84ac47&amp;type=3#fav" name="favIcon" picking-mode="Ignore" class="favIcon"/>
+</ui:UXML>

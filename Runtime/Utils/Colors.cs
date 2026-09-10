@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace SaintsHierarchy.Editor.Utils
+namespace SaintsHierarchy.Utils
 {
     public static class Colors
     {
