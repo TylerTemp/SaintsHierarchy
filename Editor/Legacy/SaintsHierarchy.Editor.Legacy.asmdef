@@ -22,7 +22,8 @@
   "precompiledReferences": [],
   "autoReferenced": true,
   "defineConstraints": [
-    "!UNITY_6000_6_OR_NEWER || SAINTSHIERARCHY_LEGACY"
+    "!UNITY_6000_6_OR_NEWER || SAINTSHIERARCHY_LEGACY",
+    "!SAINTSHIERARCHY_NEW"
   ],
   "versionDefines": [
     {
