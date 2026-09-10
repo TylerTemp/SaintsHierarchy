@@ -1,6 +1,7 @@
 ## 1.5.1 ##
 
-Fix: Legacy code incorrect namespace
+1.  Fix: Legacy code incorrect namespace
+2.  Fix: Incorrect resource path for some icons
 
 ## 1.5.0 ##
 

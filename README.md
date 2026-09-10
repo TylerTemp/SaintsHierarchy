@@ -69,6 +69,7 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 6.  Add(New): Unity no longer display a warning icon if the prefab is missing in new Hierarchy. This behavior is now restored by Saints Hierarchy.
 7.  Fix: Runtime mode no longer list scenes that is not in build list/addressable in scene selector (because the selection will fail)
 8.  Fix: Legacy code incorrect namespace
+9.  Fix: Incorrect resource path for some icons
 
 The new Hierarchy API might not be stable. If you face any issues, please report.
 
