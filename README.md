@@ -68,6 +68,7 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 5.  Add(New): `HierarchyDraw`/`HierarchyLeftDraw` now returns visual element in the new hierarchy system
 6.  Add(New): Unity no longer display a warning icon if the prefab is missing in new Hierarchy. This behavior is now restored by Saints Hierarchy.
 7.  Fix: Runtime mode no longer list scenes that is not in build list/addressable in scene selector (because the selection will fail)
+8.  Fix: Legacy code incorrect namespace
 
 The new Hierarchy API might not be stable. If you face any issues, please report.
 
@@ -93,7 +94,7 @@ You can disable this feature in `Tools` - `Saints Hierarchy` - `Disable Favorite
 
 By default, clicking the favorite gameObject will only expand and highlight you to the target. If you want to inspect it when clicking, use `Tools` - `Saints Hierarchy` - `Favorite Click To Inspect`
 
-It by default save favorite configs to personal config. If you're a one-person-army, you can use `Tools` - `Saints Hierarchy` - `Save Favorites To Project Config` so this config can be tracked by your version control like git. 
+It by default save favorite configs to personal config. If you're a one-person-army, you can use `Tools` - `Saints Hierarchy` - `Save Favorites To Project Config` so this config can be tracked by your version control like git.
 
 [![video](https://github.com/user-attachments/assets/06fa2daf-1ad4-4ad3-a61c-5bef0d30ebdf)](https://github.com/user-attachments/assets/6176d57b-4b84-46a4-8384-f231b339ebca)
 

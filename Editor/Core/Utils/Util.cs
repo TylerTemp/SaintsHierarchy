@@ -1107,7 +1107,7 @@ namespace SaintsHierarchy.Editor.Core.Utils
                         return (Texture2D)EditorGUIUtility.IconContent("d_DirectionalLight Icon").image;
                     case Canvas:
                         return (Texture2D)EditorGUIUtility.IconContent("d_Canvas Icon").image;
-                    case EventSystem:
+                    case UnityEngine.EventSystems.EventSystem:
                         return (Texture2D)EditorGUIUtility.IconContent("d_EventSystem Icon").image;
 
 #if SAINTSHIERARCHY_UNITY_RENDER_PIPELINES_CORE

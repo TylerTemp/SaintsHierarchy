@@ -1,3 +1,7 @@
+## 1.5.1 ##
+
+Fix: Legacy code incorrect namespace
+
 ## 1.5.0 ##
 
 1.  Add(New): Support new Hierarchy API from Unity 6k.3 (Unity default using the new Hierarchy in 6k.6)
@@ -6,10 +10,10 @@
 4.  Add: You can force to switch mode using "Tools" - "Saints Hierarchy" - "Force Use New/Legacy Hierarchy" to switch mode (Note: ensure your Unity Editor is at the coresponding mode before changing)
 5.  Add(New): `HierarchyDraw`/`HierarchyLeftDraw` now returns visual element in the new hierarchy system
 6.  Add(New): Unity no longer display a warning icon if the prefab is missing in new Hierarchy. This behavior is now restored by Saints Hierarchy.
-7.  Fix: Runtime mode no longer list scenes that is not in build list/addressable in scene selector (because the selection will fail) 
+7.  Fix: Runtime mode no longer list scenes that is not in build list/addressable in scene selector (because the selection will fail)
 
 The new Hierarchy API might not be stable. If you face any issues, please report.
- 
+
 ## 1.4.12 ##
 
 Fix: Favorite GameObject gave error if the scene has not finished loading in play mode
@@ -74,7 +78,7 @@ Fix: Search input for icon will close the popup
 ## 1.3.1 ##
 
 1.  Fix: Scene selector was very slow if you use addressable
-2.  Fix: Accidently drag the scene if you try drag the mouse while scene selector is already open   
+2.  Fix: Accidently drag the scene if you try drag the mouse while scene selector is already open
 
 ## 1.3.0 ##
 
@@ -82,7 +86,7 @@ Add: Now you can click the scene name to switch scene in your project
 
 ## 1.2.3 ##
 
-1.  Add: Favorite GameObjects can now read hierarchy config and async the appearance (icon, color) 
+1.  Add: Favorite GameObjects can now read hierarchy config and async the appearance (icon, color)
 2.  Add: You can now override icon and color for Favorite GameObjects
 3.  Add: Favorite GameObjects now can read the default icon config and hide the icon
 
@@ -95,7 +99,7 @@ Add: Now you can click the scene name to switch scene in your project
 
 Add: You can now drag & drop GameObjects to Favorite area at the top of the hierarchy.
 
-Note: 
+Note:
 1.  ATM the config is saved under personal config (so won't be saved by git), and can not be saved to team-shared config
 2.  ATM it can not show custom icons etc
 
