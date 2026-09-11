@@ -4,7 +4,7 @@
     <ui:VisualElement name="saintsfield-tree-row" focusable="true" class="saintsfield-tree-row-active">
         <ui:VisualElement name="saintsfield-tree-row-indent" focusable="false" picking-mode="Ignore" class="saintsfield-tree-row-button saints-right-foldout-rotate" style="white-space: nowrap; flex-direction: row; width: auto; height: 100%;"/>
         <ui:VisualElement name="saintsfield-tree-row-foldout" focusable="true" class="saintsfield-tree-row-button saints-right-foldout-rotate" style="background-image: url(&quot;project://database/Packages/today.comes.saintshierarchy/Editor/Editor%20Default%20Resources/SaintsHierarchy/classic-dropdown-right.png?fileID=2800000&amp;guid=f907d01be0864ec4877f257b3f4f973d&amp;type=3#classic-dropdown-right&quot;);"/>
-        <ui:VisualElement name="saintsfield-tree-row-toggle" focusable="true" class="saintsfield-tree-row-button" style="background-image: url(&quot;project://database/Packages/today.comes.saintshierarchy/Editor/Editor%20Default%20Resources/SaintsHierarchy/checkbox-outline-blank.png?fileID=2800000&amp;guid=6e902a189a704c24b786f087b01d3c03&amp;type=3#checkbox-outline-blank&quot;);"/>
+        <ui:VisualElement name="saintsfield-tree-row-selection" focusable="false" picking-mode="Ignore" class="saintsfield-tree-row-button"/>
         <ui:Label name="saintsfield-tree-row-label" picking-mode="Ignore"/>
     </ui:VisualElement>
     <ui:VisualElement name="saintsfield-tree-row-content" style="flex-grow: 1;"/>

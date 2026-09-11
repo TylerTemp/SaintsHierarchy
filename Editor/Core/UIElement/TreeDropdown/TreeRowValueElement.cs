@@ -13,35 +13,28 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
     // ReSharper disable once ClassNeverInstantiated.Global
     public partial class TreeRowValueElement: TreeRowAbsElement
     {
-        // new status on or off; is row click or not (row click need to close the dropdown)
-        public readonly UnityEvent<bool, bool> OnClickedEvent = new UnityEvent<bool, bool>();
+        public readonly UnityEvent OnClickedEvent = new UnityEvent();
 
         public bool IsOn { get; private set; }
         private static VisualTreeAsset _treeRowTemplate;
         // private static VisualTreeAsset _treeRowIndentIconTemplate;
 
         // public VisualElement MainButton;
-        private readonly VisualElement _toggleButton;
+        private readonly VisualElement _selectionIcon;
 
         // private readonly string _labelLow;
         private readonly HashSet<string> _searches = new HashSet<string>();
-        private readonly bool _isToggle;
-        public readonly object Value;
 
         // ReSharper disable once MemberCanBePrivate.Global
-        public TreeRowValueElement(): this(null, null, 0, false)
+        public TreeRowValueElement(): this(null, 0)
         {
         }
 
-        private bool _innerButton;
         private static Texture2D _checkedIcon;
-        private static Texture2D _boxCheckedIcon;
-        private static Texture2D _boxUncheckedIcon;
 
 
-        public TreeRowValueElement(object value, string label, int indent, bool toggle)
+        public TreeRowValueElement(string label, int indent)
         {
-            Value = value;
             _treeRowTemplate ??= Util.LoadResource<VisualTreeAsset>("UIToolkit/TreeDropdown/TreeRow.uxml");
             VisualElement treeRow = _treeRowTemplate.CloneTree();
 
@@ -49,40 +42,14 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
 
             VisualElement mainButton = treeRow.Q<VisualElement>("saintsfield-tree-row");
 
-            // MainButton.clicked += () =>
-            // {
-            //     SetValueOn(!_isOn);
-            //     OnClickedEvent.Invoke(_isOn, true);
-            // };
-            mainButton.AddManipulator(new Clickable(_ => {
-                SetValueOn(!IsOn);
-                OnClickedEvent.Invoke(IsOn, true);
-            }));
+            mainButton.AddManipulator(new Clickable(_ => OnClickedEvent.Invoke()));
 
-            VisualElement toggleButton = treeRow.Q<VisualElement>("saintsfield-tree-row-toggle");
-
+            _selectionIcon = treeRow.Q<VisualElement>("saintsfield-tree-row-selection");
             if (!_checkedIcon)
             {
                 _checkedIcon = Util.LoadResource<Texture2D>("check.png");
-                _boxUncheckedIcon = Util.LoadResource<Texture2D>("dot.png");
-                _boxCheckedIcon = Util.LoadResource<Texture2D>("check.png");
             }
-
-            _isToggle = toggle;
-            _toggleButton = toggleButton;
-
-            if (toggle)
-            {
-                toggleButton.AddManipulator(new Clickable(_ =>
-                {
-                    SetValueOn(!IsOn);
-                    OnClickedEvent.Invoke(IsOn, false);
-                }));
-            }
-            else
-            {
-                toggleButton.style.backgroundImage = _checkedIcon;
-            }
+            _selectionIcon.style.backgroundImage = _checkedIcon;
 
             // VisualElement root = treeRow.Q<VisualElement>("saintsfield-tree-row");
             if (indent > 0)
@@ -131,32 +98,7 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
 
         private void RefreshIcon()
         {
-            // if (_toggleButton is null)
-            // {
-            //     return;
-            // }
-
-            if(_isToggle)
-            {
-                Texture2D background = IsOn ? _boxCheckedIcon : _boxUncheckedIcon;
-                if (_toggleButton.style.backgroundImage != background)
-                {
-                    _toggleButton.style.backgroundImage = background;
-                }
-            }
-            else
-            {
-                // DisplayStyle display = IsOn ? DisplayStyle.Flex : DisplayStyle.None;
-                // if (_toggleButton.style.display != display)
-                // {
-                //     _toggleButton.style.display = display;
-                // }
-                Visibility display = IsOn ? Visibility.Visible : Visibility.Hidden;
-                if (_toggleButton.style.visibility != display)
-                {
-                    _toggleButton.style.visibility = display;
-                }
-            }
+            _selectionIcon.style.visibility = IsOn ? Visibility.Visible : Visibility.Hidden;
         }
 
         private bool _shown = true;

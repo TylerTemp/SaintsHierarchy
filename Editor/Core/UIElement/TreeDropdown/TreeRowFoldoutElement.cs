@@ -35,7 +35,7 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
             _treeRowTemplate ??= Util.LoadResource<VisualTreeAsset>("UIToolkit/TreeDropdown/TreeRow.uxml");
             VisualElement treeRow = _treeRowTemplate.CloneTree();
 
-            treeRow.Q<VisualElement>("saintsfield-tree-row-toggle").RemoveFromHierarchy();
+            treeRow.Q<VisualElement>("saintsfield-tree-row-selection").RemoveFromHierarchy();
 
             VisualElement root = treeRow.Q<VisualElement>("saintsfield-tree-row");
             // root.clicked += () => value = !_expand;

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,18 +8,16 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
     {
         private readonly float _width;
         private readonly AdvancedDropdownMetaInfo _metaInfo;
-        private readonly Func<object, bool, IReadOnlyList<object>> _setValue;
+        private readonly Action<object> _setValue;
 
         private readonly float _maxHeight;
-        private readonly bool _allowUnSelect;
 
-        public SaintsTreeDropdownUIToolkit(AdvancedDropdownMetaInfo metaInfo, float width, float maxHeight, bool allowUnSelect, Func<object, bool, IReadOnlyList<object>> setValue)
+        public SaintsTreeDropdownUIToolkit(AdvancedDropdownMetaInfo metaInfo, float width, float maxHeight, Action<object> setValue)
         {
             _width = width;
             _metaInfo = metaInfo;
             _setValue = setValue;
             _maxHeight = maxHeight;
-            _allowUnSelect = allowUnSelect;
         }
 
         public override void OnGUI(Rect rect)
@@ -38,7 +35,7 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
 
         public override void OnOpen()
         {
-            _treeDropdownElement = new SaintsTreeDropdownElement(_metaInfo, _allowUnSelect);
+            _treeDropdownElement = new SaintsTreeDropdownElement(_metaInfo);
 
             _treeDropdownElement.OnClickedEvent.AddListener(OnClicked);
             // _treeDropdownElement.RegisterCallback<GeometryChangedEvent>(GeoUpdateWindowSize);
@@ -64,19 +61,10 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
             editorWindow.rootVisualElement.Add(_treeDropdownElement);
         }
 
-        // public void RefreshValues(IReadOnlyList<object> curValues) => _treeDropdownElement.RefreshValues(curValues);
-
-        private void OnClicked(object value, bool isOn, bool isPrimary)
+        private void OnClicked(object value)
         {
-            IReadOnlyList<object> r = _setValue(value, isOn);
-            if (!_allowUnSelect || isPrimary || r == null)
-            {
-                editorWindow.Close();
-            }
-            else
-            {
-                _treeDropdownElement.RefreshValues(r);
-            }
+            _setValue(value);
+            editorWindow.Close();
         }
 
         public void SetSearch(string search)
@@ -89,7 +77,7 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
 //         // ReSharper disable once UnusedMember.Global
 //         public SaintsTreeDropdownElement DebugGetElement()
 //         {
-//             return new SaintsTreeDropdownElement(_metaInfo, _allowUnSelect);
+//             return new SaintsTreeDropdownElement(_metaInfo);
 //         }
 // #endif
 

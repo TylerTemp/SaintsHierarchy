@@ -1,3 +1,7 @@
+## 1.5.2 ##
+
+Fix: unnecessary check box in scene picker. Bug introduced in 1.5.0 
+
 ## 1.5.1 ##
 
 1.  Fix: Legacy code incorrect namespace

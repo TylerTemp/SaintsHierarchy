@@ -13,7 +13,7 @@
     height: 20px;
 }
 
-#saintsfield-tree-row, #saintsfield-tree-row-toggle, #saintsfield-tree-row-foldout {
+#saintsfield-tree-row, #saintsfield-tree-row-foldout {
     cursor: link;
 }
 
@@ -43,7 +43,6 @@
     height: 15px;
     flex-shrink: 0;
     -unity-background-scale-mode: scale-to-fit;
-    background-image: url("project://database/Packages/today.comes.saintshierarchy/Editor/Editor%20Default%20Resources/SaintsHierarchy/checkbox-outline-blank.png?fileID=2800000&guid=6e902a189a704c24b786f087b01d3c03&type=3#checkbox-outline-blank");
     padding: 0;
     margin: 0;
 }

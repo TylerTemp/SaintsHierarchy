@@ -10,24 +10,18 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
 {
     public class SaintsTreeDropdownElement: VisualElement
     {
-        // value
-        // new status on or off;
-        // is row click or not (row click need to close the dropdown)
-        public readonly UnityEvent<object, bool, bool> OnClickedEvent = new UnityEvent<object, bool, bool>();
+        public readonly UnityEvent<object> OnClickedEvent = new UnityEvent<object>();
 
         // public readonly UnityEvent<TreeRowAbsElement> ScrollToElementEvent = new UnityEvent<TreeRowAbsElement>();
 
         private TreeRowAbsElement CurrentFocus { get; set; }
-        private readonly bool _allowToggle;
 
         private readonly IReadOnlyList<TreeRowAbsElement> _flatList;
         private readonly ToolbarSearchField _toolbarSearchField;
         private readonly ScrollView _scrollView;
 
-        public SaintsTreeDropdownElement(AdvancedDropdownMetaInfo metaInfo, bool toggle)
+        public SaintsTreeDropdownElement(AdvancedDropdownMetaInfo metaInfo)
         {
-            _allowToggle = toggle;
-
             // VisualElement root = new VisualElement();
 
             // CleanableTextInputFullWidth cleanableTextInput = new CleanableTextInputFullWidth(null);
@@ -42,23 +36,9 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
             };
             Add(_toolbarSearchField);
 
-            HashSet<object> curValues = metaInfo.CurValues.ToHashSet();
-
-            OnClickedEvent.AddListener((v, isOn, _) =>
-            {
-                if (isOn)
-                {
-                    curValues.Add(v);
-                }
-                else
-                {
-                    curValues.Remove(v);
-                }
-            });
-
             TreeRowAbsElement[] treeRowElements = MakeNestedTreeRow(0,
                 metaInfo.DropdownListValue,
-                curValues)
+                metaInfo.CurValue)
                 .ToArray();
 
             ScrollView treeContainer = new ScrollView
@@ -76,7 +56,7 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
                     switch (rowAbsElement)
                     {
                         case TreeRowValueElement tr:
-                            tr.OnClickedEvent.AddListener((_, _) => CurrentFocus = tr);
+                            tr.OnClickedEvent.AddListener(() => CurrentFocus = tr);
                             break;
                         case TreeRowFoldoutElement tf:
                             tf.RegisterValueChangedCallback(_ => CurrentFocus = tf);
@@ -258,8 +238,7 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
                             foldoutElement.value = !foldoutElement.value;
                             break;
                         case TreeRowValueElement valueElement:
-                            valueElement.SetValueOn(!valueElement.IsOn);
-                            valueElement.OnClickedEvent.Invoke(valueElement.IsOn, false);
+                            valueElement.OnClickedEvent.Invoke();
                             break;
                     }
                 }
@@ -308,22 +287,6 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
             return result;
         }
 
-        public void RefreshValues(IReadOnlyList<object> curValues)
-        {
-            foreach (TreeRowAbsElement treeRowAbsElement in _flatList)
-            {
-                // ReSharper disable once InvertIf
-                if (treeRowAbsElement is TreeRowValueElement valueElement)
-                {
-                    bool shouldOn = curValues.Contains(valueElement.Value);
-                    if (valueElement.IsOn != shouldOn)
-                    {
-                        valueElement.SetValueOn(shouldOn);
-                    }
-                }
-            }
-        }
-
         private static IEnumerable<TreeRowAbsElement> FlatTreeRow(TreeRowAbsElement treeRow)
         {
             if (treeRow is TreeRowSepElement)
@@ -346,7 +309,7 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
             }
         }
 
-        private IReadOnlyList<TreeRowAbsElement> MakeNestedTreeRow(int indent, IAdvancedDropdownList dropdownLis, ICollection<object> curValues)
+        private IReadOnlyList<TreeRowAbsElement> MakeNestedTreeRow(int indent, IAdvancedDropdownList dropdownLis, object curValue)
         {
             List<TreeRowAbsElement> result = new List<TreeRowAbsElement>(dropdownLis.Count);
 
@@ -366,12 +329,12 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
                 if (dropdownItem.ChildCount() == 0)  // value node
                 {
                     hasMeaningfulChild = true;
-                    TreeRowValueElement valueElement = new TreeRowValueElement(dropdownItem.value, string.IsNullOrEmpty(dropdownItem.icon)? dropdownItem.displayName: $"<icon={dropdownItem.icon}/>{dropdownItem.displayName}", indent, _allowToggle);
+                    TreeRowValueElement valueElement = new TreeRowValueElement(string.IsNullOrEmpty(dropdownItem.icon)? dropdownItem.displayName: $"<icon={dropdownItem.icon}/>{dropdownItem.displayName}", indent);
                     if (dropdownItem.ExtraSearches.Count > 0)
                     {
                         valueElement.AddSearches(dropdownItem.ExtraSearches);
                     }
-                    if (curValues.Contains(dropdownItem.value))
+                    if (Equals(curValue, dropdownItem.value))
                     {
                         valueElement.SetValueOn(true);
                         CurrentFocus ??= valueElement;
@@ -383,14 +346,14 @@ namespace SaintsHierarchy.Editor.Core.UIElement.TreeDropdown
                     }
 
                     object value = dropdownItem.value;
-                    valueElement.OnClickedEvent.AddListener((on, isPrimary) => OnClickedEvent.Invoke(value, on, isPrimary));
+                    valueElement.OnClickedEvent.AddListener(() => OnClickedEvent.Invoke(value));
                     result.Add(valueElement);
 
                     continue;
                 }
 
                 // (List<TreeViewItemData<IAdvancedDropdownList>> children, int resultId, bool childSelect) = MakeNestedItems(dropdownItem, curValues, incrId, selectedNestedIds, selectedValueIds);
-                IReadOnlyList<TreeRowAbsElement> tailResult = MakeNestedTreeRow(indent + 1, dropdownItem, curValues);
+                IReadOnlyList<TreeRowAbsElement> tailResult = MakeNestedTreeRow(indent + 1, dropdownItem, curValue);
 
                 if (dropdownItem.ChildCount() > 0 && tailResult.Count == 0)
                 {

@@ -24,17 +24,16 @@ namespace SaintsHierarchy.Editor.Core.Utils
         {
             AdvancedDropdownMetaInfo meta = new AdvancedDropdownMetaInfo
             {
-                CurValues = new[] { scene.path },
+                CurValue = scene.path,
                 DropdownListValue = GetScenePaths(),
             };
             (Rect worldBound, float maxHeight) = SaintsTreeDropdownUIToolkit.GetProperPos(position);
             PopupWindow.Show(worldBound, new SaintsTreeDropdownUIToolkit(
-                meta, worldBound.width, maxHeight, false,
-                (curItem, _) =>
+                meta, worldBound.width, maxHeight,
+                curItem =>
                 {
                     OpenAScene(scene, (string)curItem);
                     onSelected?.Invoke();
-                    return null;
                 }));
         }
 
