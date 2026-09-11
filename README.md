@@ -63,8 +63,6 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 Fix: unnecessary check box in scene picker. Bug introduced in 1.5.0
 
-The new Hierarchy API might not be stable. If you face any issues, please report.
-
 See [the full change log](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
 
 ## Config ##
