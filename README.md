@@ -61,7 +61,17 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ## Change Log ##
 
-Fix: unnecessary check box in scene picker. Bug introduced in 1.5.0
+For New Hierarchy View (6k.6+)
+
+1.  Add: Optional `Tag(SH)` and `Layer(SH)` columns: Same as Unity's default one, but add "Search This Tag"/"Search This Layer" option to find all GameObject with this tag/layer
+2.  Add: "Find in Project" button to locate the scene in project. This option is removed by unity in new hierarchy view and now you can restore it
+
+For Legacy Hierarchy
+
+1.  Backport: Tag selector
+2.  Backport: Layer selector
+
+Note: legacy hierarchy does not support tag/layer search, so we use Unity's built-in [QuickSearch](https://docs.unity3d.com/Packages/com.unity.quicksearch@1.0/manual/index.html) instead
 
 See [the full change log](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
 
