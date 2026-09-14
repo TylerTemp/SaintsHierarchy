@@ -25,6 +25,10 @@ namespace SaintsHierarchy.Editor.Core.Config
         [field: SerializeField, FormerlySerializedAs("componentIcons")] public bool componentIcons { get; set; }
         [field: SerializeField] public bool componentIconsForGeneralScripts { get; set; }
         [field: SerializeField] public bool componentIconsForTransform { get; set; }
+        [field: SerializeField] public bool enableLayer { get; set; }
+        [field: SerializeField, Min(1)] public float layerWidth { get; set; } = 70;
+        [field: SerializeField] public bool enableTag { get; set; }
+        [field: SerializeField, Min(1)] public float tagWidth { get; set; } = 70;
         [field: SerializeField, FormerlySerializedAs("noDefaultIcon")] public bool noDefaultIcon { get; set; }
         [field: SerializeField, FormerlySerializedAs("transparentDefaultIcon")] public bool transparentDefaultIcon { get; set; }
 

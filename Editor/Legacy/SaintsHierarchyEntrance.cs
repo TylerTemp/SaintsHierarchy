@@ -16,6 +16,7 @@ using SaintsHierarchy.Editor.Legacy.Utils;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEditor.SceneManagement;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -433,6 +434,10 @@ namespace SaintsHierarchy.Editor.Legacy
             bool componentIconsForGeneralScripts = usingConfig.componentIconsForGeneralScripts;
             bool componentIconsForTransform = usingConfig.componentIconsForTransform;
 
+            // Reserve the far-right columns before the enabled checker, icons, and custom decorations.
+            rightRect = DrawLayerTagPickers(rightRect, originGo, usingConfig, sceneHierarchyWindow,
+                sceneHierarchy, isPrefabStageContextObject || notEditable);
+
             DrawRect(
                 gameObjectEnabledChecker,
                 gameObjectEnabledCheckerEveryRow,
@@ -601,6 +606,166 @@ namespace SaintsHierarchy.Editor.Legacy
 
                 Util.PopupConfig(new Rect(mousePosition.x, mousePosition.y, 0, 0), go, goConfig);
             }
+        }
+
+        private static Rect DrawLayerTagPickers(Rect rightRect, GameObject go, IConfig config,
+            EditorWindow window, object sceneHierarchy, bool readOnly)
+        {
+            using (new EditorGUI.DisabledScope(readOnly))
+            {
+                // Allocate right to left, leaving Layer followed by Tag in display order.
+                if (config.enableTag)
+                {
+                    Rect rect;
+                    (rect, rightRect) = ReservePickerRect(rightRect, config.tagWidth);
+                    string tag = go.tag;
+                    if (rect.width > 0 && EditorGUI.DropdownButton(rect, new GUIContent(tag, tag),
+                            FocusType.Keyboard, EditorStyles.popup))
+                    {
+                        GameObject[] targets = GetPickerTargets(go, sceneHierarchy);
+                        GenericMenu menu = new GenericMenu();
+                        foreach (string value in InternalEditorUtility.tags)
+                        {
+                            menu.AddItem(new GUIContent(value), value == tag, () => ApplyTag(targets, value));
+                        }
+                        menu.AddSeparator("");
+                        menu.AddItem(new GUIContent("Add Tag..."), false, Util.OpenTagManager);
+                        string escapedTag = tag.Replace("\\", "\\\\").Replace("\"", "\\\"");
+                        menu.AddItem(new GUIContent($"Search \"{tag}\""), false,
+                            () => SetPickerSearch(window, $"tag=\"{escapedTag}\""));
+                        menu.DropDown(rect);
+                    }
+                }
+
+                if (config.enableLayer)
+                {
+                    Rect rect;
+                    (rect, rightRect) = ReservePickerRect(rightRect, config.layerWidth);
+                    int layer = go.layer;
+                    string layerName = InternalEditorUtility.GetLayerName(layer);
+                    if (rect.width > 0 && EditorGUI.DropdownButton(rect, new GUIContent(layerName, layerName),
+                            FocusType.Keyboard, EditorStyles.popup))
+                    {
+                        GameObject[] targets = GetPickerTargets(go, sceneHierarchy);
+                        GenericMenu menu = new GenericMenu();
+                        for (int value = 0; value < 32; value++)
+                        {
+                            string name = InternalEditorUtility.GetLayerName(value);
+                            if (name.Length == 0)
+                            {
+                                continue;
+                            }
+                            int targetLayer = value;
+                            menu.AddItem(new GUIContent(name), value == layer, () => ApplyLayer(targets, targetLayer));
+                        }
+                        menu.AddSeparator("");
+                        menu.AddItem(new GUIContent("Add Layer..."), false, Util.OpenTagManager);
+                        menu.AddItem(new GUIContent($"Search \"{layerName}\""), false,
+                            () => SetPickerSearch(window, $"layer={layer}"));
+                        menu.DropDown(rect);
+                    }
+                }
+            }
+            return rightRect;
+        }
+
+        private static (Rect pickerRect, Rect remainingRect) ReservePickerRect(Rect available, float width)
+        {
+            float useWidth = Mathf.Min(Mathf.Max(1f, width), Mathf.Max(0f, available.width));
+            Rect rect = new Rect(available.xMax - useWidth, available.y, useWidth, available.height);
+            available.xMax = rect.x;
+            return (rect, available);
+        }
+
+        private static GameObject[] GetPickerTargets(GameObject go, object sceneHierarchy)
+        {
+            var (error, selectedIds) = GetSelectedIds(sceneHierarchy);
+            if (error != "" || !selectedIds.Contains(go.
+#if UNITY_6000_4_OR_NEWER
+                    GetEntityId
+#else
+                    GetInstanceID
+#endif
+                    ()))
+            {
+                return new[] { go };
+            }
+
+            return selectedIds.Select(id => EditorUtility.
+#if UNITY_6000_3_OR_NEWER
+                    EntityIdToObject
+#else
+                    InstanceIDToObject
+#endif
+                    (id) as GameObject)
+                .Where(target => target != null && (target.hideFlags & HideFlags.NotEditable) == 0
+                    && !IsPrefabStageContextObject(target))
+                .ToArray();
+        }
+
+        private static void ApplyTag(GameObject[] targets, string tag)
+        {
+            targets = targets.Where(target => target != null && (target.hideFlags & HideFlags.NotEditable) == 0
+                && !IsPrefabStageContextObject(target) && !target.CompareTag(tag)).ToArray();
+            if (targets.Length == 0)
+            {
+                return;
+            }
+
+            using (SerializedObject serialized = new SerializedObject(targets))
+            {
+                serialized.FindProperty("m_TagString").stringValue = tag;
+                serialized.ApplyModifiedProperties();
+            }
+            EditorApplication.RepaintHierarchyWindow();
+        }
+
+        private static void ApplyLayer(GameObject[] targets, int layer)
+        {
+            targets = targets.Where(target => target != null && (target.hideFlags & HideFlags.NotEditable) == 0
+                && !IsPrefabStageContextObject(target)).ToArray();
+            if (targets.Length == 0)
+            {
+                return;
+            }
+
+            if (targets.Any(target => target.transform.childCount > 0))
+            {
+                int choice = EditorUtility.DisplayDialogComplex("Change Layer",
+                    $"Do you want to set layer to {InternalEditorUtility.GetLayerName(layer)} for all child objects as well?",
+                    "Yes, change children", "No, this object only", "Cancel");
+                if (choice == 2)
+                {
+                    return;
+                }
+                if (choice == 0)
+                {
+                    targets = targets.SelectMany(target => target.GetComponentsInChildren<Transform>(true))
+                        .Select(transform => transform.gameObject)
+                        .Where(target => (target.hideFlags & HideFlags.NotEditable) == 0
+                            && !IsPrefabStageContextObject(target))
+                        .Distinct().ToArray();
+                }
+            }
+
+            using (SerializedObject serialized = new SerializedObject(targets))
+            {
+                serialized.FindProperty("m_Layer").intValue = layer;
+                serialized.ApplyModifiedProperties();
+            }
+            EditorApplication.RepaintHierarchyWindow();
+        }
+
+        private static void SetPickerSearch(EditorWindow window, string search)
+        {
+            if (window == null)
+            {
+                return;
+            }
+
+            UnityEditor.Search.SearchService.ShowWindow(
+                UnityEditor.Search.SearchService.CreateContext("scene", search),
+                saveFilters: false, reuseExisting: true);
         }
 
         private static string _mouseDownSceneSelectorStringId;

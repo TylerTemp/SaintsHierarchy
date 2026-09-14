@@ -1,4 +1,5 @@
 using SaintsHierarchy.Editor.Core.UIElement;
+using SaintsHierarchy.Editor.Core.Utils;
 using System.Collections.Generic;
 using Unity.Hierarchy;
 using Unity.Hierarchy.Editor;
@@ -95,8 +96,7 @@ namespace SaintsHierarchy.Editor.HierarchyUI
                 }
                 menu.AddSeparator("");
 
-                menu.AddItem("Add Tag...", false, () =>
-                    Selection.activeObject = AssetDatabase.LoadMainAssetAtPath("ProjectSettings/TagManager.asset"));
+                menu.AddItem("Add Tag...", false, Util.OpenTagManager);
                 menu.AddItem($"Search \"{currentTag}\"", false, () =>
                 {
                     foreach (HierarchyWindow window in Resources.FindObjectsOfTypeAll<HierarchyWindow>())

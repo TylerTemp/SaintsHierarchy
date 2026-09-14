@@ -1,4 +1,5 @@
 using SaintsHierarchy.Editor.Core.UIElement;
+using SaintsHierarchy.Editor.Core.Utils;
 using System.Collections.Generic;
 using System.Reflection;
 using Unity.Hierarchy;
@@ -105,8 +106,7 @@ namespace SaintsHierarchy.Editor.HierarchyUI
                 }
                 menu.AddSeparator("");
 
-                menu.AddItem("Add Layer...", false, () =>
-                    Selection.activeObject = AssetDatabase.LoadMainAssetAtPath("ProjectSettings/TagManager.asset"));
+                menu.AddItem("Add Layer...", false, Util.OpenTagManager);
                 menu.AddItem($"Search \"{InternalEditorUtility.GetLayerName(currentLayer)}\"", false, () =>
                 {
                     foreach (HierarchyWindow window in Resources.FindObjectsOfTypeAll<HierarchyWindow>())

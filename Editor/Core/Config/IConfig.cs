@@ -14,6 +14,10 @@ namespace SaintsHierarchy.Editor.Core.Config
         public bool componentIcons { get; }
         public bool componentIconsForGeneralScripts { get; }
         public bool componentIconsForTransform { get; }
+        public bool enableLayer { get; }
+        public float layerWidth { get; }
+        public bool enableTag { get; }
+        public float tagWidth { get; }
         public bool noDefaultIcon { get; }
         public bool transparentDefaultIcon { get; }
 

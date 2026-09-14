@@ -84,6 +84,11 @@ namespace SaintsHierarchy.Editor.Core.Utils
 
         private static SaintsHierarchyConfig _config;
 
+        public static void OpenTagManager()
+        {
+            Selection.activeObject = AssetDatabase.LoadMainAssetAtPath("ProjectSettings/TagManager.asset");
+        }
+
         public static void PopupConfig(Rect worldBound, GameObject go, GameObjectConfig goConfig)
         {
             PopupWindow.Show(worldBound, new GameObjectConfigPopup(go, goConfig));
