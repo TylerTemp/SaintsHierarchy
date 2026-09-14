@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SaintsHierarchy.Editor.Core
+namespace SaintsHierarchy.Editor.Core.Config
 {
     public interface IConfig
     {

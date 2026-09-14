@@ -11,6 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using SaintsHierarchy.Editor.Core.Config;
 using SaintsHierarchy.Editor.Core.Draw;
 using UnityEditor;
 using UnityEditor.SceneManagement;

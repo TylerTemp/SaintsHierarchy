@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace SaintsHierarchy.Editor.Core
+namespace SaintsHierarchy.Editor.Core.Config
 {
     [FilePath("Library/PersonalHierarchyConfig.asset", FilePathAttribute.Location.ProjectFolder)]
     public class PersonalHierarchyConfig: ScriptableSingleton<PersonalHierarchyConfig>, IConfig

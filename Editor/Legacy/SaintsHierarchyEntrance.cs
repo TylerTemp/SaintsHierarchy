@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using SaintsHierarchy.Editor.Core;
+using SaintsHierarchy.Editor.Core.Config;
 using SaintsHierarchy.Editor.Core.Draw;
 using SaintsHierarchy.Editor.Core.Utils;
 using SaintsHierarchy.Editor.Legacy.Draw;

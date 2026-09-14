@@ -6,6 +6,7 @@ using SaintsHierarchy.Editor.Core.Draw;
 using SaintsHierarchy.Editor.HierarchyUI.Renderer;
 using UnityEngine.SceneManagement;
 using SaintsHierarchy.Editor.Core;
+using SaintsHierarchy.Editor.Core.Config;
 using SaintsHierarchy.Editor.Core.Utils;
 using Unity.Hierarchy;
 using Unity.Hierarchy.Editor;

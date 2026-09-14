@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace SaintsHierarchy.Editor.Core
+namespace SaintsHierarchy.Editor.Core.Config
 {
     [FilePath("Assets/Editor Default Resources/SaintsHierarchy/SaintsHierarchyConfig.asset", FilePathAttribute.Location.ProjectFolder)]
 #if SAINTSHIERARCHY_DEBUG

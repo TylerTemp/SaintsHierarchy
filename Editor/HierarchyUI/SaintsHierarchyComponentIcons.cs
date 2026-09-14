@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using SaintsHierarchy.Editor.Core;
+using SaintsHierarchy.Editor.Core.Config;
 using SaintsHierarchy.Editor.Core.Utils;
 using Unity.Hierarchy;
 using Unity.Hierarchy.Editor;

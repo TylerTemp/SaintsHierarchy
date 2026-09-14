@@ -6,7 +6,6 @@
         "AK.Wwise.Unity.MonoBehaviour",
         "SaintsHierarchy",
         "SaintsField.Runtime",
-        "SaintsField.Editor",
         "Unity.Addressables",
         "Unity.Addressables.Editor",
         "spine-csharp",

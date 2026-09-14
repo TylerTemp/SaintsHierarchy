@@ -1,4 +1,5 @@
 using SaintsHierarchy.Editor.Core;
+using SaintsHierarchy.Editor.Core.Config;
 using SaintsHierarchy.Editor.Core.Utils;
 using UnityEditor;
 using UnityEngine;

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SaintsHierarchy.Editor.Core.Config;
 using UnityEditor;
 #if UNITY_2023_1_OR_NEWER
 using UnityEditor.Build;
@@ -23,6 +24,12 @@ namespace SaintsHierarchy.Editor.Core.Utils
             "Saints Hierarchy/";
 
         private const string DisablePath = MenuRoot + "Disable Saints Hierarchy";
+
+        [MenuItem(MenuRoot + "Edit Config...", priority = -103)]
+        public static void EditConfig()
+        {
+            EditorWindow.GetWindow<ConfigEditWindow>().Show();
+        }
 
         [MenuItem(DisablePath, priority=-102)]
         public static void DisableSaintsHierarchy()
@@ -437,7 +444,7 @@ namespace SaintsHierarchy.Editor.Core.Utils
         }
 
 
-        private static void Refresh()
+        internal static void Refresh()
         {
             HierarchyEditorEvents.RequestInitialize();
             EditorApplication.RepaintHierarchyWindow();
