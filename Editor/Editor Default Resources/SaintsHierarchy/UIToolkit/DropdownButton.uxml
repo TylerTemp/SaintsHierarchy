@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="DropdownButtonStyle.uss" />
+    <ui:Button name="dropdown-button" class="saints-hierarchy-dropdown-button__button unity-base-popup-field__input">
+        <ui:Label name="dropdown-label" picking-mode="Ignore" class="unity-base-popup-field__text" />
+        <ui:VisualElement picking-mode="Ignore" class="unity-base-popup-field__arrow" />
+    </ui:Button>
+</ui:UXML>

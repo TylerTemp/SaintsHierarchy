@@ -25,6 +25,7 @@ namespace SaintsHierarchy.Editor.Core
         public List<GameObjectFavorite> favorites { get; }
 
         public bool disableSceneSelector { get; set; }
+        public bool disableSceneFindInProject { get; set; }
         // ReSharper restore InconsistentNaming
 
         void SaveToDisk();

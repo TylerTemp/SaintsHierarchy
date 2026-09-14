@@ -39,6 +39,7 @@ namespace SaintsHierarchy.Editor.Core
         [field: SerializeField] public List<GameObjectFavorite> favorites { get; private set; }  = new List<GameObjectFavorite>();
 
         [field: SerializeField] public bool disableSceneSelector { get; set; }
+        [field: SerializeField] public bool disableSceneFindInProject { get; set; }
         // ReSharper restore InconsistentNaming
 
         public void SaveToDisk() => Save(true);

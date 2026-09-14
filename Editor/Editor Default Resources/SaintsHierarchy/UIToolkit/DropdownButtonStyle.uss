@@ -1,0 +1,9 @@
+:root {
+    flex-grow: 1;
+}
+
+.saints-hierarchy-dropdown-button__button {
+    flex-grow: 1;
+    flex-direction: row;
+    margin: 0;
+}

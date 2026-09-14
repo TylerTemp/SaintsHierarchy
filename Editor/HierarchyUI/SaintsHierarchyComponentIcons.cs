@@ -20,7 +20,15 @@ namespace SaintsHierarchy.Editor.HierarchyUI
         {
             descriptor.Title = "Components(SH)";
 
-            descriptor.MakeHeader = () => new Label("Components");
+            descriptor.MakeHeader = () => new Label("Components")
+            {
+                style =
+                {
+                    height = Length.Percent(100),
+                    unityTextAlign = TextAnchor.MiddleLeft,
+                    paddingLeft = 4,
+                },
+            };
             descriptor.BindHeader = (_, _) => { };
             descriptor.UnbindHeader = (_, _) => { };
             descriptor.DestroyHeader = (_, _) => { };

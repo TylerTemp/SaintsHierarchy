@@ -1,3 +1,10 @@
+## 1.5.3 ##
+
+For New Hierarchy View (6k.6+)
+
+1.  Add: Optional `Tag(SH)` and `Layer(SH)` columns: Same as Unity's default one, but add "Search This Tag"/"Search This Layer" option to find all GameObject with this tag/layer
+2.  Add: "Find in Project" button to locate the scene in project. This option is removed by unity in new hierarchy view and now you can restore it
+
 ## 1.5.2 ##
 
 Fix: unnecessary check box in scene picker. Bug introduced in 1.5.0 

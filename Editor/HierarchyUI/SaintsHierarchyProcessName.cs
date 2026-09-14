@@ -25,6 +25,10 @@ namespace SaintsHierarchy.Editor.HierarchyUI
                 {
                     ProcessSceneSelector(item);
                 }
+                if (!usingConfig.disableSceneFindInProject)
+                {
+                    ProcessSceneFinder(item);
+                }
                 return;
             }
             if (item.Handler is not HierarchyGameObjectHandler)
@@ -134,6 +138,60 @@ namespace SaintsHierarchy.Editor.HierarchyUI
                 SceneSelector.Show(scene, GUIUtility.ScreenToGUIRect(anchor));
                 return;
             }
+        }
+
+        private static void ProcessSceneFinder(HierarchyViewItem item)
+        {
+            Scene scene = ((HierarchySceneHandler)item.Handler).GetScene(item.Node);
+            if (!scene.IsValid() || !scene.isLoaded)
+            {
+                return;
+            }
+
+            Button findSceneInProject = new Button(() =>
+            {
+                if (!scene.IsValid() || string.IsNullOrEmpty(scene.path))
+                {
+                    return;
+                }
+
+                SceneAsset sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scene.path);
+                if (sceneAsset == null)
+                {
+                    return;
+                }
+
+                EditorUtility.FocusProjectWindow();
+                EditorGUIUtility.PingObject(sceneAsset);
+            })
+            {
+                tooltip = "Find In Project",
+                style =
+                {
+                    flexShrink = 0,
+                    marginLeft = 0,
+                    marginRight = 0,
+                    marginTop = 0,
+                    marginBottom = 0,
+                    paddingLeft = 0,
+                    paddingRight = 0,
+                    paddingTop = 0,
+                    paddingBottom = 0,
+                    borderLeftWidth = 0,
+                    borderRightWidth = 0,
+                    borderTopWidth = 0,
+                    borderBottomWidth = 0,
+                    width = 14,
+                    height = Length.Percent(100),
+                    backgroundImage = Util.GetCachedIcon("open-ext.png"),
+                    backgroundSize = new BackgroundSize(BackgroundSizeType.Contain),
+                    // unityBackgroundImageTintColor = Color.gray,
+                    backgroundColor = Color.clear,
+                    opacity = 0.8f,
+                },
+            };
+            findSceneInProject.AddToClassList(SaintsHierarchyEntrance.ExtraAddedClass);
+            item.RightCustomContainer.Add(findSceneInProject);
         }
 
         private static HierarchyArea CreateCustomArea(Component target, MethodInfo method)

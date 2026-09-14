@@ -103,6 +103,7 @@ namespace SaintsHierarchy.Editor.Core.Utils
                     PersonalHierarchyConfig.instance.FavoriteClickToInspect = SaintsHierarchyConfig.instance.FavoriteClickToInspect;
                     PersonalHierarchyConfig.instance.favorites = SaintsHierarchyConfig.instance.favorites.ToList();
                     PersonalHierarchyConfig.instance.disableSceneSelector = SaintsHierarchyConfig.instance.disableSceneSelector;
+                    PersonalHierarchyConfig.instance.disableSceneFindInProject = SaintsHierarchyConfig.instance.disableSceneFindInProject;
                     PersonalHierarchyConfig.instance.SaveToDisk();
                 }
             }
@@ -422,6 +423,19 @@ namespace SaintsHierarchy.Editor.Core.Utils
 
         #endregion
 
+        private const string DisableSceneFindInProjectPath = MenuRoot + "Disable Scene Find In Project";
+
+        [MenuItem(DisableSceneFindInProjectPath, priority = 12)]
+        public static void DisableSceneFindInProject()
+        {
+            IConfig config = Util.GetUsingConfig();
+            EditorUtility.SetDirty((Object)config);
+            config.disableSceneFindInProject = !config.disableSceneFindInProject;
+            config.SaveToDisk();
+
+            Refresh();
+        }
+
 
         private static void Refresh()
         {
@@ -490,6 +504,9 @@ namespace SaintsHierarchy.Editor.Core.Utils
 
             bool disableSceneSelector = Util.GetUsingConfig().disableSceneSelector;
             Menu.SetChecked(DisableSceneSelectorPath, disableSceneSelector);
+
+            bool disableSceneFindInProject = Util.GetUsingConfig().disableSceneFindInProject;
+            Menu.SetChecked(DisableSceneFindInProjectPath, disableSceneFindInProject);
         }
 
         // ReSharper disable once UnusedMember.Local
