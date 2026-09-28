@@ -171,18 +171,13 @@ namespace SaintsHierarchy.Editor.Core.UIElement
         public void SetValueWithoutNotify(ColorPickerResult newValue)
         {
             _curValue = newValue;
-            bool foundExists = false;
             foreach ((ItemButtonElement buttonElement, Color presentColor)  in _presentColorButtons)
             {
-                bool isPresent = presentColor == _curValue.Color;
+                bool isPresent = _curValue.HasColor && presentColor == _curValue.Color;
                 buttonElement.SetSelected(isPresent);
-                if (isPresent)
-                {
-                    foundExists = true;
-                }
             }
 
-            if (!foundExists && _colorField.value != newValue.Color)
+            if (_colorField.value != newValue.Color)
             {
                 _colorField.SetValueWithoutNotify(_curValue.Color);
             }

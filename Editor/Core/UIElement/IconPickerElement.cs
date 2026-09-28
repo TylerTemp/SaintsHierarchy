@@ -136,7 +136,12 @@ namespace SaintsHierarchy.Editor.Core.UIElement
 
             foreach (string iconPath in presetIcons)
             {
-                ItemButtonElement btn = MakeIconButton(Util.LoadResource<Texture2D>(iconPath));
+                Texture2D icon = Util.LoadResource<Texture2D>(iconPath);
+                if (!icon)
+                {
+                    continue;
+                }
+                ItemButtonElement btn = MakeIconButton(icon);
                 bool isCurrent = iconPath == _curIcon;
                 if (isCurrent)
                 {

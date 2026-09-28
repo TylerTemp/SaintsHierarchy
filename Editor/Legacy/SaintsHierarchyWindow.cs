@@ -1020,6 +1020,18 @@ namespace SaintsHierarchy.Editor.Legacy
 
         private static readonly Dictionary<EditorWindow,EditorWindowStatus> EditorWindowStatuses = new Dictionary<EditorWindow,EditorWindowStatus>();
 
+        private static void InvokeOriginalGUI(Delegate original)
+        {
+            try
+            {
+                original.DynamicInvoke();
+            }
+            catch (TargetInvocationException exception) when (exception.InnerException is ExitGUIException)
+            {
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(exception.InnerException).Throw();
+            }
+        }
+
         private static void OnGUIWrapper(EditorWindow window)
         {
             // Debug.Log("called");
@@ -1048,7 +1060,7 @@ namespace SaintsHierarchy.Editor.Legacy
             // bool personalDisabled = !PersonalHierarchyConfig.instance.personalEnabled;
             if (config.disabled || config.disableFavorites)
             {
-                originalOnGUI.DynamicInvoke();
+                InvokeOriginalGUI(originalOnGUI);
                 return;
             }
 
@@ -1071,7 +1083,7 @@ namespace SaintsHierarchy.Editor.Legacy
                 GameObject go = runtimeFavoriteGameObject.LoadedGameObject;
                 if (go == null)
                 {
-                    return;
+                    continue;
                 }
                 MergedConfig mergedConfig = GetMergedConfig(go, runtimeFavoriteGameObject);
 
@@ -1384,9 +1396,14 @@ namespace SaintsHierarchy.Editor.Legacy
             {
                 _fieldMPos.SetValue(window, offsetMPos);  // need this for scroll
 
-                originalOnGUI.DynamicInvoke();
-
-                _fieldMPos.SetValue(window, originMPos);
+                try
+                {
+                    InvokeOriginalGUI(originalOnGUI);
+                }
+                finally
+                {
+                    _fieldMPos.SetValue(window, originMPos);
+                }
             }
 
             if (windowStatus.Dragging.Count > 0)

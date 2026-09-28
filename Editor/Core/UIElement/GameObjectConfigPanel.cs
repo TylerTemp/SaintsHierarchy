@@ -231,6 +231,7 @@ namespace SaintsHierarchy.Editor.Core.UIElement
                             }
                             EditorUtility.SetDirty(personalDisabled? SaintsHierarchyConfig.instance: PersonalHierarchyConfig.instance);
                             HierarchyEditorEvents.RequestReloadAllScenes();
+                            Util.GetUsingConfig().SaveToDisk();
                             if(needClose)
                             {
                                 NeedCloseEvent.Invoke(true);

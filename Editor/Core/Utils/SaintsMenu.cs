@@ -392,6 +392,8 @@ namespace SaintsHierarchy.Editor.Core.Utils
                 {
                     SaintsHierarchyConfig.instance.favorites.Clear();
                     SaintsHierarchyConfig.instance.favorites.AddRange(PersonalHierarchyConfig.instance.favorites);
+                    EditorUtility.SetDirty(SaintsHierarchyConfig.instance);
+                    SaintsHierarchyConfig.instance.SaveToDisk();
                 }
             }
             config.SaveToDisk();

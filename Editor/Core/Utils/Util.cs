@@ -876,7 +876,9 @@ namespace SaintsHierarchy.Editor.Core.Utils
 
         public static IConfig GetFavoriteConfig()
         {
-            return PersonalHierarchyConfig.instance;
+            return GetUsingConfig().saveFavoritesToProjectConfig
+                ? (IConfig)SaintsHierarchyConfig.instance
+                : PersonalHierarchyConfig.instance;
         }
 
         public static (bool found, GameObjectConfig config) GetGameObjectConfig(GameObject go)
