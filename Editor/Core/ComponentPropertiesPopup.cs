@@ -1,3 +1,4 @@
+using SaintsHierarchy.Editor.Core.UIElement;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -16,6 +17,11 @@ namespace SaintsHierarchy.Editor.Core
         [SerializeField] private Vector2 _anchorPosition;
         private UnityEditor.Editor _editor;
         private bool _initialFitDone;
+
+        public static string GetName(Component component)
+        {
+            return $"{ObjectNames.NicifyVariableName(component.GetType().Name)} ({component.gameObject.name})";
+        }
 
         public static void Show(Component component, Rect activatorRect)
         {
@@ -54,7 +60,8 @@ namespace SaintsHierarchy.Editor.Core
 
             ComponentPropertiesPopup window = CreateInstance<ComponentPropertiesPopup>();
             window._component = component;
-            window.titleContent = new GUIContent($"{ObjectNames.NicifyVariableName(component.GetType().Name)} ({component.gameObject.name})");
+            window._component = component;
+            window.titleContent = new GUIContent(GetName(component));
             window.minSize = new Vector2(280f, 140f);
             Rect initialPosition = new Rect(screenPosition.x, screenPosition.y, Width, FallbackHeight);
             window._anchorPosition = initialPosition.position;
@@ -100,20 +107,35 @@ namespace SaintsHierarchy.Editor.Core
 
             if (_component is Behaviour behaviour)
             {
-                Toggle enabledToggle = new Toggle("Enabled")
+                Toggle enabledToggle = new Toggle(GetName(behaviour))
                 {
                     value = behaviour.enabled,
                     style =
                     {
+                        flexDirection = FlexDirection.RowReverse,
+                        justifyContent = Justify.FlexEnd,
+
                         flexShrink = 1,
                         flexGrow = 1,
                         marginTop = 0,
                         marginBottom = 0,
-                        marginLeft = 0,
+                        marginLeft = 22,
                         marginRight = 0,
+                        // backgroundColor = Color.red,
                     },
                 };
-                enabledToggle.AddToClassList(Toggle.alignedFieldUssClassName);
+                VisualElement enableToggleInput = enabledToggle.Q<VisualElement>(className: "unity-toggle__input");
+                if (enableToggleInput != null)
+                {
+                    enableToggleInput.style.flexGrow = 0;
+                    // enableToggleInput.style.backgroundColor = Color.blue;
+                    // enableToggleLabel.style.marginRight = 2;
+                }
+
+                // enabledToggle.labelElement.style.backgroundColor = Color.aquamarine;
+                enabledToggle.labelElement.style.unityTextAlign = TextAnchor.MiddleLeft;
+
+                // enabledToggle.AddToClassList(Toggle.alignedFieldUssClassName);
                 enabledToggle.RegisterValueChangedCallback(evt =>
                 {
                     if (behaviour == null)
@@ -121,15 +143,34 @@ namespace SaintsHierarchy.Editor.Core
                         return;
                     }
 
-                    Undo.RecordObject(behaviour, "Toggle Behaviour Enabled");
+                    Undo.RecordObject(behaviour, $"Toggle Enabled for {ObjectNames.NicifyVariableName(behaviour.GetType().Name)}");
                     behaviour.enabled = evt.newValue;
                     EditorUtility.SetDirty(behaviour);
                     PrefabUtility.RecordPrefabInstancePropertyModifications(behaviour);
                 });
 
-                VisualElement enabledToggleContainer = new VisualElement();
+                VisualElement enabledToggleContainer = new VisualElement
+                {
+                    style =
+                    {
+                        flexDirection = FlexDirection.Row,
+                        backgroundColor = new Color(62/255f,62/255f,62/255f),
+                        borderBottomWidth = 1,
+                        borderBottomColor = new Color(48/255f, 48/255f, 48/255f),
+                    },
+                };
                 enabledToggleContainer.AddToClassList(InspectorElement.ussClassName);
                 enabledToggleContainer.Add(enabledToggle);
+
+                enabledToggleContainer.Add(new Button(() =>
+                {
+                    DestroyImmediate(_component, true);
+                    Close();
+                })
+                {
+                    text = "Remove Component",
+                });
+
                 scrollView.Add(enabledToggleContainer);
             }
 

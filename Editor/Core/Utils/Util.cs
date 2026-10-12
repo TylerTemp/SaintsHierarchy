@@ -1098,6 +1098,195 @@ namespace SaintsHierarchy.Editor.Core.Utils
             return new PrefabIconInfo(true, isMissingPrefab, assetType == PrefabAssetType.Model, icon);
         }
 
+        // Name decorations use legacy order: keep other components stable, with transforms last.
+        public static List<(Component component, Texture2D icon)> GetSortedComponentIcons(
+            Component[] allComponents, bool componentIconsForGeneralScripts, bool componentIconsForTransform)
+        {
+            return GetComponentIcons(allComponents, componentIconsForGeneralScripts, componentIconsForTransform)
+                .OrderBy(each => each.component is Transform)  // always last
+                .ToList();
+        }
+
+        // Keep legacy filtering, but emit icons in GetComponents order.
+        public static List<(Component component, Texture2D icon)> GetComponentIcons(
+            Component[] allComponents, bool componentIconsForGeneralScripts, bool componentIconsForTransform)
+        {
+            List<(Component component, Texture2D icon)> componentAndIcon = new List<(Component, Texture2D)>(allComponents.Length);
+            bool hasCanvas = false;
+            // Canvas may follow RectTransform, so determine its filtering effect first.
+            foreach (Component component in allComponents)
+            {
+                if (component is Canvas)
+                {
+                    hasCanvas = true;
+                    break;
+                }
+            }
+            foreach (Component component in allComponents)
+            {
+                switch (component)
+                {
+
+#if SAINTSHIERARCHY_UNITY_RENDER_PIPELINES_CORE
+                    case UnityEngine.Rendering.Volume:
+                    {
+                        if (componentIconsForGeneralScripts)
+                        {
+                            componentAndIcon.Add((component, GetCachedIcon("d_Volume Icon.asset")));
+                        }
+                    }
+                        break;
+#endif
+#if SAINTSHIERARCHY_WWISE
+                    case AkInitializer:
+                    {
+                        if (componentIconsForGeneralScripts)
+                        {
+                            componentAndIcon.Add((component, GetCachedIcon("wwise-logo.png")));
+                        }
+                    }
+                        break;
+                    case AkAudioListener:
+                    {
+                        if (componentIconsForGeneralScripts)
+                        {
+                            componentAndIcon.Add((component, GetCachedIcon("wwise-audio-listener.psd")));
+                        }
+                    }
+                        break;
+                    case AkGameObj:
+                    {
+                        if (componentIconsForGeneralScripts)
+                        {
+                            componentAndIcon.Add((component, GetCachedIcon("wwise-game-object.psd")));
+                        }
+                    }
+                        break;
+#endif
+
+                    case Camera:
+                    case Light:
+                    case UnityEngine.EventSystems.EventSystem:
+                    case CanvasRenderer:
+                        if (componentIconsForGeneralScripts)
+                        {
+                            goto default;
+                        }
+                        break;
+                    case RectTransform rt:
+                        if (componentIconsForTransform && (!hasCanvas || componentIconsForGeneralScripts))
+                        {
+                            componentAndIcon.Add((rt,
+                                EditorGUIUtility.IconContent("d_RectTransform Icon").image as Texture2D));
+                        }
+                        break;
+                    case Transform trans:
+                        if (componentIconsForTransform && componentIconsForGeneralScripts)
+                        {
+                            componentAndIcon.Add((trans,
+                                EditorGUIUtility.IconContent("Transform Icon").image as Texture2D));
+                        }
+                        break;
+                    case Canvas:
+                        if (componentIconsForGeneralScripts)
+                        {
+                            goto default;
+                        }
+                        break;
+                    case ParticleSystemRenderer:  // Ignored
+                        break;
+#if SAINTSHIERARCHY_SPINE_UNITY
+                    case Spine.Unity.SkeletonAnimation:
+                    {
+                        if (componentIconsForGeneralScripts)
+                        {
+                            componentAndIcon.Add((component, GetCachedIcon("spine-icon.png")));
+                        }
+                    }
+                        break;
+                    case Spine.Unity.SkeletonGraphic:
+                    {
+                        if (componentIconsForGeneralScripts)
+                        {
+                            componentAndIcon.Add((component, GetCachedIcon("spine-skeleton-graphic.psd")));
+                        }
+                    }
+                        break;
+#endif
+                    default:
+                    {
+                        if (component == null)
+                        {
+                            break;
+                        }
+
+                        Texture2D icon = EditorGUIUtility.GetIconForObject(component);
+                        if (icon == null)
+                        {
+                            using(new DisableUnityLogScoop())
+                            {
+                                icon =
+                                    EditorGUIUtility.IconContent($"d_{component.GetType().Name} Icon")
+                                        ?.image as Texture2D;
+                            }
+
+
+                            if(icon == null)
+                            {
+                                using(new DisableUnityLogScoop())
+                                {
+                                    icon =
+                                        EditorGUIUtility.IconContent($"{component.GetType().Name} Icon")
+                                            ?.image as Texture2D;
+                                }
+                            }
+                        }
+
+                        MonoBehaviour monoBehaviour = component as MonoBehaviour;
+                        bool isMonoBehaviour = monoBehaviour != null;
+                        if (!componentIconsForGeneralScripts && isMonoBehaviour && IsGeneralScriptIcon(icon))
+                        {
+                            icon = null;
+                        }
+
+                        if (icon == null && isMonoBehaviour)
+                        {
+                            MonoScript script = MonoScript.FromMonoBehaviour(monoBehaviour);
+                            if(script != null)
+                            {
+                                Texture2D scriptIcon = AssetPreview.GetMiniThumbnail(script);
+                                if(scriptIcon != null)
+                                {
+                                    bool isGeneralScriptIcon = IsGeneralScriptIcon(scriptIcon);
+                                    if (!isGeneralScriptIcon || componentIconsForGeneralScripts)
+                                    {
+                                        icon = scriptIcon;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (icon == null && componentIconsForGeneralScripts)
+                        {
+                            icon = GetCachedIcon("question-mark-grey-20.png");
+                        }
+                        if (icon != null)
+                        {
+                            componentAndIcon.Add((component, icon));
+                        }
+                    }
+                        break;
+                }
+            }
+
+            return componentAndIcon;
+        }
+
+        private static bool IsGeneralScriptIcon(Texture2D icon)
+        {
+            return icon != null && (icon.name == "d_cs Script Icon" || icon.name == "cs Script Icon");
+        }
+
         public static Texture2D GetIconByComponent(IEnumerable<Component> components)
         {
             foreach (Component comp in components)

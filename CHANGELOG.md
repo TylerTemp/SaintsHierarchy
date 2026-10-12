@@ -1,3 +1,14 @@
+## 1.5.4 ##
+
+For New Hierarchy View (6k.6+)
+
+1.  Add: Backport `Component Icons` to display at the end of the row. "Component Icons" length is dynamic, which looks awful in Unity's new "column" features. You can decide which one you want to use
+
+For New & Legacy Hierarchy
+
+1.  Add: `Remove Component` button in popup component editor
+2.  Change: Update the look of the popup component editor
+
 ## 1.5.3 ##
 
 For New Hierarchy View (6k.6+)

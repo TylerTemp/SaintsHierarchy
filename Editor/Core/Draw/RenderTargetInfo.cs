@@ -8,41 +8,42 @@ namespace SaintsHierarchy.Editor.Core.Draw
 {
     public readonly struct RenderTargetInfo : IEquatable<RenderTargetInfo>, IRichTextTagProvider
     {
-        private readonly Component Target;
+        private readonly Component _target;
 
         public readonly IHierarchyAttribute Attribute;
         public readonly MemberType MemberType;
         public readonly MemberInfo MemberInfo;
         public readonly int SortOrder;
 
-        private readonly string LabelName;
-        private readonly string ContainerType;
-        private readonly string ContainerTypeBaseType;
+        private readonly string _labelName;
+        private readonly string _containerType;
+        private readonly string _containerTypeBaseType;
 
         public RenderTargetInfo(Component target, IHierarchyAttribute attribute, MemberType memberType, MemberInfo memberInfo, int sortOrder)
         {
-            Target = target;
+            _target = target;
 
             Attribute = attribute;
             MemberType = memberType;
             MemberInfo = memberInfo;
             SortOrder = sortOrder;
 
-            (ContainerType, ContainerTypeBaseType) = GetType(target.GetType());
+            (_containerType, _containerTypeBaseType) = GetType(target.GetType());
 
+            // ReSharper disable once ConvertSwitchStatementToSwitchExpression
             switch (memberInfo)
             {
                 case FieldInfo fieldInfo:
-                    LabelName = ObjectNames.NicifyVariableName(fieldInfo.Name);
+                    _labelName = ObjectNames.NicifyVariableName(fieldInfo.Name);
                     break;
                 case PropertyInfo propertyInfo:
-                    LabelName = ObjectNames.NicifyVariableName(propertyInfo.Name);
+                    _labelName = ObjectNames.NicifyVariableName(propertyInfo.Name);
                     break;
                 case MethodInfo methodInfo:
-                    LabelName = ObjectNames.NicifyVariableName(methodInfo.Name);
+                    _labelName = ObjectNames.NicifyVariableName(methodInfo.Name);
                     break;
                 default:
-                    LabelName = "";
+                    _labelName = "";
                     break;
             }
         }
@@ -75,17 +76,17 @@ namespace SaintsHierarchy.Editor.Core.Draw
 
         public string GetLabel()
         {
-            return LabelName;
+            return _labelName;
         }
 
         public string GetContainerType()
         {
-            return ContainerType;
+            return _containerType;
         }
 
         public string GetContainerTypeBaseType()
         {
-            return ContainerTypeBaseType;
+            return _containerTypeBaseType;
         }
 
         public string GetIndex(string formatter)
@@ -100,7 +101,7 @@ namespace SaintsHierarchy.Editor.Core.Draw
                 case FieldInfo fieldInfo:
                     try
                     {
-                        return fieldInfo.GetValue(Target)?.ToString();
+                        return fieldInfo.GetValue(_target)?.ToString();
                     }
                     catch (Exception)
                     {
@@ -109,7 +110,7 @@ namespace SaintsHierarchy.Editor.Core.Draw
                 case PropertyInfo propertyInfo:
                     try
                     {
-                        return propertyInfo.GetValue(Target)?.ToString();
+                        return propertyInfo.GetValue(_target)?.ToString();
                     }
                     catch (Exception)
                     {

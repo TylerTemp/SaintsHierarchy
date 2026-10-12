@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using SaintsHierarchy.Editor.Core;
 using SaintsHierarchy.Editor.Core.Draw;
 using SaintsHierarchy.Editor.HierarchyUI.Renderer;
 using UnityEngine.SceneManagement;
-using SaintsHierarchy.Editor.Core;
 using SaintsHierarchy.Editor.Core.Config;
 using SaintsHierarchy.Editor.Core.Utils;
 using Unity.Hierarchy;
@@ -44,7 +44,8 @@ namespace SaintsHierarchy.Editor.HierarchyUI
             }
 
             Dictionary<bool, (string name, VisualElement container)> groups = new Dictionary<bool, (string name, VisualElement container)>();
-            foreach (Component component in go.GetComponents<Component>())
+            Component[] components = go.GetComponents<Component>();
+            foreach (Component component in components)
             {
                 foreach (RenderTargetInfo cached in Util.GetRenderTargetInfos(component))
                 {
@@ -57,7 +58,7 @@ namespace SaintsHierarchy.Editor.HierarchyUI
                     {
                         area = CreateCustomArea(component, method);
                     }
-                    else if (info.Attribute is HierarchyButtonAttribute || info.Attribute is HierarchyLabelAttribute)
+                    else if (info.Attribute is HierarchyButtonAttribute or HierarchyLabelAttribute)
                     {
                         area = new HierarchyArea(info.Attribute.IsLeft, CreateNameElement(component, info));
                     }
@@ -71,6 +72,8 @@ namespace SaintsHierarchy.Editor.HierarchyUI
                         item.LeftCustomContainer, item.RightCustomContainer, groups);
                 }
             }
+
+            RefreshComponentIcons(view, item, usingConfig);
         }
 
         private static void ProcessSceneSelector(HierarchyViewItem item)
@@ -246,6 +249,39 @@ namespace SaintsHierarchy.Editor.HierarchyUI
 
             area.Element.AddToClassList(SaintsHierarchyEntrance.ExtraAddedClass);
             parent.Add(area.Element);
+        }
+
+        private const string ComponentIconClass = "saints-hierarchy-name-component-icon";
+
+        internal static void RefreshComponentIcons(HierarchyView view, HierarchyViewItem item, IConfig usingConfig)
+        {
+            foreach (VisualElement icon in item.RightCustomContainer.Query<VisualElement>(className: ComponentIconClass).ToList())
+            {
+                icon.RemoveFromHierarchy();
+            }
+
+            if (usingConfig.disabled || !usingConfig.componentIcons || item.Handler is not HierarchyGameObjectHandler)
+            {
+                return;
+            }
+
+            GameObject go = EditorUtility.EntityIdToObject(view.Source.GetEntityIdFromNode(item.Node)) as GameObject;
+            if (go == null)
+            {
+                return;
+            }
+
+            foreach ((Component component, Texture2D icon) in Util.GetSortedComponentIcons(
+                         go.GetComponents<Component>(), usingConfig.componentIconsForGeneralScripts,
+                         usingConfig.componentIconsForTransform))
+            {
+                Button btn = SaintsHierarchyUtil.CreateComponentIconButton(component, icon);
+                btn.AddToClassList(ComponentIconClass);
+                item.RightCustomContainer.Add(
+                    btn
+                );
+                btn.AddToClassList(SaintsHierarchyEntrance.ExtraAddedClass);
+            }
         }
 
         private static VisualElement CreateNameElement(Component target, RenderTargetInfo info) =>

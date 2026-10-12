@@ -18,7 +18,6 @@ using UnityEditor.IMGUI.Controls;
 using UnityEditor.SceneManagement;
 using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using SceneSelector = SaintsHierarchy.Editor.Core.Utils.SceneSelector;
 using Object = UnityEngine.Object;
@@ -946,177 +945,11 @@ namespace SaintsHierarchy.Editor.Legacy
 
             if (componentIcons)
             {
-                List<(Component component, bool canToggle, Texture2D icon)> componentAndIcon = new List<(Component, bool, Texture2D)>(allComponents.Length);
-                bool hasCanvas = false;
-                RectTransform rectTransform = null;
-                Transform transform = null;
-                foreach (Component component in allComponents)
-                {
-                    switch (component)
-                    {
-
-#if SAINTSHIERARCHY_UNITY_RENDER_PIPELINES_CORE
-                        case UnityEngine.Rendering.Volume:
-                        {
-                            if (componentIconsForGeneralScripts)
-                            {
-                                componentAndIcon.Add((component, component is Behaviour, Util.GetCachedIcon("d_Volume Icon.asset")));
-                            }
-                        }
-                            break;
-#endif
-#if SAINTSHIERARCHY_WWISE
-                        case AkInitializer:
-                        {
-                            if (componentIconsForGeneralScripts)
-                            {
-                                componentAndIcon.Add((component, component is Behaviour, Util.GetCachedIcon("wwise-logo.png")));
-                            }
-                        }
-                            break;
-                        case AkAudioListener:
-                        {
-                            if (componentIconsForGeneralScripts)
-                            {
-                                componentAndIcon.Add((component, component is Behaviour, Util.GetCachedIcon("wwise-audio-listener.psd")));
-                            }
-                        }
-                            break;
-                        case AkGameObj:
-                        {
-                            if (componentIconsForGeneralScripts)
-                            {
-                                componentAndIcon.Add((component, component is Behaviour, Util.GetCachedIcon("wwise-game-object.psd")));
-                            }
-                        }
-                            break;
-#endif
-
-                        case Camera:
-                        case Light:
-                        case EventSystem:
-                        case CanvasRenderer:
-                            if (componentIconsForGeneralScripts)
-                            {
-                                goto default;
-                            }
-                            break;
-                        case RectTransform rt:
-                            if (componentIconsForTransform)
-                            {
-                                rectTransform = rt;
-                            }
-                            break;
-                        case Transform trans:
-                            if (componentIconsForTransform)
-                            {
-                                transform = trans;
-                            }
-                            break;
-                        case Canvas:
-                            hasCanvas = true;
-                            if (componentIconsForGeneralScripts)
-                            {
-                                goto default;
-                            }
-                            break;
-                        case ParticleSystemRenderer:  // Ignored
-                            break;
-#if SAINTSHIERARCHY_SPINE_UNITY
-                        case Spine.Unity.SkeletonAnimation:
-                        {
-                            if (componentIconsForGeneralScripts)
-                            {
-                                componentAndIcon.Add((component, component is Behaviour, Util.GetCachedIcon("spine-icon.png")));
-                            }
-                        }
-                            break;
-                        case Spine.Unity.SkeletonGraphic:
-                        {
-                            if (componentIconsForGeneralScripts)
-                            {
-                                componentAndIcon.Add((component, component is Behaviour, Util.GetCachedIcon("spine-skeleton-graphic.psd")));
-                            }
-                        }
-                            break;
-#endif
-                        default:
-                        {
-                            if (component == null)
-                            {
-                                break;
-                            }
-
-                            Texture2D icon = EditorGUIUtility.GetIconForObject(component);
-                            if (icon == null)
-                            {
-                                using(new DisableUnityLogScoop())
-                                {
-                                    icon =
-                                        EditorGUIUtility.IconContent($"d_{component.GetType().Name} Icon")
-                                            ?.image as Texture2D;
-                                }
-
-
-                                if(icon == null)
-                                {
-                                    using(new DisableUnityLogScoop())
-                                    {
-                                        icon =
-                                            EditorGUIUtility.IconContent($"{component.GetType().Name} Icon")
-                                                ?.image as Texture2D;
-                                    }
-                                }
-                            }
-
-                            MonoBehaviour monoBehaviour = component as MonoBehaviour;
-                            bool isMonoBehaviour = monoBehaviour != null;
-                            if (!componentIconsForGeneralScripts && isMonoBehaviour && IsGeneralScriptIcon(icon))
-                            {
-                                icon = null;
-                            }
-
-                            if (icon == null && isMonoBehaviour)
-                            {
-                                MonoScript script = MonoScript.FromMonoBehaviour(monoBehaviour);
-                                if(script != null)
-                                {
-                                    Texture2D scriptIcon = AssetPreview.GetMiniThumbnail(script);
-                                    if(scriptIcon != null)
-                                    {
-                                        bool isGeneralScriptIcon = IsGeneralScriptIcon(scriptIcon);
-                                        if (!isGeneralScriptIcon || componentIconsForGeneralScripts)
-                                        {
-                                            icon = scriptIcon;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (icon == null && componentIconsForGeneralScripts)
-                            {
-                                icon = Util.GetCachedIcon("question-mark-grey-20.png");
-                            }
-                            if (icon != null)
-                            {
-                                componentAndIcon.Add((component, component is Behaviour, icon));
-                            }
-                        }
-                            break;
-                    }
-                }
-
                 // rectTransform always at end
-                if ((!hasCanvas || componentIconsForGeneralScripts) && rectTransform is not null)
-                {
-                    componentAndIcon.Add((rectTransform, false,
-                        EditorGUIUtility.IconContent("d_RectTransform Icon").image as Texture2D));
-                }
-
-                if (componentIconsForGeneralScripts && transform is not null)  // always last
-                {
-                    componentAndIcon.Add((transform, false, EditorGUIUtility.IconContent("Transform Icon").image as Texture2D));
-                }
+                List<(Component component, bool canToggle, Texture2D icon)> componentAndIcon = Util.GetSortedComponentIcons(
+                        allComponents, componentIconsForGeneralScripts, componentIconsForTransform)
+                    .Select(each => (each.component, each.component is Behaviour, each.icon))
+                    .ToList();
 
                 if (componentAndIcon.Count > 0)
                 {
@@ -1464,11 +1297,6 @@ namespace SaintsHierarchy.Editor.Legacy
                     }
                 }
             }
-        }
-
-        private static bool IsGeneralScriptIcon(Texture2D icon)
-        {
-            return icon != null && (icon.name == "d_cs Script Icon" || icon.name == "cs Script Icon");
         }
 
         private static bool IsInsideCurrentPrefabContents(GameObject go)

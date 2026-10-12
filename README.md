@@ -63,15 +63,12 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 For New Hierarchy View (6k.6+)
 
-1.  Add: Optional `Tag(SH)` and `Layer(SH)` columns: Same as Unity's default one, but add "Search This Tag"/"Search This Layer" option to find all GameObject with this tag/layer
-2.  Add: "Find in Project" button to locate the scene in project. This option is removed by unity in new hierarchy view and now you can restore it
+1.  Add: Backport `Component Icons` to display at the end of the row. "Component Icons" length is dynamic, which looks awful in Unity's new "column" features. You can decide which one you want to use
 
-For Legacy Hierarchy
+For New & Legacy Hierarchy
 
-1.  Backport: Tag selector
-2.  Backport: Layer selector
-
-Note: legacy hierarchy does not support tag/layer search, so we use Unity's built-in [QuickSearch](https://docs.unity3d.com/Packages/com.unity.quicksearch@1.0/manual/index.html) instead
+1.  Add: `Remove Component` button in popup component editor
+2.  Change: Update the look of the popup component editor
 
 See [the full change log](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
 
@@ -152,6 +149,22 @@ Result:
 Alt-Click popup inspector:
 
 ![](https://github.com/user-attachments/assets/c6306227-d687-4dcb-bfcc-d6671b3a8e37)
+
+### Layer/Tag Picker ###
+
+Quick change Layer/Tag, and search GameObject for that Layer/Tag.
+
+**New Hierarchy**
+
+Unity default layer/tag has no search ability. To use layer/tag picker with searcher, do: Hierarchy Menu (3-dots) - `Layer (SH)`/`Tag (SH)`
+
+**Legacy Hierarchy**
+
+Note: legacy hierarchy does not support tag/layer search, so we use Unity's built-in [QuickSearch](https://docs.unity3d.com/Packages/com.unity.quicksearch@1.0/manual/index.html) instead
+
+`Tools` - `Saints Hierarchy` - `Edit Config...` and set layer/tag options
+
+![](https://github.com/user-attachments/assets/80ccbd06-2d33-405a-90ef-859a38562a51)
 
 ### GameObject Enabled Checker (Legacy) ###
 

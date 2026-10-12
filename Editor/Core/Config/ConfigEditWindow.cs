@@ -90,7 +90,9 @@ namespace SaintsHierarchy.Editor.Core.Config
             SerializedProperty disabled = _serializedConfig.FindProperty($"<{nameof(IConfig.disabled)}>k__BackingField");
 #if SAINTSHIERARCHY_USE_LEGACY
             SerializedProperty enabledChecker = _serializedConfig.FindProperty($"<{nameof(IConfig.gameObjectEnabledChecker)}>k__BackingField");
+#endif
             SerializedProperty componentIcons = _serializedConfig.FindProperty($"<{nameof(IConfig.componentIcons)}>k__BackingField");
+#if SAINTSHIERARCHY_USE_LEGACY
             SerializedProperty enableLayer = _serializedConfig.FindProperty($"<{nameof(IConfig.enableLayer)}>k__BackingField");
             SerializedProperty enableTag = _serializedConfig.FindProperty($"<{nameof(IConfig.enableTag)}>k__BackingField");
 #endif
@@ -103,8 +105,9 @@ namespace SaintsHierarchy.Editor.Core.Config
             Toggle backgroundStripToggle = AddToggle(_serializedConfig.FindProperty($"<{nameof(IConfig.backgroundStrip)}>k__BackingField"));
             Toggle enabledCheckerToggle = AddToggle(enabledChecker);
             Toggle everyRowToggle = AddToggle(_serializedConfig.FindProperty($"<{nameof(IConfig.gameObjectEnabledCheckerEveryRow)}>k__BackingField"));
-            Toggle componentIconsToggle = AddToggle(componentIcons);
 #endif
+            Toggle componentIconsToggle = AddToggle(componentIcons);
+
             Toggle generalScriptsToggle = AddToggle(_serializedConfig.FindProperty($"<{nameof(IConfig.componentIconsForGeneralScripts)}>k__BackingField"));
             Toggle transformToggle = AddToggle(_serializedConfig.FindProperty($"<{nameof(IConfig.componentIconsForTransform)}>k__BackingField"));
 #if SAINTSHIERARCHY_USE_LEGACY
@@ -130,7 +133,9 @@ namespace SaintsHierarchy.Editor.Core.Config
                 backgroundStripToggle.SetEnabled(hierarchyEnabled);
                 enabledCheckerToggle.SetEnabled(hierarchyEnabled);
                 everyRowToggle.SetEnabled(hierarchyEnabled && enabledChecker.boolValue);
+#endif
                 componentIconsToggle.SetEnabled(hierarchyEnabled);
+#if SAINTSHIERARCHY_USE_LEGACY
                 layerToggle.SetEnabled(hierarchyEnabled);
                 layerWidthField.SetEnabled(hierarchyEnabled && enableLayer.boolValue);
                 tagToggle.SetEnabled(hierarchyEnabled);
@@ -156,7 +161,9 @@ namespace SaintsHierarchy.Editor.Core.Config
             _fields.TrackPropertyValue(disabled, UpdateEnabledStates);
 #if SAINTSHIERARCHY_USE_LEGACY
             _fields.TrackPropertyValue(enabledChecker, UpdateEnabledStates);
+#endif
             _fields.TrackPropertyValue(componentIcons, UpdateEnabledStates);
+#if SAINTSHIERARCHY_USE_LEGACY
             _fields.TrackPropertyValue(enableLayer, UpdateEnabledStates);
             _fields.TrackPropertyValue(enableTag, UpdateEnabledStates);
 #endif

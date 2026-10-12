@@ -141,6 +141,7 @@ namespace SaintsHierarchy.Editor.Core.Utils
 
             Refresh();
         }
+#endif
 
         private const string ComponentIconsPath = MenuRoot + "Component Icons";
         [MenuItem(ComponentIconsPath, priority=1)]
@@ -162,8 +163,6 @@ namespace SaintsHierarchy.Editor.Core.Utils
 
             Refresh();
         }
-
-#endif
 
         private const string ComponentIconsForGeneralScriptsPath = MenuRoot + "Component Icons For General Scripts";
         [MenuItem(ComponentIconsForGeneralScriptsPath, priority=2)]
@@ -477,12 +476,10 @@ namespace SaintsHierarchy.Editor.Core.Utils
 
             bool gameObjectEnabledCheckerEveryRow = personalEnabled? PersonalHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow : SaintsHierarchyConfig.instance.gameObjectEnabledCheckerEveryRow;
             Menu.SetChecked(GameObjectEnabledCheckerEveryRowPath, gameObjectEnabledCheckerEveryRow);
+#endif
 
             bool componentIcons = personalEnabled? PersonalHierarchyConfig.instance.componentIcons : SaintsHierarchyConfig.instance.componentIcons;
             Menu.SetChecked(ComponentIconsPath, componentIcons);
-#else
-            const bool componentIcons = true;
-#endif
 
             bool componentIconsForGeneralScripts = personalEnabled
                 ? PersonalHierarchyConfig.instance.componentIconsForGeneralScripts

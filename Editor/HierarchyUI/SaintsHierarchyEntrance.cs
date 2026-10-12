@@ -76,13 +76,16 @@ namespace SaintsHierarchy.Editor.HierarchyUI
 
         private static void RefreshVisibleItems()
         {
+            IConfig usingConfig = Util.GetUsingConfig();
             foreach (HierarchyWindow window in Resources.FindObjectsOfTypeAll<HierarchyWindow>())
             {
                 foreach (HierarchyViewItem item in window.rootVisualElement.Query<HierarchyViewItem>().ToList())
                 {
+                    SaintsHierarchyProcessName.RefreshComponentIcons(window.View, item, usingConfig);
                     SaintsHierarchyProcessConfig.ProcessConfig(item);
                     SaintsHierarchyProcessIndent.ProcessIndent(item);
                 }
+                SaintsHierarchyComponentIcons.RefreshVisibleCells(window.rootVisualElement);
             }
         }
 
