@@ -10,12 +10,13 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ## Features ##
 
-1.  Favorate GameObjects for quick access
-2.  Scene quick switcher
-3.  Draw indent guild
-4.  Allow set icons (pre-set & custom)
-5.  Auto set icons for camera, cavans, light, eventSystem & Wwise Initializer
-6.  Prefab footer icon if you have custom icon set
+1.  Support both new and legacy Hierarchy API (Unity 6k.6+ for new, others for legacy)
+2.  Favorate GameObjects for quick access
+3.  Scene quick switcher
+4.  Draw indent guild
+5.  Allow set icons (pre-set & custom)
+6.  Auto set icons for camera, cavans, light, eventSystem & Wwise Initializer
+7.  Prefab footer icon if you have custom icon set
 
 ## Install ##
 
