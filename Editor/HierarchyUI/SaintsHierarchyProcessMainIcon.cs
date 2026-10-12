@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using SaintsHierarchy.Editor.Core;
 using SaintsHierarchy.Editor.Core.Config;
 using SaintsHierarchy.Editor.Core.Utils;
@@ -11,6 +12,10 @@ namespace SaintsHierarchy.Editor.HierarchyUI
 {
     public static class SaintsHierarchyProcessMainIcon
     {
+        private const string PrefabOverlayClass = "saints-hierarchy-main-icon-prefab-overlay";
+        private static readonly Dictionary<HierarchyViewItem, (StyleBackground image, StyleEnum<DisplayStyle> display)>
+            OriginalIcons = new Dictionary<HierarchyViewItem, (StyleBackground, StyleEnum<DisplayStyle>)>();
+
         private static readonly string[] DefaultIcons =
         {
             "d_Transform Icon",
@@ -22,14 +27,20 @@ namespace SaintsHierarchy.Editor.HierarchyUI
             HierarchyViewItem item,
             IConfig usingConfig)
         {
-            // Debug.Log(item.Icon.style.backgroundImage.value.texture);
+            Clear(item);
+            if (usingConfig.disabled)
+            {
+                return;
+            }
+            OriginalIcons[item] = (item.Icon.style.backgroundImage, item.Icon.style.display);
             bool isDefaultScriptIcon = Array.IndexOf(DefaultIcons, item.Icon.style.backgroundImage.value.texture?.name) >= 0;
 
             EntityId entityId = view.Source.GetEntityIdFromNode(item.Node);
             GameObject go = EditorUtility.EntityIdToObject(entityId) as GameObject;
-            Texture2D customIcon = go != null
-                ? Util.GetIconByComponent(go.GetComponents<Component>())
-                : null;
+            string configuredIcon = go != null ? Util.GetGameObjectConfig(go).config.icon : null;
+            Texture2D customIcon = !string.IsNullOrEmpty(configuredIcon)
+                ? Util.GetCachedIcon(configuredIcon)
+                : go != null ? Util.GetIconByComponent(go.GetComponents<Component>()) : null;
 
             if (customIcon is not null)
             {
@@ -72,7 +83,22 @@ namespace SaintsHierarchy.Editor.HierarchyUI
                     },
                 };
                 rightBottomOverlay.AddToClassList(SaintsHierarchyEntrance.ExtraAddedClass);
+                rightBottomOverlay.AddToClassList(PrefabOverlayClass);
                 item.OverlayIcon.Add(rightBottomOverlay);
+            }
+        }
+
+        public static void Clear(HierarchyViewItem item)
+        {
+            if (OriginalIcons.TryGetValue(item, out var original))
+            {
+                item.Icon.style.backgroundImage = original.image;
+                item.Icon.style.display = original.display;
+                OriginalIcons.Remove(item);
+            }
+            foreach (VisualElement overlay in item.OverlayIcon.Query<VisualElement>(className: PrefabOverlayClass).ToList())
+            {
+                overlay.RemoveFromHierarchy();
             }
         }
     }

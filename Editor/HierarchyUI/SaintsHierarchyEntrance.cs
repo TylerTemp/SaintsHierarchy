@@ -81,6 +81,7 @@ namespace SaintsHierarchy.Editor.HierarchyUI
             {
                 foreach (HierarchyViewItem item in window.rootVisualElement.Query<HierarchyViewItem>().ToList())
                 {
+                    SaintsHierarchyProcessMainIcon.ProcessMainIcon(window.View, item, usingConfig);
                     SaintsHierarchyProcessName.RefreshComponentIcons(window.View, item, usingConfig);
                     SaintsHierarchyProcessConfig.ProcessConfig(item);
                     SaintsHierarchyProcessIndent.ProcessIndent(item);
@@ -99,6 +100,7 @@ namespace SaintsHierarchy.Editor.HierarchyUI
 
         private static void ClearExtraAdded(HierarchyViewItem item)
         {
+            SaintsHierarchyProcessMainIcon.Clear(item);
             SaintsHierarchyProcessIndent.Clear(item);
             SaintsHierarchyProcessConfig.Clear(item);
             foreach (VisualElement extra in item.Query<VisualElement>(className: ExtraAddedClass).ToList())
