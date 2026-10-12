@@ -251,7 +251,7 @@ namespace SaintsHierarchy.Editor.HierarchyUI
             parent.Add(area.Element);
         }
 
-        internal const string ComponentIconClass = "saints-hierarchy-name-component-icon";
+        private const string ComponentIconClass = "saints-hierarchy-name-component-icon";
 
         internal static void RefreshComponentIcons(HierarchyView view, HierarchyViewItem item, IConfig usingConfig)
         {
