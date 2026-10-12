@@ -124,11 +124,9 @@ This is legacy only. new Hierarchy by default uses background strip which is con
 
 ### Component Icons ###
 
-New: Hierarchy Menu (3-dots) - `Components(SH)`
-
 ![](https://github.com/user-attachments/assets/80cb50d8-ad09-4b4c-bc08-18e5c50ecd6a)
 
-Legacy: `Tools` - `Saints Hierarchy` - `Component Icons`
+`Tools` - `Saints Hierarchy` - `Component Icons`
 
 You can set the script icon and show the icons at the end of row
 
@@ -149,6 +147,8 @@ Result:
 Alt-Click popup inspector:
 
 ![](https://github.com/user-attachments/assets/c6306227-d687-4dcb-bfcc-d6671b3a8e37)
+
+New: Hierarchy Menu (3-dots) - `Components(SH)` allows to show as a column (use click instead of alt-click). You can decide which style you like.
 
 ### Layer/Tag Picker ###
 

@@ -29,7 +29,10 @@ namespace SaintsHierarchy.Editor.HierarchyUI
 
         private static void OnConfigPointerDown(PointerDownEvent evt)
         {
+            Button targetButton = evt.target as Button ??
+                                  (evt.target as VisualElement)?.GetFirstAncestorOfType<Button>();
             if (evt.button != 0 || !evt.altKey || Util.GetUsingConfig().disabled ||
+                targetButton != null && targetButton.ClassListContains(SaintsHierarchyUtil.ComponentIconButtonClass) ||
                 evt.currentTarget is not HierarchyViewItem item)
             {
                 return;

@@ -79,7 +79,9 @@ namespace SaintsHierarchy.Editor.HierarchyUI
                          go.GetComponents<Component>(), config.componentIconsForGeneralScripts,
                          config.componentIconsForTransform))
             {
-                row.Add(SaintsHierarchyUtil.CreateComponentIconButton(component, icon));
+                Button button = SaintsHierarchyUtil.CreateComponentIconButton(component, icon);
+                button.clicked += () => ComponentPropertiesPopup.Show(component, button);
+                row.Add(button);
             }
             cell.Add(row);
         }

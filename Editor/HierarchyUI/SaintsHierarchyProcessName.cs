@@ -251,7 +251,7 @@ namespace SaintsHierarchy.Editor.HierarchyUI
             parent.Add(area.Element);
         }
 
-        private const string ComponentIconClass = "saints-hierarchy-name-component-icon";
+        internal const string ComponentIconClass = "saints-hierarchy-name-component-icon";
 
         internal static void RefreshComponentIcons(HierarchyView view, HierarchyViewItem item, IConfig usingConfig)
         {
@@ -276,6 +276,16 @@ namespace SaintsHierarchy.Editor.HierarchyUI
                          usingConfig.componentIconsForTransform))
             {
                 Button btn = SaintsHierarchyUtil.CreateComponentIconButton(component, icon);
+                btn.RegisterCallback<ClickEvent>(evt =>
+                {
+                    if (evt.button != 0 || !evt.altKey)
+                    {
+                        return;
+                    }
+
+                    evt.StopPropagation();
+                    ComponentPropertiesPopup.Show(component, btn);
+                });
                 btn.AddToClassList(ComponentIconClass);
                 item.RightCustomContainer.Add(
                     btn
