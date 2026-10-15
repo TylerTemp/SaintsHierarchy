@@ -465,7 +465,9 @@ namespace SaintsHierarchy.Editor.Legacy
 
             if (fWindow.GetType() == _sceneHierarchyWindowType)
             {
-                SetupWrap(fWindow);
+                // DockArea can report focus before the window has a parent.
+                EditorApplication.delayCall -= CheckWindowAll;
+                EditorApplication.delayCall += CheckWindowAll;
             }
         }
 #endif
@@ -679,6 +681,11 @@ namespace SaintsHierarchy.Editor.Legacy
             // EditorWindow.m_Parent;
             // UnityEditor.DockArea;
             // Debug.Log(hostViewParent.GetType());
+            if (hostViewParent == null)
+            {
+                return default;
+            }
+
             if (_methodCreateDelegate == null)
             {
                 (_hostViewType, _methodCreateDelegate) = RecGetMethodInfo(hostViewParent.GetType(), "CreateDelegate",
