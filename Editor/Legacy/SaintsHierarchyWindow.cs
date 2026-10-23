@@ -132,7 +132,8 @@ namespace SaintsHierarchy.Editor.Legacy
 
         public static void OnLoad()
         {
-            if (GetUsingConfig().disableFavorites)
+            IConfig config = GetUsingConfig();
+            if (config.disableFavorites && !config.ReplaceContextMenu)
             {
                 return;
             }
@@ -486,6 +487,7 @@ namespace SaintsHierarchy.Editor.Legacy
             public readonly object HostViewParent;
             public readonly Delegate OriginalOnGUI;
             public readonly Delegate WrappedOnGUI;
+            public readonly HierarchyContextMenu ContextMenu;
 
             public readonly Func<
 #if UNITY_6000_3_OR_NEWER
@@ -497,7 +499,7 @@ namespace SaintsHierarchy.Editor.Legacy
 
             // private readonly PropertyInfo _propTreeViewRect;
 
-            public WrapInfo(object hostViewParent, Delegate originalOnGUI, Delegate wrappedOnGUI, Func<
+            public WrapInfo(EditorWindow window, object hostViewParent, Delegate originalOnGUI, Delegate wrappedOnGUI, Func<
 #if UNITY_6000_3_OR_NEWER
                 EntityId
 #else
@@ -506,6 +508,7 @@ namespace SaintsHierarchy.Editor.Legacy
                 , bool, bool> setExpand
                 )
             {
+                ContextMenu = new HierarchyContextMenu(window);
                 HostViewParent = hostViewParent;
                 OriginalOnGUI = originalOnGUI;
                 WrappedOnGUI = wrappedOnGUI;
@@ -524,6 +527,7 @@ namespace SaintsHierarchy.Editor.Legacy
                 return;
             }
 
+            wrappedInfo.ContextMenu?.Dispose();
             Wrapped.Remove(window);
 
             // Debug.Log($"start wrap {window}");
@@ -731,7 +735,7 @@ namespace SaintsHierarchy.Editor.Legacy
             // OriginDelegate[window] = wrappedDelegate;
             // window.Repaint();
 
-            return new WrapInfo(hostViewParent, onGuiDelegate, wrappedDelegate, setExpand);
+            return new WrapInfo(window, hostViewParent, onGuiDelegate, wrappedDelegate, setExpand);
         }
 
         private static FieldInfo _fieldMPos;
@@ -1067,7 +1071,7 @@ namespace SaintsHierarchy.Editor.Legacy
             // bool personalDisabled = !PersonalHierarchyConfig.instance.personalEnabled;
             if (config.disabled || config.disableFavorites)
             {
-                InvokeOriginalGUI(originalOnGUI);
+                wrapInfo.ContextMenu.Draw(() => InvokeOriginalGUI(originalOnGUI));
                 return;
             }
 
@@ -1405,7 +1409,7 @@ namespace SaintsHierarchy.Editor.Legacy
 
                 try
                 {
-                    InvokeOriginalGUI(originalOnGUI);
+                    wrapInfo.ContextMenu.Draw(() => InvokeOriginalGUI(originalOnGUI));
                 }
                 finally
                 {

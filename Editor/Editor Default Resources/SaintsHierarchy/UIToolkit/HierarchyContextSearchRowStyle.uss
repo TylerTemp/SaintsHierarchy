@@ -1,0 +1,18 @@
+.search-start-button {
+    margin: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-width: 0;
+    border-radius: 0;
+    background-color: transparent;
+    background-image: none;
+    -unity-text-align: middle-left;
+}
+
+.search-field {
+    margin: 0;
+    min-width: initial;
+    width: initial;
+    flex-grow: 0;
+    flex-shrink: 0;
+}

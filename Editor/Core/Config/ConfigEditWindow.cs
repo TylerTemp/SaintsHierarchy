@@ -123,11 +123,17 @@ namespace SaintsHierarchy.Editor.Core.Config
             Toggle saveFavoritesToggle = AddToggle(_serializedConfig.FindProperty($"<{nameof(IConfig.saveFavoritesToProjectConfig)}>k__BackingField"));
             Toggle sceneSelectorToggle = AddToggle(_serializedConfig.FindProperty($"<{nameof(IConfig.disableSceneSelector)}>k__BackingField"));
             Toggle sceneFinderToggle = AddToggle(_serializedConfig.FindProperty($"<{nameof(IConfig.disableSceneFindInProject)}>k__BackingField"));
+            Toggle replaceContextMenu = AddToggle(_serializedConfig.FindProperty($"<{nameof(IConfig.ReplaceContextMenu)}>k__BackingField"));
+            Toggle defaultContextMenuIcons = AddToggle(_serializedConfig.FindProperty($"<{nameof(IConfig.DefaultContextMenuIcons)}>k__BackingField"));
+            Toggle saveContextMenu = AddToggle(_serializedConfig.FindProperty($"<{nameof(IConfig.SaveContextMenuToProjectConfig)}>k__BackingField"));
             _fields.Bind(_serializedConfig);
 
             void UpdateEnabledStates(SerializedProperty _)
             {
                 bool hierarchyEnabled = !disabled.boolValue;
+                replaceContextMenu.SetEnabled(hierarchyEnabled);
+                defaultContextMenuIcons.SetEnabled(hierarchyEnabled);
+                saveContextMenu.SetEnabled(hierarchyEnabled);
                 indentGuidesToggle.SetEnabled(hierarchyEnabled);
 #if SAINTSHIERARCHY_USE_LEGACY
                 backgroundStripToggle.SetEnabled(hierarchyEnabled);

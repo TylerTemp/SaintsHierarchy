@@ -1,0 +1,43 @@
+.context-menu-edit-row {
+    flex-grow: 1;
+}
+
+.context-menu-edit-row__content {
+    flex-direction: row;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.context-menu-edit-row__icon {
+    width: 20px;
+    flex-shrink: 0;
+}
+
+.context-menu-edit-row__icon-text {
+    display: none;
+}
+
+.context-menu-edit-row__icon-image {
+    display: none;
+    width: 16px;
+    height: 16px;
+}
+
+.context-menu-edit-row__name {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.context-menu-edit-row__status {
+    font-size: 10px;
+    margin-right: 6px;
+    opacity: 0.65;
+}
+
+.context-menu-edit-row--separator {
+    border-top-width: 1px;
+    border-top-color: rgba(128, 128, 128, 0.45);
+}

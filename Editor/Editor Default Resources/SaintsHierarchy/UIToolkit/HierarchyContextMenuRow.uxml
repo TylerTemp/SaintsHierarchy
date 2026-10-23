@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
+    <Style src="HierarchyContextMenuRowStyle.uss"/>
+    <ui:VisualElement picking-mode="Ignore" class="project-context-row__content">
+        <ui:VisualElement name="icon" picking-mode="Ignore" class="project-context-row__icon">
+            <ui:Label name="iconText" text="✓"/>
+            <ui:Image name="iconImage" style="display: none"/>
+            <ui:Image name="iconChecked" tint-color="rgb(50, 205, 50)" class="project-context-row__icon_checked"/>
+        </ui:VisualElement>
+        <ui:Label name="label" picking-mode="Ignore" text="Label"  class="project-context-row__label"/>
+        <ui:Label name="shortcut" picking-mode="Ignore" text="Ctrl+F" class="project-context-row__shortcut"/>
+    </ui:VisualElement>
+</ui:UXML>

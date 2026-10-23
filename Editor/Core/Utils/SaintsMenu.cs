@@ -111,6 +111,13 @@ namespace SaintsHierarchy.Editor.Core.Utils
                     PersonalHierarchyConfig.instance.favorites = SaintsHierarchyConfig.instance.favorites.ToList();
                     PersonalHierarchyConfig.instance.disableSceneSelector = SaintsHierarchyConfig.instance.disableSceneSelector;
                     PersonalHierarchyConfig.instance.disableSceneFindInProject = SaintsHierarchyConfig.instance.disableSceneFindInProject;
+                    PersonalHierarchyConfig.instance.ReplaceContextMenu = SaintsHierarchyConfig.instance.ReplaceContextMenu;
+                    PersonalHierarchyConfig.instance.DefaultContextMenuIcons = SaintsHierarchyConfig.instance.DefaultContextMenuIcons;
+                    PersonalHierarchyConfig.instance.SaveContextMenuToProjectConfig = SaintsHierarchyConfig.instance.SaveContextMenuToProjectConfig;
+                    PersonalHierarchyConfig.instance.ContextPathOverrides.Clear();
+                    PersonalHierarchyConfig.instance.ContextPathOverrides.AddRange(SaintsHierarchyConfig.instance.ContextPathOverrides);
+                    PersonalHierarchyConfig.instance.ContextCustomGroups.Clear();
+                    PersonalHierarchyConfig.instance.ContextCustomGroups.AddRange(SaintsHierarchyConfig.instance.ContextCustomGroups);
                     PersonalHierarchyConfig.instance.SaveToDisk();
                 }
             }
@@ -445,6 +452,26 @@ namespace SaintsHierarchy.Editor.Core.Utils
         }
 
 
+        private const string ReplaceContextMenuPath = MenuRoot + "Replace Context Menu";
+        private const string DefaultContextMenuIconsPath = MenuRoot + "Default Context Menu Icons";
+        private const string SaveContextMenuToProjectConfigPath = MenuRoot + "Save Context Menu To Project Config";
+
+        [MenuItem(ReplaceContextMenuPath, false, 20)]
+        private static void ReplaceContextMenu() => ToggleContextOption("Replace Context Menu", config => config.ReplaceContextMenu = !config.ReplaceContextMenu);
+
+        [MenuItem(DefaultContextMenuIconsPath, false, 21)]
+        private static void DefaultContextMenuIcons() => ToggleContextOption("Default Context Menu Icons", config => config.DefaultContextMenuIcons = !config.DefaultContextMenuIcons);
+
+        [MenuItem(SaveContextMenuToProjectConfigPath, false, 22)]
+        private static void SaveContextMenuToProjectConfig() => ToggleContextOption("Save Context Menu To Project Config", config => config.SaveContextMenuToProjectConfig = !config.SaveContextMenuToProjectConfig);
+
+        private static void ToggleContextOption(string label, Action<IConfig> change)
+        {
+            IConfig config = Util.GetUsingConfig();
+            HierarchyContextConfigStore.Edit(config, label, () => change(config));
+            Refresh();
+        }
+
         internal static void Refresh()
         {
             HierarchyEditorEvents.RequestInitialize();
@@ -466,6 +493,9 @@ namespace SaintsHierarchy.Editor.Core.Utils
             bool disabled = personalEnabled? PersonalHierarchyConfig.instance.disabled : SaintsHierarchyConfig.instance.disabled;
             Menu.SetChecked(DisablePath, disabled);
             Menu.SetChecked(IndentGuidesPath, Util.GetUsingConfig().indentGuides);
+            Menu.SetChecked(ReplaceContextMenuPath, Util.GetUsingConfig().ReplaceContextMenu);
+            Menu.SetChecked(DefaultContextMenuIconsPath, Util.GetUsingConfig().DefaultContextMenuIcons);
+            Menu.SetChecked(SaveContextMenuToProjectConfigPath, Util.GetUsingConfig().SaveContextMenuToProjectConfig);
 
 #if SAINTSHIERARCHY_USE_LEGACY
             bool backgroundStrip = personalEnabled?  PersonalHierarchyConfig.instance.backgroundStrip : SaintsHierarchyConfig.instance.backgroundStrip;

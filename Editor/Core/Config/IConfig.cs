@@ -32,6 +32,12 @@ namespace SaintsHierarchy.Editor.Core.Config
         public bool disableSceneFindInProject { get; set; }
         // ReSharper restore InconsistentNaming
 
+        public bool ReplaceContextMenu { get; set; }
+        public bool DefaultContextMenuIcons { get; set; }
+        public bool SaveContextMenuToProjectConfig { get; set; }
+        public List<ContextPathOverride> ContextPathOverrides { get; }
+        public List<ContextCustomGroup> ContextCustomGroups { get; }
+
         void SaveToDisk();
     }
 }

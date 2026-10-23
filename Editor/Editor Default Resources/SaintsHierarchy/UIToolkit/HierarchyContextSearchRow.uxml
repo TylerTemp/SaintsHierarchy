@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
+    <Style src="HierarchyContextMenuRowStyle.uss"/>
+    <Style src="HierarchyContextSearchRowStyle.uss"/>
+    <ui:VisualElement>
+        <ui:Button name="search-start-button" class="project-context-row project-context-row__content search-start-button">
+            <ui:Image name="icon" picking-mode="Ignore" class="project-context-row__icon"/>
+            <ui:Label name="label" picking-mode="Ignore" text="Search..." class="project-context-row__label"/>
+            <ui:Label name="shortcut" picking-mode="Ignore" text="Ctrl+F" class="project-context-row__shortcut"/>
+        </ui:Button>
+        <UnityEditor.UIElements.ToolbarSearchField placeholder-text="Search..." class="project-context-row search-field"/>
+    </ui:VisualElement>
+</ui:UXML>

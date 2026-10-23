@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="True">
+    <Style src="ContextMenuEditRowStyle.uss"/>
+    <ui:VisualElement picking-mode="Ignore" class="context-menu-edit-row__content">
+        <ui:VisualElement name="icon" picking-mode="Ignore" class="context-menu-edit-row__icon">
+            <ui:Label name="iconText" picking-mode="Ignore" class="context-menu-edit-row__icon-text"/>
+            <ui:Image name="iconImage" picking-mode="Ignore" class="context-menu-edit-row__icon-image"/>
+        </ui:VisualElement>
+        <ui:Label name="name" picking-mode="Ignore" class="context-menu-edit-row__name"/>
+        <ui:Label name="status" picking-mode="Ignore" class="context-menu-edit-row__status"/>
+    </ui:VisualElement>
+</ui:UXML>

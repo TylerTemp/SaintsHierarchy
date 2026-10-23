@@ -18,6 +18,10 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 6.  Auto set icons for camera, cavans, light, eventSystem & Wwise Initializer
 7.  Prefab footer icon if you have custom icon set
 
+## Context Menu ##
+
+...
+
 ## Install ##
 
 *   Using [OpenUPM](https://openupm.com/packages/today.comes.saintsfield/)

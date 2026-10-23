@@ -1,0 +1,62 @@
+.project-context-row {
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.project-context-row__content {
+    flex-direction: row;
+    align-items: center;
+    flex-grow: 1;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.project-context-row__icon {
+    width: 20px;
+}
+
+.project-context-row__icon > #iconImage {
+    width: 20px;
+    height: 20px;
+    padding: 3px;
+}
+
+.project-context-row__icon_checked {
+    --unity-image: resource("check");
+    width: 14px;
+    height: 14px;
+
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+
+.project-context-row__label {
+    flex-grow: 1;
+}
+
+.project-context-row__shortcut {
+    margin-left: 24px;
+    -unity-text-align: middle-right;
+}
+
+.project-context-row--selected,
+.search-start-button:enabled:hover {
+    background-color: rgb(61, 125, 230);
+}
+
+.project-context-row--dark.project-context-row--selected,
+.project-context-row--dark.search-start-button:enabled:hover {
+    background-color: rgb(43, 92, 135);
+}
+
+.project-context-row--separator {
+    height: 4px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(128, 128, 128, 0.35);
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 3px;
+}
+
+.project-context-row--separator > .project-context-row__content { display: none; }
