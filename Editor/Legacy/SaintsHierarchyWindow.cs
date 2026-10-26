@@ -487,7 +487,7 @@ namespace SaintsHierarchy.Editor.Legacy
             public readonly object HostViewParent;
             public readonly Delegate OriginalOnGUI;
             public readonly Delegate WrappedOnGUI;
-            public readonly HierarchyContextMenu ContextMenu;
+            public readonly HierarchyContextMenuAdapter ContextMenu;
 
             public readonly Func<
 #if UNITY_6000_3_OR_NEWER
@@ -508,7 +508,7 @@ namespace SaintsHierarchy.Editor.Legacy
                 , bool, bool> setExpand
                 )
             {
-                ContextMenu = new HierarchyContextMenu(window);
+                ContextMenu = new HierarchyContextMenuAdapter(window);
                 HostViewParent = hostViewParent;
                 OriginalOnGUI = originalOnGUI;
                 WrappedOnGUI = wrappedOnGUI;

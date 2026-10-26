@@ -40,7 +40,7 @@ namespace SaintsHierarchy.Editor.Core
             { "Hierarchy/3D Object", new[] { "d_PreMatCube" } },
             { "Hierarchy/3D Object/Cube", new[] { "d_PreMatCube" } },
             { "Hierarchy/3D Object/Sphere", new[] { "d_PreMatSphere" } },
-            { "Hierarchy/3D Object/Capsule", new[] { "d_CapsuleCollider Icon" } },
+            { "Hierarchy/3D Object/Capsule", new[] { "Capsule Icon.png" } },
             { "Hierarchy/3D Object/Cylinder", new[] { "d_PreMatCylinder" } },
             { "Hierarchy/3D Object/Plane", new[] { "d_PreMatQuad" } },
             { "Hierarchy/3D Object/Quad", new[] { "d_PreMatQuad" } },

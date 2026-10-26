@@ -52,7 +52,7 @@ namespace SaintsHierarchy.Editor.HierarchyUI
             if (item != null && EditorUtility.EntityIdToObject(view.Source.GetEntityIdFromNode(item.Node)) is not GameObject) return;
             try
             {
-                List<HierarchyContextUtil.MenuItem> snapshot = HierarchyContextUtil.Read(menu, binding.EventInfo);
+                List<HierarchyContextUtil.MenuItem> snapshot = Read(menu, binding.EventInfo);
                 if (binding.Menu.Show(snapshot, binding.ScreenPosition))
                 {
                     // Empty native menu suppresses display after the population event finishes.
@@ -63,6 +63,31 @@ namespace SaintsHierarchy.Editor.HierarchyUI
             {
                 binding.Menu.ReportFailure(exception);
             }
+        }
+
+        private static List<HierarchyContextUtil.MenuItem> Read(DropdownMenu menu, DropdownMenuEventInfo eventInfo)
+        {
+            List<HierarchyContextUtil.MenuItem> source = new List<HierarchyContextUtil.MenuItem>();
+            foreach (DropdownMenuItem item in menu.MenuItems())
+            {
+                if (item is DropdownMenuSeparator separator)
+                {
+                    source.Add(HierarchyContextUtil.Item(separator.subMenuPath, true, false, false, null));
+                }
+                else if (item is DropdownMenuAction action)
+                {
+                    action.UpdateActionStatus(eventInfo);
+                    if (action.status == DropdownMenuAction.Status.None
+                        || (action.status & DropdownMenuAction.Status.Hidden) != 0)
+                    {
+                        continue;
+                    }
+                    source.Add(HierarchyContextUtil.Item(action.name, false,
+                        (action.status & DropdownMenuAction.Status.Disabled) == 0,
+                        (action.status & DropdownMenuAction.Status.Checked) != 0, action.Execute));
+                }
+            }
+            return source;
         }
 
         private static void Dispose()

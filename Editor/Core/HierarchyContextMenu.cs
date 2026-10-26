@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using SaintsHierarchy.Editor.Core.Config;
 using SaintsHierarchy.Editor.Core.UIElement;
 using SaintsHierarchy.Editor.Core.Utils;
@@ -11,10 +10,8 @@ using Object = UnityEngine.Object;
 
 namespace SaintsHierarchy.Editor.Core
 {
-    // Menu data belongs to one invocation. Only hook ownership survives it.
     public sealed class HierarchyContextMenu
     {
-        private const BindingFlags Flags = HierarchyContextUtil.Flags;
         private readonly EditorWindow _window;
         private HierarchyPopupMenu _dropdown;
         private bool _reportedFailure;
@@ -63,148 +60,6 @@ namespace SaintsHierarchy.Editor.Core
         {
             _dropdown?.Close();
             _dropdown = null;
-        }
-
-        // Legacy adapter: install only for this draw, after Unity's selection handling and before its popup callback.
-        public void Draw(Action original)
-        {
-            Event evt = Event.current;
-            if (!Enabled || evt == null || evt.type != EventType.ContextClick || _window.rootVisualElement.panel == null)
-            {
-                original();
-                return;
-            }
-            List<Action> restore = new List<Action>();
-            try
-            {
-                object hierarchy = HierarchyContextUtil.Get(_window, "m_SceneHierarchy");
-                object tree = hierarchy == null ? null : HierarchyContextUtil.Get(hierarchy, "m_TreeView");
-                if (tree != null)
-                {
-                    PropertyInfo callback = tree.GetType().GetProperty("contextClickItemCallback", Flags);
-                    if (callback?.GetValue(tree) is Delegate previous && previous.GetInvocationList().Length == 1
-                        && previous.Method.DeclaringType == hierarchy.GetType())
-                    {
-                        Type idType = previous.GetType().GetGenericArguments()[0];
-                        MethodInfo factory = GetType().GetMethod(nameof(ItemCallback), Flags)!.MakeGenericMethod(idType);
-                        Delegate installed = (Delegate)factory.Invoke(this, new object[] { previous, hierarchy, tree });
-                        callback.SetValue(tree, installed);
-                        restore.Add(() =>
-                        {
-                            if (Equals(callback.GetValue(tree), installed)) callback.SetValue(tree, previous);
-                        });
-                    }
-                    PropertyInfo outside = tree.GetType().GetProperty("contextClickOutsideItemsCallback", Flags);
-                    if (outside?.GetValue(tree) is Action oldOutside && oldOutside.GetInvocationList().Length == 1
-                        && oldOutside.Method.DeclaringType == hierarchy.GetType())
-                    {
-                        Action installed = () => OutsideItems(hierarchy, oldOutside);
-                        outside.SetValue(tree, installed);
-                        restore.Add(() =>
-                        {
-                            if (Equals(outside.GetValue(tree), installed)) outside.SetValue(tree, oldOutside);
-                        });
-                    }
-                }
-            }
-            catch (Exception exception)
-            {
-                ReportFailure(exception);
-                for (int i = restore.Count - 1; i >= 0; i--) restore[i]();
-                restore.Clear();
-            }
-            try
-            {
-                original();
-            }
-            finally
-            {
-                for (int i = restore.Count - 1; i >= 0; i--) restore[i]();
-            }
-        }
-
-        private Action<T> ItemCallback<T>(Delegate previous, object hierarchy, object tree) => id =>
-        {
-            bool handled = false;
-            try
-            {
-                object item = HierarchyContextUtil.Call(tree, "FindItem", id);
-                GameObject go = item == null ? null : HierarchyContextUtil.Get(item, "objectPPTR") as GameObject;
-                // Scene headers and SubScenes keep Unity's original menu.
-                if (go != null && !IsSubScene(go))
-                {
-                    handled = ShowLegacy(hierarchy,
-#if UNITY_6000_4_OR_NEWER
-                        go.GetEntityId()
-#else
-                        go.GetInstanceID()
-#endif
-                    );
-                }
-            }
-            catch (Exception exception)
-            {
-                ReportFailure(exception);
-            }
-            if (!handled) previous.DynamicInvoke(id);
-        };
-
-        private void OutsideItems(object hierarchy, Action native)
-        {
-            Object[] selection = Selection.objects;
-            Object active = Selection.activeObject;
-            bool handled = false;
-            try
-            {
-                // Match Unity: creations from blank space must not become children of the old selection.
-                Selection.activeObject = null;
-                handled = ShowLegacy(hierarchy, null);
-            }
-            catch (Exception exception)
-            {
-                ReportFailure(exception);
-            }
-            if (!handled)
-            {
-                Selection.objects = selection;
-                Selection.activeObject = active;
-                native();
-            }
-        }
-
-        private static bool IsSubScene(GameObject go)
-        {
-            Type type = typeof(EditorWindow).Assembly.GetType("UnityEditor.SubSceneGUI");
-            MethodInfo method = type?.GetMethod("GetSubSceneInfo", Flags, null, new[] { typeof(GameObject) }, null);
-            object info = method?.Invoke(null, new object[] { go });
-            return info != null && HierarchyContextUtil.Get(info, "isValid") is true;
-        }
-
-        private bool ShowLegacy(object hierarchy, object id)
-        {
-            GenericMenu menu = new GenericMenu();
-            MethodInfo build = hierarchy.GetType().GetMethod("CreateGameObjectContextClick", Flags)
-                ?? throw new MissingMethodException(hierarchy.GetType().FullName, "CreateGameObjectContextClick");
-            Type idType = build.GetParameters()[1].ParameterType;
-            if (id == null)
-            {
-                id = Activator.CreateInstance(idType);
-            }
-            else if (!idType.IsInstanceOfType(id))
-            {
-                MethodInfo convert = Array.Find(id.GetType().GetMethods(Flags), method =>
-                    method.Name == "op_Implicit" && method.ReturnType == idType
-                    && method.GetParameters().Length == 1 && method.GetParameters()[0].ParameterType == id.GetType());
-                id = convert?.Invoke(null, new[] { id }) ?? throw new InvalidOperationException("Unsupported Hierarchy identifier.");
-            }
-            build.Invoke(hierarchy, new object[] { menu, id });
-            bool shown = Show(HierarchyContextUtil.Read(menu), GUIUtility.GUIToScreenPoint(Event.current.mousePosition));
-            if (shown)
-            {
-                GUIUtility.hotControl = 0;
-                Event.current.Use();
-            }
-            return shown;
         }
 
         public bool Show(List<HierarchyContextUtil.MenuItem> source, Vector2 screenPosition)
