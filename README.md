@@ -181,6 +181,27 @@ Add a checkbox at the end for gameObject which has any disabled parent gameObjec
 
 ![](https://github.com/user-attachments/assets/22cb4180-4aa6-4dcc-8cfc-6df0ee822e90)
 
+### Alternative Context Menu ###
+
+Replace Unity's default right click popup menu to new style menu which supports:
+1. Search
+2. Re-Organization
+3. Hide
+4. Default Icons + Allow Custom Icons 
+5. Customize!
+
+![](https://github.com/user-attachments/assets/82a15056-35cc-4779-aca5-5cfd30093ec9)
+
+You can easily search menu items using `ctrl`/`cmd`+`f`
+
+![](https://github.com/user-attachments/assets/64e6046c-ce25-4f8f-a067-3da19f275bb5)
+
+You can easily customize it
+
+![](https://github.com/user-attachments/assets/86e5cfe0-58b8-4152-b15c-a80a80962ad4)
+
+Or disable it if you do not like it in `Tools` - `Saints Hierarchy` - `Replace Context Menu`
+
 ## Usage ##
 
 ### GameObject Icon ###
