@@ -66,14 +66,14 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ## Change Log ##
 
-For New Hierarchy View (6k.6+)
+Add alternative right click context menu to:
 
-1.  Add: Backport `Component Icons` to display at the end of the row. "Component Icons" length is dynamic, which looks awful in Unity's new "column" features. You can decide which one you want to use
+1.  Hide menu you don't want
+2.  Move menu into another submenu, even a submenu you created
+3.  Rename menu name, custom icons
+4.  Provide default icons for menu
 
-For New & Legacy Hierarchy
-
-1.  Add: `Remove Component` button in popup component editor
-2.  Change: Update the look of the popup component editor
+Use `Tools` - `Saints Hierarchy` - `Replace Context Menu` to enable it
 
 See [the full change log](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
 
