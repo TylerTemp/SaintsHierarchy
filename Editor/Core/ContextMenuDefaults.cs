@@ -33,6 +33,8 @@ namespace SaintsHierarchy.Editor.Core
             { "Hierarchy/Prefab/Unpack Completely", new[] { "d_Unlinked" } },
             { "Hierarchy/Prefab/Remove Unused Overrides...", new[] { "d_Grid.EraserTool" } },
 
+            { "Hierarchy/Add to Assistant", new[] { "d_AISparkle Icon" } },
+
             // GameObject creation.
             { "Hierarchy/Create Empty", new[] { "d_GameObject Icon" } },
             { "Hierarchy/Create Empty Child", new[] { "d_GameObject Icon" } },
@@ -141,7 +143,7 @@ namespace SaintsHierarchy.Editor.Core
             { "Hierarchy/UI (Canvas)/Legacy/Input Field", new[] { "d_InputField Icon" } },
 
             // Navigation uses the same thumbnails as its components in the Inspector.
-            { "Hierarchy/AI", new[] { "d_NavMeshDAata Icon" } },
+            { "Hierarchy/AI", new[] { "Packages/com.unity.ai.navigation/EditorResources/Overlay/d_NavigationOverlay On.png" } },
             { "Hierarchy/AI/NavMesh Surface", new[] { "Packages/com.unity.ai.navigation/Gizmos/NavMeshSurface Icon.png" } },
             { "Hierarchy/AI/NavMesh Modifier Volume", new[] { "Packages/com.unity.ai.navigation/Gizmos/NavMeshModifierVolume Icon.png" } },
             { "Hierarchy/AI/NavMesh Link", new[] { "Packages/com.unity.ai.navigation/Gizmos/NavMeshLink Icon.png" } },
@@ -174,10 +176,11 @@ namespace SaintsHierarchy.Editor.Core
 //            { "Hierarchy/Volume/Box Volume", new[] { "d_Volume Icon.asset", "Packages/com.unity.render-pipelines.core/Editor/Icons/Processed/d_Volume Icon.asset", "d_Volume Icon" } },
 //            { "Hierarchy/Volume/Sphere Volume", new[] { "d_Volume Icon.asset", "Packages/com.unity.render-pipelines.core/Editor/Icons/Processed/d_Volume Icon.asset", "d_Volume Icon" } },
 //            { "Hierarchy/Volume/Convex Mesh Volume", new[] { "d_Volume Icon.asset", "Packages/com.unity.render-pipelines.core/Editor/Icons/Processed/d_Volume Icon.asset", "d_Volume Icon" } },
-            { "Hierarchy/Wwise", new[] { "wwise-logo.png" } },
+            { "Hierarchy/Wwise", new[] { "f7a780326c92fb44d8a01bfef285a553", "Assets/Wwise/API/Editor/WwiseWindows/BrowserIcon.png", "d_AudioSource Icon" } },
             { "Hierarchy/Camera", new[] { "d_Camera Icon" } },
-            { "Hierarchy/Demigiant", new[] { "dotween-logo.png" } },
-            { "Hierarchy/Demigiant/DOTween Manager", new[] { "dotween-logo.png" } },
+            // Load DOTween's own mini icon; the GUID also supports relocated installations.
+            { "Hierarchy/Demigiant", new[] { "61521df2e071645488ba3d05e49289ae", "Assets/Plugins/Demigiant/DOTween/Editor/Imgs/DOTweenMiniIcon.png", "d_DefaultAsset Icon" } },
+            { "Hierarchy/Demigiant/DOTween Manager", new[] { "61521df2e071645488ba3d05e49289ae", "Assets/Plugins/Demigiant/DOTween/Editor/Imgs/DOTweenMiniIcon.png", "d_DefaultAsset Icon" } },
         };
 
     }

@@ -44,7 +44,7 @@ namespace SaintsHierarchy.Editor.Core.Config
         // [field: SerializeField] public List<SceneGuidToGoFavorites> sceneGuidToGoFavoritesList { get; set; } = new List<SceneGuidToGoFavorites>();
         // ReSharper restore InconsistentNaming
 
-        [field: SerializeField] public bool ReplaceContextMenu { get; set; }
+        [field: SerializeField] public bool ReplaceContextMenu { get; set; } = true;
         [field: SerializeField] public bool DefaultContextMenuIcons { get; set; } = true;
         [field: SerializeField] public bool SaveContextMenuToProjectConfig { get; set; }
         [field: SerializeField] public List<ContextPathOverride> ContextPathOverrides { get; private set; } = new List<ContextPathOverride>();

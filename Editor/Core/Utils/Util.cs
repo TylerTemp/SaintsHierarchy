@@ -939,6 +939,10 @@ namespace SaintsHierarchy.Editor.Core.Utils
                 if(prefabPath.EndsWith(".prefab"))
                 {
                     prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+                    if (prefabAsset == null)  // this prefab is not loaded by Unity yet.
+                    {
+                        continue;
+                    }
                 }
                 else  // fbx etc
                 {
@@ -1142,7 +1146,7 @@ namespace SaintsHierarchy.Editor.Core.Utils
                     {
                         if (componentIconsForGeneralScripts)
                         {
-                            componentAndIcon.Add((component, GetCachedIcon("wwise-logo.png")));
+                            componentAndIcon.Add((component, GetWwiseBrowserIcon()));
                         }
                     }
                         break;
@@ -1321,7 +1325,7 @@ namespace SaintsHierarchy.Editor.Core.Utils
 #endif
 #if SAINTSHIERARCHY_WWISE
                     case AkInitializer:
-                        return GetCachedIcon("wwise-logo.png");
+                        return GetWwiseBrowserIcon();
 #endif
                 }
             }
@@ -1330,6 +1334,26 @@ namespace SaintsHierarchy.Editor.Core.Utils
         }
 
         private static readonly Dictionary<string, Texture2D> NameToTexture2DCache = new Dictionary<string, Texture2D>();
+
+        private static Texture2D GetWwiseBrowserIcon()
+        {
+            const string cacheKey = "WwiseBrowserIcon";
+            if (NameToTexture2DCache.TryGetValue(cacheKey, out Texture2D cached))
+            {
+                return cached;
+            }
+
+            foreach (string path in ContextMenuDefaults.DefaultIcons["Hierarchy/Wwise"])
+            {
+                Texture2D icon = HierarchyContextUtil.LoadIcon(path);
+                if (icon != null)
+                {
+                    return NameToTexture2DCache[cacheKey] = icon;
+                }
+            }
+
+            return NameToTexture2DCache[cacheKey] = null;
+        }
 
         public static Texture2D GetCachedIcon(string name)
         {

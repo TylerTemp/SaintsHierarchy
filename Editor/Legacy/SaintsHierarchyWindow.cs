@@ -609,6 +609,10 @@ namespace SaintsHierarchy.Editor.Legacy
                 return default;
             }
             object treeViewData = _propertyMTreeViewData.GetValue(treeViewController);
+            if (treeViewData == null)
+            {
+                return default;
+            }
 
             Type itemType =
 #if UNITY_6000_3_OR_NEWER
@@ -629,6 +633,10 @@ namespace SaintsHierarchy.Editor.Legacy
                     "SetExpanded",
                     BindingFlags.Public | BindingFlags.Instance, new[] { itemType, typeof(bool) });
                 _methodSetExpand = setExpandedResult.methodInfo;
+            }
+            if (_methodSetExpand == null)
+            {
+                return default;
             }
             // Debug.Log(_methodSetExpand);
 
@@ -1048,7 +1056,8 @@ namespace SaintsHierarchy.Editor.Legacy
             // Debug.Log("called");
             if (!Wrapped.TryGetValue(window, out WrapInfo wrapInfo))
             {
-                throw new Exception("This version of Unity is not supported");
+                Debug.LogWarning("Saints Hierarchy wrapper state is unavailable; skipping this draw.");
+                return;
             }
 
             if (!EditorWindowStatuses.TryGetValue(window, out EditorWindowStatus windowStatus))

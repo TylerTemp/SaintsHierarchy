@@ -1368,12 +1368,16 @@ namespace SaintsHierarchy.Editor.Legacy
         {
             if (!_sceneHierarchyWindowsFieldInit)
             {
-                _sceneHierarchyWindowsFieldInit = true;
-                _sceneHierarchyWindowsField ??= typeof(UnityEditor.Editor).Assembly
-                    .GetType("UnityEditor.SceneHierarchyWindow").GetField(
+                Type windowType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.SceneHierarchyWindow");
+                if (windowType == null)
+                {
+                    return ("SceneHierarchyWindow type not found", null, null);
+                }
+                _sceneHierarchyWindowsField ??= windowType.GetField(
                         "s_SceneHierarchyWindows",
                         BindingFlags.Static | BindingFlags.NonPublic
                     );
+                _sceneHierarchyWindowsFieldInit = _sceneHierarchyWindowsField != null;
             }
 
             if (_sceneHierarchyWindowsField == null)
@@ -1381,12 +1385,12 @@ namespace SaintsHierarchy.Editor.Legacy
                 return ("_sceneHierarchyWindowsField not found", null, null);
             }
 
-            if (_sceneHierarchyFieldInit && _sceneHierarchyField == null)
+            if (_sceneHierarchyWindowsField.GetValue(null) is not IList windows)
             {
-                return ("_sceneHierarchyField not found", null, null);
+                return ("sceneHierarchyWindows not found", null, null);
             }
 
-            List<EditorWindow> sceneHierarchyWindows = ((IList)_sceneHierarchyWindowsField.GetValue(null)).Cast<EditorWindow>().ToList();
+            List<EditorWindow> sceneHierarchyWindows = windows.Cast<EditorWindow>().Where(window => window != null).ToList();
             EditorWindow sceneHierarchyWindow;
             if (sceneHierarchyWindows.Count == 1)
             {
@@ -1407,8 +1411,8 @@ namespace SaintsHierarchy.Editor.Legacy
             // Type type = sceneHierarchyWindow.GetType();
             if (!_sceneHierarchyFieldInit)
             {
-                _sceneHierarchyFieldInit = true;
                 _sceneHierarchyField = sceneHierarchyWindow.GetType().GetField("m_SceneHierarchy", instanceNonPublic);
+                _sceneHierarchyFieldInit = _sceneHierarchyField != null;
                 if (_sceneHierarchyField == null)
                 {
                     return ("_sceneHierarchyField not found", sceneHierarchyWindow, null);
@@ -1464,11 +1468,11 @@ namespace SaintsHierarchy.Editor.Legacy
                 {
                     if (!_keyboardControlIdFieldInit)
                     {
-                        _keyboardControlIdFieldInit = true;
                         const BindingFlags instanceNonPublic = BindingFlags.Instance | BindingFlags.NonPublic;
                         _keyboardControlIdField =
                             sceneHierarchy.GetType().GetField(
                                 "m_TreeViewKeyboardControlID", instanceNonPublic);
+                        _keyboardControlIdFieldInit = _keyboardControlIdField != null;
                         if (_keyboardControlIdField == null)
                         {
                             return ("_keyboardControlIdFieldInit not found", default);
@@ -1512,8 +1516,8 @@ namespace SaintsHierarchy.Editor.Legacy
         {
             if (!_treeViewFieldInit)
             {
-                _treeViewFieldInit = true;
                 _treeViewField = sceneHierarchy.GetType().GetField("m_TreeView", BindingFlags.Instance | BindingFlags.NonPublic);
+                _treeViewFieldInit = _treeViewField != null;
             }
 
             if (_treeViewField == null)
@@ -1521,11 +1525,15 @@ namespace SaintsHierarchy.Editor.Legacy
                 return ("_treeViewField not found", null);
             }
             object treeViewController = _treeViewField.GetValue(sceneHierarchy);
+            if (treeViewController == null)
+            {
+                return ("treeViewController not found", null);
+            }
             // Debug.Log(treeViewController);
             if (!_treeViewControllerStateFieldInit)
             {
-                _treeViewControllerStateFieldInit = true;
                 _treeViewControllerStateField = treeViewController.GetType().GetProperty("state", BindingFlags.Instance | BindingFlags.Public);
+                _treeViewControllerStateFieldInit = _treeViewControllerStateField != null;
 
                 if (_treeViewControllerStateField == null)
                 {
@@ -1576,8 +1584,8 @@ namespace SaintsHierarchy.Editor.Legacy
         {
             if (!_treeViewFieldInit)
             {
-                _treeViewFieldInit = true;
                 _treeViewField = sceneHierarchy.GetType().GetField("m_TreeView", BindingFlags.Instance | BindingFlags.NonPublic);
+                _treeViewFieldInit = _treeViewField != null;
             }
 
             if (_treeViewField == null)
@@ -1585,11 +1593,15 @@ namespace SaintsHierarchy.Editor.Legacy
                 return ("_treeViewField not found", null);
             }
             object treeViewController = _treeViewField.GetValue(sceneHierarchy);
+            if (treeViewController == null)
+            {
+                return ("treeViewController not found", null);
+            }
             // Debug.Log(treeViewController);
             if (!_treeViewControllerStateFieldInit)
             {
-                _treeViewControllerStateFieldInit = true;
                 _treeViewControllerStateField = treeViewController.GetType().GetProperty("state", BindingFlags.Instance | BindingFlags.Public);
+                _treeViewControllerStateFieldInit = _treeViewControllerStateField != null;
 
                 if (_treeViewControllerStateField == null)
                 {
