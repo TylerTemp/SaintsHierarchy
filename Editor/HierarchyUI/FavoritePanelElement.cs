@@ -100,8 +100,14 @@ namespace SaintsHierarchy.Editor.HierarchyUI
             ResetPress();
             ClearDrag();
             IConfig usingConfig = Util.GetUsingConfig();
-            style.display = usingConfig.disabled || usingConfig.disableFavorites
-                ? DisplayStyle.None : DisplayStyle.Flex;
+            if (usingConfig.disabled || usingConfig.disableFavorites)
+            {
+                style.display = DisplayStyle.None;
+                _favorites.Clear();
+                _buttons.Clear();
+                return;
+            }
+            style.display = DisplayStyle.Flex;
             // Keep resolved objects through play mode, where their global IDs can change.
             Dictionary<string, GameObject> loaded = _favorites.ToDictionary(each => each.config.globalObjectIdString, each => each.go);
             _favorites.Clear();

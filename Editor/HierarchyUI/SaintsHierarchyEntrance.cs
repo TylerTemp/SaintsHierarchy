@@ -43,8 +43,10 @@ namespace SaintsHierarchy.Editor.HierarchyUI
 
         private static void OnBindView(HierarchyWindow window, HierarchyView view)
         {
+            IConfig config = Util.GetUsingConfig();
+
             // ReSharper disable once InvertIf
-            if (!Util.GetUsingConfig().disableFavorites && window.rootVisualElement.Q<FavoritePanelElement>() == null)
+            if (!config.disabled && !config.disableFavorites && window.rootVisualElement.Q<FavoritePanelElement>() == null)
             {
                 VisualElement parent = window.View.parent;
                 parent.Insert(parent.IndexOf(window.View), new FavoritePanelElement());

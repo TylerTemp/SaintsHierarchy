@@ -176,6 +176,8 @@ namespace SaintsHierarchy.Editor.Core
 //            { "Hierarchy/Volume/Convex Mesh Volume", new[] { "d_Volume Icon.asset", "Packages/com.unity.render-pipelines.core/Editor/Icons/Processed/d_Volume Icon.asset", "d_Volume Icon" } },
             { "Hierarchy/Wwise", new[] { "wwise-logo.png" } },
             { "Hierarchy/Camera", new[] { "d_Camera Icon" } },
+            { "Hierarchy/Demigiant", new[] { "dotween-logo.png" } },
+            { "Hierarchy/Demigiant/DOTween Manager", new[] { "dotween-logo.png" } },
         };
 
     }

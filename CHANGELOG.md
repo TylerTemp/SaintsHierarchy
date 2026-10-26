@@ -1,3 +1,14 @@
+## 1.6.0 ##
+
+Add alternative right click context menu to:
+
+1.  Hide menu you don't want
+2.  Move menu into another submenu, even a submenu you created
+3.  Rename menu name, custom icons
+4.  Provide default icons for menu
+
+Use `Tools` - `Saints Hierarchy` - `Replace Context Menu` to enable it
+
 ## 1.5.4 ##
 
 For New Hierarchy View (6k.6+)

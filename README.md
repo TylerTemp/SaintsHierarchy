@@ -493,6 +493,15 @@ private HierarchyUsed DrawRight1G2(HierarchyArea headerArea)
 [![](https://github.com/user-attachments/assets/bd5db3ef-da03-4455-b665-1dc661901b15)](https://github.com/user-attachments/assets/260c9661-e7c2-4e0f-b666-a36287fe9eb4)
 
 
+## License and Third-Party Notices ##
+
+Saints Hierarchy is licensed under the [MIT License](https://github.com/TylerTemp/SaintsHierarchy/blob/master/LICENSE), excluding the third-party logos listed in [ThirdPartyNotices.txt](https://github.com/TylerTemp/SaintsHierarchy/blob/master/ThirdPartyNotices.txt).
+
+*   `wwise-logo.png` belongs to Audiokinetic Inc. ([Wwise](https://www.audiokinetic.com/)).
+*   `dotween-logo.png` belongs to Daniele Giardini - Demigiant ([DOTween](https://dotween.demigiant.com/)).
+
+Both logos are used solely for display in the Unity Editor to identify the corresponding tools and integrations. They reside under `Editor/Editor Default Resources/SaintsHierarchy/` and are not included in player builds. Their inclusion does not imply affiliation or endorsement, and the package's MIT license grants no rights to these logos. See [ThirdPartyNotices.txt](ThirdPartyNotices.txt) for ownership and license references.
+
 ## Package is too simple ##
 
 Your asset was reviewed by the Unity Content Operation team, and was not approved for the following reason(s): - Content Quality and Presentation. This package is too simple for our current standards (https://assetstore.unity.com/publishing/submission-guidelines, Section 1.1.a). Please spend more time researching the current game market, polishing and tweaking your package to a high degree of quality, and expanding its contents to reach a broader audience. We recommend visiting the Asset Store Forums so users may give you more feedback (https://forum.unity.com/forums/assets-and-asset-store.32/) and reading the Submission Guidelines (https://assetstore.unity.com/publishing/submission-guidelines). Until you make improvements, we have chosen not to publish this asset. However, we greatly appreciate the time and effort spent in preparing your submission. This restriction was made as the asset is not compliant with our content policy (https://unity.com/legal/asset-store-content-transparency). If you are based in the EU, you can see your redress options under the Digital Services Act in the Redress Options section (https://unity.com/legal/asset-store-content-transparency#redress-options).

@@ -1,0 +1,33 @@
+Third-Party Notices
+===================
+
+Saints Hierarchy includes the following third-party logos solely for display
+in the Unity Editor, to identify the corresponding tools and integrations.
+Both images are located under Editor/Editor Default Resources/SaintsHierarchy/
+and are not included in player builds.
+
+These logos are excluded from Saints Hierarchy's MIT license. Copyright and
+trademark rights remain with their respective owners. Their inclusion does
+not imply affiliation with, sponsorship by, or endorsement of Saints Hierarchy.
+This notice does not grant any license or permission to reuse the logos.
+
+Wwise
+-----
+File: Editor/Editor Default Resources/SaintsHierarchy/wwise-logo.png
+Rights holder: Audiokinetic Inc.
+Wwise and the Wwise logo are trademarks or registered trademarks of
+Audiokinetic Inc. All rights reserved.
+Product: https://www.audiokinetic.com/
+Official branding resources: https://www.audiokinetic.com/en/resources/credits/
+
+DOTween
+-------
+File: Editor/Editor Default Resources/SaintsHierarchy/dotween-logo.png
+Rights holder: Daniele Giardini - Demigiant
+The DOTween name and logo belong to Daniele Giardini - Demigiant.
+All rights reserved.
+Product: https://dotween.demigiant.com/
+License reference: https://dotween.demigiant.com/license.php
+The DOTween software license expressly excludes rights to use the copyright
+holder's trademarks, service marks, trade names, and logos. It is not a
+license for the logo included here.
