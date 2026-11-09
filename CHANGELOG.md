@@ -1,3 +1,8 @@
+## 1.6.1 ##
+
+1.  Fix: Tag/Layer picker gave error after select
+2.  Fix: prefab nested fbx did not show correct icon & expander [#4](https://github.com/TylerTemp/SaintsHierarchy/issues/4)
+
 ## 1.6.0 ##
 
 Add alternative right click context menu to:
