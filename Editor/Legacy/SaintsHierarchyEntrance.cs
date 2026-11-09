@@ -330,7 +330,7 @@ namespace SaintsHierarchy.Editor.Legacy
                 iconTexture = Util.GetIconByComponent(allComponents);
             }
 
-            Util.PrefabIconInfo prefabInfo = Util.GetPrefabIconInfo(go);
+            Util.PrefabIconInfo prefabInfo = Util.GetPrefabIconInfo(originGo);
             bool isAnyPrefabInstanceRoot = prefabInfo.IsInstanceRoot;
             bool isMissingPrefab = prefabInfo.IsMissingPrefab;
             bool isModelPrefab = prefabInfo.IsModelPrefab;
@@ -711,11 +711,13 @@ namespace SaintsHierarchy.Editor.Legacy
                 return;
             }
 
-            using (SerializedObject serialized = new SerializedObject(targets))
+            foreach (GameObject target in targets)
             {
+                using SerializedObject serialized = new SerializedObject(target);
                 serialized.FindProperty("m_TagString").stringValue = tag;
                 serialized.ApplyModifiedProperties();
             }
+
             EditorApplication.RepaintHierarchyWindow();
         }
 
@@ -747,11 +749,13 @@ namespace SaintsHierarchy.Editor.Legacy
                 }
             }
 
-            using (SerializedObject serialized = new SerializedObject(targets))
+            foreach (GameObject target in targets)
             {
+                using SerializedObject serialized = new SerializedObject(target);
                 serialized.FindProperty("m_Layer").intValue = layer;
                 serialized.ApplyModifiedProperties();
             }
+
             EditorApplication.RepaintHierarchyWindow();
         }
 
