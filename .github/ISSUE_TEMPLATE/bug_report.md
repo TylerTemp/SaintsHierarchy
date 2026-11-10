@@ -16,8 +16,8 @@ assignees: TylerTemp
 **Have you manually changed Unity's [Use new Hierarchy window](https://docs.unity.com/ja-jp/engine/6000.3/manual/unity-editor/editor-settings-reference/preferences/general) config**
 
 - [ ] No
-- [ ] Yes, it's uses [new / old] Hierarchy window
-- [ ] I don't know/it's not related
+- [ ] Yes, it uses [new / old] Hierarchy window
+- [ ] I don't know / it's not related
 
 **Additional context**
 
