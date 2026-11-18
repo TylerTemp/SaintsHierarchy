@@ -83,6 +83,7 @@ namespace SaintsHierarchy.Editor.Core.UIElement
                 _searchRow = new HierarchyContextSearchRow();
                 _scroll.Add(_searchRow);
                 _searchRow.ToolbarSearchField.RegisterValueChangedCallback(OnSearchCallback);
+                _searchRow.ToolbarSearchField.RegisterCallback<FocusInEvent>(_ => _menu.ClearSelection(this));
                 _searchRow.RegisterCallback<PointerEnterEvent>(_ => _menu.ClearSelection(this));
                 _searchRow.RegisterCallback<PointerMoveEvent>(_ =>
                 {
@@ -246,7 +247,9 @@ namespace SaintsHierarchy.Editor.Core.UIElement
                 bool plainKey = !evt.altKey && !evt.ctrlKey && !evt.commandKey && !evt.shiftKey;
                 bool navigateResults = inSearchField && plainKey &&
                     (evt.keyCode == KeyCode.UpArrow || evt.keyCode == KeyCode.DownArrow ||
-                     Selected >= 0 && (evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter));
+                     Selected >= 0 && (evt.keyCode == KeyCode.LeftArrow || evt.keyCode == KeyCode.RightArrow ||
+                                       evt.keyCode == KeyCode.Home || evt.keyCode == KeyCode.End ||
+                                       evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter));
                 // Escape dismisses the whole menu even while editing the search field.
                 if (evt.keyCode != KeyCode.Escape && !navigateResults)
                 {
@@ -268,6 +271,8 @@ namespace SaintsHierarchy.Editor.Core.UIElement
                 return;
             }
             Rows[index].SetSelected(true);
+            // Highlighting a result hands keyboard navigation to the menu until search is focused again.
+            rootVisualElement.Focus();
             _scroll.ScrollTo(Rows[index]);
         }
 

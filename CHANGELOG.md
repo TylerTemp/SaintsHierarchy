@@ -1,3 +1,7 @@
+## 1.6.2 ##
+
+Fix: improved the navigation when search.
+
 ## 1.6.1 ##
 
 1.  Fix: Tag/Layer picker gave error after select

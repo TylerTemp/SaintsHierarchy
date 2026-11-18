@@ -66,8 +66,7 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ## Change Log ##
 
-1.  Fix: Tag/Layer picker gave error after select
-2.  Fix: prefab nested fbx did not show correct icon & expander [#4](https://github.com/TylerTemp/SaintsHierarchy/issues/4)
+Fix: improved the navigation when search.
 
 See [the full change log](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
 
