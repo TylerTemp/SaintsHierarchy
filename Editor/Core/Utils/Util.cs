@@ -1070,6 +1070,21 @@ namespace SaintsHierarchy.Editor.Core.Utils
             }
         }
 
+        // Fix FBX nested inside a regular prefab reported as Regular.
+        public static PrefabAssetType GetNearestPrefabAssetType(GameObject instanceRoot)
+        {
+            string assetPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(instanceRoot);
+            if (string.IsNullOrEmpty(assetPath))
+            {
+                return PrefabUtility.GetPrefabAssetType(instanceRoot);
+            }
+
+            GameObject asset = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+            return PrefabUtility.GetPrefabAssetType(asset != null
+                ? asset
+                : instanceRoot);
+        }
+
         public static PrefabIconInfo GetPrefabIconInfo(GameObject go)
         {
             if (go == null || !PrefabUtility.IsAnyPrefabInstanceRoot(go))
@@ -1077,7 +1092,7 @@ namespace SaintsHierarchy.Editor.Core.Utils
                 return default;
             }
 
-            PrefabAssetType assetType = PrefabUtility.GetPrefabAssetType(go);
+            PrefabAssetType assetType = GetNearestPrefabAssetType(go);
             bool isMissingPrefab = PrefabUtility.GetPrefabInstanceStatus(go) == PrefabInstanceStatus.MissingAsset;
             string iconName;
             if (isMissingPrefab)

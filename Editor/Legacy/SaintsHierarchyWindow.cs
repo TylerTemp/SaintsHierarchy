@@ -997,7 +997,7 @@ namespace SaintsHierarchy.Editor.Legacy
                 return Util.LoadResource<Texture2D>("prefab_warning.png");
             }
 
-            PrefabAssetType assetType = PrefabUtility.GetPrefabAssetType(go);
+            PrefabAssetType assetType = Util.GetNearestPrefabAssetType(go);
 
             // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
             switch (assetType)
