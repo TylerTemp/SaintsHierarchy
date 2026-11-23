@@ -1,3 +1,7 @@
+## 1.6.3 ##
+
+Fix: fbx nested inside prefab got detected as a prefab [#4](https://github.com/TylerTemp/SaintsHierarchy/issues/4)
+
 ## 1.6.2 ##
 
 Fix: improved the navigation when search.
