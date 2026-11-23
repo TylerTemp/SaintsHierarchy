@@ -66,7 +66,7 @@ Unity Hierarchy enhancement. Use `Alt`+`Left Mouse Button` to select.
 
 ## Change Log ##
 
-Fix: improved the navigation when search.
+Fix: fbx nested inside prefab got detected as a prefab [#4](https://github.com/TylerTemp/SaintsHierarchy/issues/4)
 
 See [the full change log](https://github.com/TylerTemp/SaintsHierarchy/blob/master/CHANGELOG.md)
 
